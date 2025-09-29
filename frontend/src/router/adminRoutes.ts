@@ -37,7 +37,7 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
-        path: 'function-tools',
+        path: 'functions',
         name: 'adminFunctionTools',
         component: () => import('../views/admin/FunctionToolManagementView.vue'),
         meta: {
