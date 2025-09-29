@@ -95,9 +95,9 @@ const goToAdminLogin = () => {
           </button>
         </div>
       </div>
-    </div>
+      </div>
     
-    <div class="login-bg" />
+    <!-- <div class="login-bg" /> -->
   </div>
 </template>
 

@@ -391,9 +391,10 @@ const toggleFunctionStatus = (functionId: number, currentStatus: boolean) => {
     <!-- 分页 -->
     <div class="pagination-section">
       <ElPagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-
+        :current-page="currentPage"
+        @current-change="currentPage = $event"
+        :page-size="pageSize"
+        @size-change="pageSize = $event"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
         :total="filteredFunctions.length"
@@ -551,6 +552,7 @@ const getTagType = (type: string): 'primary' | 'success' | 'warning' | 'info' =>
 
 .description-text {
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;

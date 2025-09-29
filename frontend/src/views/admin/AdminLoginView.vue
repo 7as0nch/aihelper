@@ -169,6 +169,7 @@ const goToUserLogin = () => {
   font-size: 2rem;
   font-weight: 700;
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 10px;

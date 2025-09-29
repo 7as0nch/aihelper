@@ -138,7 +138,7 @@ const goToLogin = () => {
       </div>
     </div>
     
-    <div class="register-bg" />
+    <!-- <div class="register-bg" /> -->
   </div>
 </template>
 
@@ -185,6 +185,7 @@ const goToLogin = () => {
   font-weight: 700;
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 10px;
 }
