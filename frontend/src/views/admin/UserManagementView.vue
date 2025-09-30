@@ -316,13 +316,12 @@ const toggleUserStatus = (userId: number, currentStatus: boolean) => {
       <ElTable
         v-loading="loading"
         :data="paginatedUsers"
-        style="width: 100%"
         border
         class="user-table"
       >
         <ElTableColumn prop="id" label="用户ID" width="80" align="center" />
         
-        <ElTableColumn prop="username" label="用户名" min-width="120">
+        <ElTableColumn prop="username" label="用户名" min-width="10">
           <template #default="{ row }">
             <div class="user-info">
               <div class="user-avatar">
@@ -333,7 +332,7 @@ const toggleUserStatus = (userId: number, currentStatus: boolean) => {
           </template>
         </ElTableColumn>
         
-        <ElTableColumn prop="email" label="邮箱" min-width="180" />
+        <ElTableColumn prop="email" label="邮箱" min-width="40" />
         
         <ElTableColumn prop="role" label="角色" width="100" align="center">
           <template #default="{ row }">
@@ -349,8 +348,6 @@ const toggleUserStatus = (userId: number, currentStatus: boolean) => {
               v-model="row.status"
               :active-value="true"
               :inactive-value="false"
-              active-text="启用"
-              inactive-text="禁用"
               @change="toggleUserStatus(row.id, !row.status)"
             />
           </template>
@@ -495,6 +492,8 @@ const toggleUserStatus = (userId: number, currentStatus: boolean) => {
 
 .user-table {
   border: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 1200px;
 }
 
 .user-info {

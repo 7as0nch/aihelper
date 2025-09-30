@@ -152,7 +152,7 @@ const goToLogin = () => {
   justify-content: center;
   align-items: center;
   padding: 20px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #93d3fb 0%, #5791f5 100%);
 }
 
 .register-bg {
@@ -183,7 +183,7 @@ const goToLogin = () => {
 .app-title {
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #93d3fb 0%, #5791f5 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -208,7 +208,7 @@ const goToLogin = () => {
   height: 48px;
   font-size: 16px;
   font-weight: 600;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #93d3fb 0%, #5791f5 100%);
   border: none;
   border-radius: var(--radius-md);
   transition: all 0.3s ease;
@@ -216,7 +216,7 @@ const goToLogin = () => {
 
 .register-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+  box-shadow: 0 4px 12px rgba(147, 211, 251, 0.4);
 }
 
 .register-footer {

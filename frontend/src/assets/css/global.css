@@ -1,4 +1,5 @@
 /* 全局样式重置 */
+@import "tailwindcss";
 * {
   margin: 0;
   padding: 0;
