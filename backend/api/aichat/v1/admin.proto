@@ -1,0 +1,233 @@
+syntax = "proto3";
+
+package aichat.admin.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/aichat/backend/api/aichat/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.aichat.api.admin.v1";
+option java_outer_classname = "AdminProtoV1";
+
+// AdminService 管理服务定义
+service AdminService {
+  // 获取MCP配置
+  rpc GetMCPConfig (GetMCPConfigRequest) returns (GetMCPConfigReply) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/config/mcp"
+    };
+  }
+
+  // 更新MCP配置
+  rpc UpdateMCPConfig (UpdateMCPConfigRequest) returns (UpdateMCPConfigReply) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/config/mcp"
+      body: "*"
+    };
+  }
+
+  // 获取函数工具列表
+  rpc GetFunctionList (GetFunctionListRequest) returns (GetFunctionListReply) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/function/list"
+    };
+  }
+
+  // 创建函数工具
+  rpc CreateFunction (CreateFunctionRequest) returns (CreateFunctionReply) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/function/create"
+      body: "*"
+    };
+  }
+
+  // 更新函数工具
+  rpc UpdateFunction (UpdateFunctionRequest) returns (UpdateFunctionReply) {
+    option (google.api.http) = {
+      put: "/api/v1/admin/function/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除函数工具
+  rpc DeleteFunction (DeleteFunctionRequest) returns (DeleteFunctionReply) {
+    option (google.api.http) = {
+      delete: "/api/v1/admin/function/{id}"
+    };
+  }
+
+  // 获取工作流列表
+  rpc GetWorkflowList (GetWorkflowListRequest) returns (GetWorkflowListReply) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/workflow/list"
+    };
+  }
+
+  // 创建工作流
+  rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowReply) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/workflow/create"
+      body: "*"
+    };
+  }
+
+  // 更新工作流
+  rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowReply) {
+    option (google.api.http) = {
+      put: "/api/v1/admin/workflow/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除工作流
+  rpc DeleteWorkflow (DeleteWorkflowRequest) returns (DeleteWorkflowReply) {
+    option (google.api.http) = {
+      delete: "/api/v1/admin/workflow/{id}"
+    };
+  }
+}
+
+// GetMCPConfigRequest 获取MCP配置请求
+message GetMCPConfigRequest {}
+
+// GetMCPConfigReply 获取MCP配置响应
+message GetMCPConfigReply {
+  bool success = 1;
+  string message = 2;
+  map<string, string> data = 3;
+}
+
+// UpdateMCPConfigRequest 更新MCP配置请求
+message UpdateMCPConfigRequest {
+  map<string, string> config = 1;
+}
+
+// UpdateMCPConfigReply 更新MCP配置响应
+message UpdateMCPConfigReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// GetFunctionListRequest 获取函数工具列表请求
+message GetFunctionListRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+// GetFunctionListReply 获取函数工具列表响应
+message GetFunctionListReply {
+  bool success = 1;
+  repeated FunctionInfo data = 2;
+  int32 total = 3;
+}
+
+// CreateFunctionRequest 创建函数工具请求
+message CreateFunctionRequest {
+  string name = 1;
+  string description = 2;
+  string code = 3;
+  map<string, string> config = 4;
+}
+
+// CreateFunctionReply 创建函数工具响应
+message CreateFunctionReply {
+  bool success = 1;
+  string message = 2;
+  FunctionInfo data = 3;
+}
+
+// UpdateFunctionRequest 更新函数工具请求
+message UpdateFunctionRequest {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  string code = 4;
+  map<string, string> config = 5;
+}
+
+// UpdateFunctionReply 更新函数工具响应
+message UpdateFunctionReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// DeleteFunctionRequest 删除函数工具请求
+message DeleteFunctionRequest {
+  uint64 id = 1;
+}
+
+// DeleteFunctionReply 删除函数工具响应
+message DeleteFunctionReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// GetWorkflowListRequest 获取工作流列表请求
+message GetWorkflowListRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+// GetWorkflowListReply 获取工作流列表响应
+message GetWorkflowListReply {
+  bool success = 1;
+  repeated WorkflowInfo data = 2;
+  int32 total = 3;
+}
+
+// CreateWorkflowRequest 创建工作流请求
+message CreateWorkflowRequest {
+  string name = 1;
+  string description = 2;
+  string definition = 3;
+}
+
+// CreateWorkflowReply 创建工作流响应
+message CreateWorkflowReply {
+  bool success = 1;
+  string message = 2;
+  WorkflowInfo data = 3;
+}
+
+// UpdateWorkflowRequest 更新工作流请求
+message UpdateWorkflowRequest {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  string definition = 4;
+}
+
+// UpdateWorkflowReply 更新工作流响应
+message UpdateWorkflowReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// DeleteWorkflowRequest 删除工作流请求
+message DeleteWorkflowRequest {
+  uint64 id = 1;
+}
+
+// DeleteWorkflowReply 删除工作流响应
+message DeleteWorkflowReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// FunctionInfo 函数工具信息
+message FunctionInfo {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}
+
+// WorkflowInfo 工作流信息
+message WorkflowInfo {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}

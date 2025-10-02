@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -14,6 +14,7 @@
     "ant-design-vue": "^4.2.6",
     "axios": "^1.12.2",
     "date-fns": "^4.1.0",
+    "echarts": "^6.0.0",
     "element-plus": "^2.11.4",
     "pinia": "^3.0.3",
     "tailwindcss": "^4.1.13",

@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1759335266430_hy7sz8yea",
+  "approvalId": "approval_1759335266427_8jzmxyf03",
+  "approvalTitle": "前端重构具体实现文档审批",
+  "version": 1,
+  "timestamp": "2025-10-01T16:14:26.429Z",
+  "trigger": "initial",
+  "status": "pending",
+  "content": "# 前端重构具体实现方案\n\n## 1. 项目初始化\n- 配置项目目录结构\n- 安装基础依赖包\n- 配置开发环境\n\n## 2. 依赖升级和配置优化\n- 升级Vue到最新稳定版本\n- 升级TypeScript到最新版本\n- 替换Element Plus为Ant Design Vue，升级Vant组件库\n- 优化Vite配置文件\n- 配置ESLint和Prettier规则\n\n## 3. H5端功能重构实现\n- 重构首页组件\n- 重构用户中心组件\n- 重构消息通知组件\n- 重构设置页面组件\n- 实现响应式布局\n\n## 4. 管理后台功能重构实现\n- 重构仪表盘组件\n- 重构用户管理模块\n- 重构内容管理模块\n- 重构系统设置模块\n- 实现权限控制\n\n## 5. 公共组件开发\n- 开发Header组件\n- 开发Footer组件\n- 开发导航菜单组件\n- 开发表单组件\n- 开发表格组件\n\n## 6. 性能优化和测试\n- 进行代码分割优化\n- 实现懒加载机制\n- 进行单元测试\n- 进行端到端测试\n\n## 7. 部署和文档编写\n- 配置生产环境\n- 编写部署文档\n- 编写用户手册\n- 进行最终测试",
+  "fileStats": {
+    "size": 1042,
+    "lines": 46,
+    "lastModified": "2025-10-01T16:14:23.042Z"
+  },
+  "comments": []
+}

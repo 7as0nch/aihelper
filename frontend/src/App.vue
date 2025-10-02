@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 // 路由和状态管理
 const route = useRoute();
+const router = useRouter();
 
 // 计算页面标题
 const pageTitle = computed(() => {
@@ -19,17 +20,13 @@ onMounted(() => {
   document.title = pageTitle.value;
   
   // 监听路由变化
-  const unwatch = route.meta.title && 
-    import('vue-router').then(({ useRouter }) => {
-      const router = useRouter();
-      return router.afterEach((to) => {
-        if (to.meta.title) {
-          document.title = `${to.meta.title} | ${import.meta.env.VITE_APP_TITLE || 'AI聊天助手'}`;
-        } else {
-          document.title = import.meta.env.VITE_APP_TITLE || 'AI聊天助手';
-        }
-      });
-    });
+  const unwatch = route.meta.title && router.afterEach((to) => {
+    if (to.meta.title) {
+      document.title = `${to.meta.title} | ${import.meta.env.VITE_APP_TITLE || 'AI聊天助手'}`;
+    } else {
+      document.title = import.meta.env.VITE_APP_TITLE || 'AI聊天助手';
+    }
+  });
   
   // 在组件卸载时取消监听
   return () => {

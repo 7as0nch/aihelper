@@ -6,7 +6,6 @@ import 'ant-design-vue/dist/reset.css';
 import { Button as AButton } from 'ant-design-vue';
 import { Spin as ASpin } from 'ant-design-vue';
 import { Avatar as AAvatar } from 'ant-design-vue';
-import { Input as AInput } from 'ant-design-vue';
 import { Textarea as ATextarea } from 'ant-design-vue';
 import { message } from 'ant-design-vue';
 import { sendMessage, getMessages, createChat, getChatList } from '../../api/chat';

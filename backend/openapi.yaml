@@ -1,0 +1,659 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /api/v1/admin/config/mcp:
+        get:
+            tags:
+                - AdminService
+            description: 获取MCP配置
+            operationId: AdminService_GetMCPConfig
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.GetMCPConfigReply'
+        post:
+            tags:
+                - AdminService
+            description: 更新MCP配置
+            operationId: AdminService_UpdateMCPConfig
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/aichat.admin.v1.UpdateMCPConfigRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.UpdateMCPConfigReply'
+    /api/v1/admin/function/create:
+        post:
+            tags:
+                - AdminService
+            description: 创建函数工具
+            operationId: AdminService_CreateFunction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/aichat.admin.v1.CreateFunctionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.CreateFunctionReply'
+    /api/v1/admin/function/list:
+        get:
+            tags:
+                - AdminService
+            description: 获取函数工具列表
+            operationId: AdminService_GetFunctionList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.GetFunctionListReply'
+    /api/v1/admin/function/{id}:
+        put:
+            tags:
+                - AdminService
+            description: 更新函数工具
+            operationId: AdminService_UpdateFunction
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/aichat.admin.v1.UpdateFunctionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.UpdateFunctionReply'
+        delete:
+            tags:
+                - AdminService
+            description: 删除函数工具
+            operationId: AdminService_DeleteFunction
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.DeleteFunctionReply'
+    /api/v1/admin/workflow/create:
+        post:
+            tags:
+                - AdminService
+            description: 创建工作流
+            operationId: AdminService_CreateWorkflow
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/aichat.admin.v1.CreateWorkflowRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.CreateWorkflowReply'
+    /api/v1/admin/workflow/list:
+        get:
+            tags:
+                - AdminService
+            description: 获取工作流列表
+            operationId: AdminService_GetWorkflowList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.GetWorkflowListReply'
+    /api/v1/admin/workflow/{id}:
+        put:
+            tags:
+                - AdminService
+            description: 更新工作流
+            operationId: AdminService_UpdateWorkflow
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/aichat.admin.v1.UpdateWorkflowRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.UpdateWorkflowReply'
+        delete:
+            tags:
+                - AdminService
+            description: 删除工作流
+            operationId: AdminService_DeleteWorkflow
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.admin.v1.DeleteWorkflowReply'
+    /api/v1/chat/history:
+        get:
+            tags:
+                - ChatService
+            description: 获取聊天历史
+            operationId: ChatService_GetChatHistory
+            parameters:
+                - name: chatId
+                  in: query
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.chat.v1.GetChatHistoryReply'
+    /api/v1/chat/send:
+        post:
+            tags:
+                - ChatService
+            description: 发送消息
+            operationId: ChatService_SendMessage
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/aichat.chat.v1.SendMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.chat.v1.SendMessageReply'
+    /api/v1/user/info:
+        get:
+            tags:
+                - UserService
+            description: 获取用户信息
+            operationId: UserService_GetUserInfo
+            parameters:
+                - name: userId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.user.v1.GetUserInfoReply'
+    /api/v1/user/login:
+        post:
+            tags:
+                - UserService
+            description: 用户登录
+            operationId: UserService_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/aichat.user.v1.LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.user.v1.LoginReply'
+    /api/v1/user/register:
+        post:
+            tags:
+                - UserService
+            description: 用户注册
+            operationId: UserService_Register
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/aichat.user.v1.RegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/aichat.user.v1.RegisterReply'
+    /helloworld/{name}:
+        get:
+            tags:
+                - Greeter
+            description: Sends a greeting
+            operationId: Greeter_SayHello
+            parameters:
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.HelloReply'
+components:
+    schemas:
+        aichat.admin.v1.CreateFunctionReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                data:
+                    $ref: '#/components/schemas/aichat.admin.v1.FunctionInfo'
+            description: CreateFunctionReply 创建函数工具响应
+        aichat.admin.v1.CreateFunctionRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                description:
+                    type: string
+                code:
+                    type: string
+                config:
+                    type: object
+                    additionalProperties:
+                        type: string
+            description: CreateFunctionRequest 创建函数工具请求
+        aichat.admin.v1.CreateWorkflowReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                data:
+                    $ref: '#/components/schemas/aichat.admin.v1.WorkflowInfo'
+            description: CreateWorkflowReply 创建工作流响应
+        aichat.admin.v1.CreateWorkflowRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                description:
+                    type: string
+                definition:
+                    type: string
+            description: CreateWorkflowRequest 创建工作流请求
+        aichat.admin.v1.DeleteFunctionReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: DeleteFunctionReply 删除函数工具响应
+        aichat.admin.v1.DeleteWorkflowReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: DeleteWorkflowReply 删除工作流响应
+        aichat.admin.v1.FunctionInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: FunctionInfo 函数工具信息
+        aichat.admin.v1.GetFunctionListReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/aichat.admin.v1.FunctionInfo'
+                total:
+                    type: integer
+                    format: int32
+            description: GetFunctionListReply 获取函数工具列表响应
+        aichat.admin.v1.GetMCPConfigReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                data:
+                    type: object
+                    additionalProperties:
+                        type: string
+            description: GetMCPConfigReply 获取MCP配置响应
+        aichat.admin.v1.GetWorkflowListReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/aichat.admin.v1.WorkflowInfo'
+                total:
+                    type: integer
+                    format: int32
+            description: GetWorkflowListReply 获取工作流列表响应
+        aichat.admin.v1.UpdateFunctionReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: UpdateFunctionReply 更新函数工具响应
+        aichat.admin.v1.UpdateFunctionRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                code:
+                    type: string
+                config:
+                    type: object
+                    additionalProperties:
+                        type: string
+            description: UpdateFunctionRequest 更新函数工具请求
+        aichat.admin.v1.UpdateMCPConfigReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: UpdateMCPConfigReply 更新MCP配置响应
+        aichat.admin.v1.UpdateMCPConfigRequest:
+            type: object
+            properties:
+                config:
+                    type: object
+                    additionalProperties:
+                        type: string
+            description: UpdateMCPConfigRequest 更新MCP配置请求
+        aichat.admin.v1.UpdateWorkflowReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+            description: UpdateWorkflowReply 更新工作流响应
+        aichat.admin.v1.UpdateWorkflowRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                definition:
+                    type: string
+            description: UpdateWorkflowRequest 更新工作流请求
+        aichat.admin.v1.WorkflowInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: WorkflowInfo 工作流信息
+        aichat.chat.v1.GetChatHistoryReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                messages:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/aichat.chat.v1.MessageInfo'
+                total:
+                    type: integer
+                    format: int32
+            description: GetChatHistoryReply 获取聊天历史响应
+        aichat.chat.v1.MessageInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                content:
+                    type: string
+                type:
+                    type: string
+                from:
+                    type: string
+                createdAt:
+                    type: string
+                metadata:
+                    type: object
+                    additionalProperties:
+                        type: string
+            description: MessageInfo 消息信息
+        aichat.chat.v1.SendMessageReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                chatId:
+                    type: string
+                messages:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/aichat.chat.v1.MessageInfo'
+            description: SendMessageReply 发送消息响应
+        aichat.chat.v1.SendMessageRequest:
+            type: object
+            properties:
+                chatId:
+                    type: string
+                content:
+                    type: string
+                type:
+                    type: string
+                metadata:
+                    type: object
+                    additionalProperties:
+                        type: string
+            description: SendMessageRequest 发送消息请求
+        aichat.user.v1.GetUserInfoReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                data:
+                    $ref: '#/components/schemas/aichat.user.v1.UserInfo'
+            description: GetUserInfoReply 获取用户信息响应
+        aichat.user.v1.LoginReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                token:
+                    type: string
+                data:
+                    $ref: '#/components/schemas/aichat.user.v1.UserInfo'
+            description: LoginReply 登录响应
+        aichat.user.v1.LoginRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+            description: LoginRequest 登录请求
+        aichat.user.v1.RegisterReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                user:
+                    $ref: '#/components/schemas/aichat.user.v1.UserInfo'
+            description: RegisterReply 注册响应
+        aichat.user.v1.RegisterRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                email:
+                    type: string
+                password:
+                    type: string
+            description: RegisterRequest 注册请求
+        aichat.user.v1.UserInfo:
+            type: object
+            properties:
+                userId:
+                    type: string
+                username:
+                    type: string
+                email:
+                    type: string
+                role:
+                    type: string
+                createdAt:
+                    type: string
+                lastLoginAt:
+                    type: string
+            description: UserInfo 用户信息
+        helloworld.v1.HelloReply:
+            type: object
+            properties:
+                message:
+                    type: string
+            description: The response message containing the greetings
+tags:
+    - name: AdminService
+      description: AdminService 管理服务定义
+    - name: ChatService
+      description: ChatService 聊天服务定义
+    - name: Greeter
+      description: The greeting service definition.
+    - name: UserService
+      description: UserService 用户服务定义

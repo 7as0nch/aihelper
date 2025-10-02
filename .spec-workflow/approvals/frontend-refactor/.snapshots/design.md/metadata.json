@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/frontend-refactor/design.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-01T16:11:35.364Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759335095358_14v4pnf8w",
+      "approvalTitle": "前端重构设计文档审批"
+    }
+  ]
+}
