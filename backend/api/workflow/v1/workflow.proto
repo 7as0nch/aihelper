@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package workflow.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "backend/api/workflow/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.workflow.v1";
+option java_outer_classname = "WorkflowProtoV1";
+
+// The workflow service definition.
+service Workflow {
+  // Execute a workflow
+  rpc ExecuteWorkflow (ExecuteWorkflowRequest) returns (ExecuteWorkflowReply) {
+    option (google.api.http) = {
+      post: "/v1/workflow/execute"
+      body: "*"
+    };
+  }
+
+  // Get workflow execution status
+  rpc GetWorkflowStatus (GetWorkflowStatusRequest) returns (GetWorkflowStatusReply) {
+    option (google.api.http) = {
+      get: "/v1/workflow/status/{execution_id}"
+    };
+  }
+
+  // List workflow executions
+  rpc ListWorkflowExecutions (ListWorkflowExecutionsRequest) returns (ListWorkflowExecutionsReply) {
+    option (google.api.http) = {
+      get: "/v1/workflow/executions"
+    };
+  }
+}
+
+// Request for executing a workflow
+message ExecuteWorkflowRequest {
+  string workflow_type = 1;
+  map<string, string> parameters = 2;
+  string user_id = 3;
+}
+
+// Reply for executing a workflow
+message ExecuteWorkflowReply {
+  string execution_id = 1;
+  string status = 2;
+  string message = 3;
+}
+
+// Request for getting workflow status
+message GetWorkflowStatusRequest {
+  string execution_id = 1;
+}
+
+// Reply for getting workflow status
+message GetWorkflowStatusReply {
+  string execution_id = 1;
+  string status = 2;
+  string result = 3;
+  string error_message = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+// Request for listing workflow executions
+message ListWorkflowExecutionsRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+// Reply for listing workflow executions
+message ListWorkflowExecutionsReply {
+  repeated WorkflowExecution executions = 1;
+  int32 total = 2;
+}
+
+// Workflow execution structure
+message WorkflowExecution {
+  string id = 1;
+  string workflow_type = 2;
+  string status = 3;
+  string user_id = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}

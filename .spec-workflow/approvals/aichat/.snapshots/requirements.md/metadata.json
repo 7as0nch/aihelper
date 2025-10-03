@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/ai-chat-assistant/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-02T07:06:58.217Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759388818213_7nevppvag",
+      "approvalTitle": "AI Chat Assistant 需求文档审批"
+    }
+  ]
+}

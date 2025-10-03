@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package userfeedback.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "backend/api/userfeedback/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.userfeedback.v1";
+option java_outer_classname = "UserfeedbackProtoV1";
+
+// The user feedback service definition.
+service UserFeedback {
+  // Create a new user feedback
+  rpc CreateFeedback (CreateFeedbackRequest) returns (CreateFeedbackReply) {
+    option (google.api.http) = {
+      post: "/v1/userfeedback"
+      body: "*"
+    };
+  }
+
+  // Get a user feedback by ID
+  rpc GetFeedback (GetFeedbackRequest) returns (GetFeedbackReply) {
+    option (google.api.http) = {
+      get: "/v1/userfeedback/{id}"
+    };
+  }
+
+  // List user feedbacks with pagination
+  rpc ListFeedbacks (ListFeedbacksRequest) returns (ListFeedbacksReply) {
+    option (google.api.http) = {
+      get: "/v1/userfeedback"
+    };
+  }
+
+  // Update a user feedback
+  rpc UpdateFeedback (UpdateFeedbackRequest) returns (UpdateFeedbackReply) {
+    option (google.api.http) = {
+      put: "/v1/userfeedback/{id}"
+      body: "*"
+    };
+  }
+
+  // Delete a user feedback
+  rpc DeleteFeedback (DeleteFeedbackRequest) returns (DeleteFeedbackReply) {
+    option (google.api.http) = {
+      delete: "/v1/userfeedback/{id}"
+    };
+  }
+
+  // List user feedbacks by status
+  rpc ListFeedbacksByStatus (ListFeedbacksByStatusRequest) returns (ListFeedbacksByStatusReply) {
+    option (google.api.http) = {
+      get: "/v1/userfeedback/status/{status}"
+    };
+  }
+}
+
+// Request messages
+message CreateFeedbackRequest {
+  uint32 user_id = 1;
+  string content = 2;
+  string type = 3;
+  string status = 4;
+  int32 rating = 5;
+}
+
+message GetFeedbackRequest {
+  uint32 id = 1;
+}
+
+message ListFeedbacksRequest {
+  uint32 user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message UpdateFeedbackRequest {
+  uint32 id = 1;
+  uint32 user_id = 2;
+  string content = 3;
+  string type = 4;
+  string status = 5;
+  int32 rating = 6;
+}
+
+message DeleteFeedbackRequest {
+  uint32 id = 1;
+}
+
+message ListFeedbacksByStatusRequest {
+  string status = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+// Response messages
+message CreateFeedbackReply {
+  UserFeedbackData feedback = 1;
+}
+
+message GetFeedbackReply {
+  UserFeedbackData feedback = 1;
+}
+
+message ListFeedbacksReply {
+  repeated UserFeedbackData feedbacks = 1;
+  int64 total = 2;
+}
+
+message UpdateFeedbackReply {
+  UserFeedbackData feedback = 1;
+}
+
+message DeleteFeedbackReply {
+  bool success = 1;
+}
+
+message ListFeedbacksByStatusReply {
+  repeated UserFeedbackData feedbacks = 1;
+  int64 total = 2;
+}
+
+// Data structure
+message UserFeedbackData {
+  uint32 id = 1;
+  uint32 user_id = 2;
+  string content = 3;
+  string type = 4;
+  string status = 5;
+  int32 rating = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}

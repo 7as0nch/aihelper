@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "backend/api/chat/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.chat.v1";
+option java_outer_classname = "ChatProtoV1";
+
+// The chat service definition.
+service Chat {
+  // Send a chat message
+  rpc SendMessage (SendMessageRequest) returns (SendMessageReply) {
+    option (google.api.http) = {
+      post: "/v1/chat/message"
+      body: "*"
+    };
+  }
+
+  // Get chat messages
+  rpc GetMessages (GetMessagesRequest) returns (GetMessagesReply) {
+    option (google.api.http) = {
+      get: "/v1/chat/messages"
+    };
+  }
+
+  // Stream chat messages for real-time communication
+  rpc StreamMessages (StreamMessagesRequest) returns (stream StreamMessagesReply) {
+    option (google.api.http) = {
+      get: "/v1/chat/stream"
+    };
+  }
+}
+
+// Request for sending a message
+message SendMessageRequest {
+  string content = 1;
+  string user_id = 2;
+  string session_id = 3;
+}
+
+// Reply for sending a message
+message SendMessageReply {
+  string message_id = 1;
+  bool success = 2;
+  string error_message = 3;
+}
+
+// Request for getting messages
+message GetMessagesRequest {
+  string session_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+// Reply for getting messages
+message GetMessagesReply {
+  repeated ChatMessage messages = 1;
+  int32 total = 2;
+}
+
+// Request for streaming messages
+message StreamMessagesRequest {
+  string session_id = 1;
+}
+
+// Reply for streaming messages
+message StreamMessagesReply {
+  ChatMessage message = 1;
+}
+
+// Chat message structure
+message ChatMessage {
+  string id = 1;
+  string content = 2;
+  string user_id = 3;
+  string session_id = 4;
+  string timestamp = 5;
+  string type = 6; // e.g., "user", "assistant"
+}
