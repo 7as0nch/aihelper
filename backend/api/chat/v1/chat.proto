@@ -8,13 +8,28 @@ option go_package = "backend/api/chat/v1;v1";
 option java_multiple_files = true;
 option java_package = "dev.kratos.api.chat.v1";
 option java_outer_classname = "ChatProtoV1";
+// import "openapi/v3/annotations.proto";
+
+// option (openapi.v3.document) = {
+//   info: {title: "基础-医嘱合并管理";
+//     version: "1.0";
+//     contact: {
+//       name:
+//           "成江";
+//       email:
+//           "chengjiang@buffalo-robot.com";
+//     };
+//   }
+//   ;
+// }
+// ;
 
 // The chat service definition.
 service Chat {
   // Send a chat message
   rpc SendMessage (SendMessageRequest) returns (SendMessageReply) {
     option (google.api.http) = {
-      post: "/v1/chat/message"
+      post: "/chat/msg"
       body: "*"
     };
   }
@@ -26,19 +41,58 @@ service Chat {
     };
   }
 
+
+
   // Stream chat messages for real-time communication
   rpc StreamMessages (StreamMessagesRequest) returns (stream StreamMessagesReply) {
     option (google.api.http) = {
-      get: "/v1/chat/stream"
+      post: "/chat/send"
+      body: "*"
     };
   }
 }
 
+
 // Request for sending a message
 message SendMessageRequest {
-  string content = 1;
-  string user_id = 2;
-  string session_id = 3;
+  // // 用户输入的内容
+  // string content = 1;
+  // // 用户唯一标识符
+  // string user_id = 2;
+  // // 会话唯一标识符
+  // string session_id = 3;
+  // 最大生成令牌数
+  int32 max_tokens = 4;
+  // 使用的AI模型名称
+  string model = 5;
+  // 控制生成文本随机性的参数，值越高结果越随机
+  float temperature = 6;
+  // 控制生成文本多样性的参数，0-1之间
+  float top_p = 7;
+  // 存在惩罚因子，防止重复话题
+  float presence_penalty = 8;
+  // 频率惩罚因子，防止重复词汇
+  float frequency_penalty = 9;
+  // 聊天历史记录消息列表
+  repeated Message messages = 10;
+  // 是否启用流式响应
+  bool stream = 11;
+  // 密钥标识符
+  string kid = 12;
+  // 应用程序标识符
+  string app_id = 13;
+  // 是否包含附件
+  bool has_attachment = 14;
+  // 是否自动选择模型
+  bool auto_select_model = 15;
+}
+
+// Message structure for chat history
+message Message {
+  // 消息发送者角色 ("system", "user", "assistant")
+  string role = 1;
+  // 消息内容
+  string content = 2;
 }
 
 // Reply for sending a message

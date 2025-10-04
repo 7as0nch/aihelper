@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/example/aichat/backend/internal/service"
 	"github.com/go-kratos/kratos/v2/log"
 	socketio "github.com/googollee/go-socket.io"
 )
@@ -13,17 +14,19 @@ type WebSocketServer struct {
 	engine *socketio.Server
 	log    *log.Helper
 	server *http.Server
+	chat   *service.ChatService
 	mu     sync.RWMutex
 	rooms  map[string]map[string]bool // room -> clientID -> bool
 }
 
-func NewWebSocketServer(logger log.Logger) *WebSocketServer {
+func NewWebSocketServer(chat *service.ChatService, logger log.Logger) *WebSocketServer {
 	// 创建Socket.IO服务器
 	server := socketio.NewServer(nil)
 
 	ws := &WebSocketServer{
 		engine: server,
 		log:    log.NewHelper(logger),
+		chat:   chat,
 		rooms:  make(map[string]map[string]bool),
 	}
 
@@ -86,6 +89,24 @@ func (ws *WebSocketServer) configureServer() {
 	// 处理心跳事件
 	ws.engine.OnEvent("/", "ping", func(s socketio.Conn, data interface{}) {
 		s.Emit("pong", data)
+	})
+
+	// 处理流式消息请求事件
+	ws.engine.OnEvent("/", "stream_messages", func(s socketio.Conn, data map[string]interface{}) {
+		ws.log.Infof("Received stream messages request: %v", data)
+		
+		// 从请求数据中获取sessionId
+		sessionId, ok := data["session_id"].(string)
+		if !ok {
+			s.Emit("stream_error", map[string]string{
+				"error": "Missing session_id",
+			})
+			return
+		}
+		
+		// 模拟流式消息推送
+		// 在实际应用中，这里应该调用chat service的StreamMessages方法
+		go ws.streamMessages(s, sessionId)
 	})
 }
 
@@ -177,4 +198,19 @@ func (ws *WebSocketServer) GetAllRooms() map[string]int {
 		rooms[room] = len(clients)
 	}
 	return rooms
+}
+
+// 流式消息推送
+func (ws *WebSocketServer) streamMessages(s socketio.Conn, sessionId string) {
+	// 使用chat service发送流式消息
+	ws.chat.StreamMessagesToWebSocket(sessionId, 
+		func(message map[string]interface{}) {
+			s.Emit("stream_message", message)
+		},
+		func() {
+			s.Emit("stream_complete", map[string]string{
+				"session_id": sessionId,
+				"message": "Stream completed",
+			})
+		})
 }

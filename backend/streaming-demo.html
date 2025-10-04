@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Streaming Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #messageForm {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        #sendButton {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #sendButton:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #chatContainer {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            background-color: #fafafa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            text-align: right;
+        }
+        .assistant-message {
+            background-color: #e9ecef;
+            color: #333;
+        }
+        .streaming-message {
+            background-color: #fff3cd;
+            color: #856404;
+            font-style: italic;
+        }
+        .status {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin: 10px 0;
+        }
+        /* Markdown样式 */
+        .markdown-content {
+            line-height: 1.5;
+        }
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3 {
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+        .markdown-content p {
+            margin-top: 0;
+            margin-bottom: 1em;
+        }
+        .markdown-content ul,
+        .markdown-content ol {
+            margin-top: 0;
+            margin-bottom: 1em;
+            padding-left: 20px;
+        }
+        .markdown-content li {
+            margin-bottom: 0.25em;
+        }
+        .markdown-content pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+        .markdown-content code {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-family: monospace;
+        }
+        .markdown-content pre code {
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .markdown-content blockquote {
+            margin: 0 0 1em;
+            padding: 0.5em 1em;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .markdown-content a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .markdown-content a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Chat Streaming Demo</h1>
+        <form id="messageForm">
+            <input type="text" id="messageInput" placeholder="输入您的消息..." required>
+            <button type="submit" id="sendButton">发送</button>
+        </form>
+        <div id="status" class="status"></div>
+        <div id="chatContainer"></div>
+    </div>
+
+    <script>
+        // DOM元素
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatContainer = document.getElementById('chatContainer');
+        const statusDiv = document.getElementById('status');
+
+        // 会话ID（在实际应用中应该由服务器分配）
+        const sessionId = 'session_' + Date.now();
+
+        // 添加消息到聊天容器
+        function addMessage(content, isUser = false, isStreaming = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : isStreaming ? 'streaming-message' : 'assistant-message'}`;
+            
+            // 创建内容容器
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'markdown-content';
+            
+            // 如果是用户消息或流式消息，直接显示文本内容
+            if (isUser || isStreaming) {
+                contentDiv.textContent = content;
+            } else {
+                // 对于AI助手的完整消息，解析Markdown
+                contentDiv.innerHTML = marked.parse(content);
+            }
+            
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 更新状态显示
+        function updateStatus(text) {
+            statusDiv.textContent = text;
+        }
+
+        // 发送消息并处理流式响应
+        async function sendMessage(message) {
+            // 显示用户消息
+            addMessage(message, true);
+            
+            // 清空输入框
+            messageInput.value = '';
+            
+            // 禁用发送按钮
+            sendButton.disabled = true;
+            updateStatus('正在发送消息...');
+            
+            // 构建消息历史数组
+            const messageHistory = [
+                {
+                    role: "system",
+                    content: "You are a helpful assistant."
+                },
+                {
+                    role: "user",
+                    content: message
+                }
+            ];
+            
+            // 构建请求参数
+            const requestData = {
+                session_id: sessionId,
+                content: message,
+                max_tokens: 150,
+                model: "gpt-3.5-turbo",
+                temperature: 0.7,
+                top_p: 0.9,
+                presence_penalty: 0.5,
+                frequency_penalty: 0.5,
+                messages: messageHistory,
+                stream: true,
+                kid: "key789",
+                app_id: "app123",
+                has_attachment: false,
+                auto_select_model: false
+            };
+            
+            try {
+                // 使用fetch调用/chat/send端点
+                const response = await fetch('/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                // 检查响应状态
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // 获取响应体的ReadableStream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                
+                // 创建临时消息用于流式更新
+                let streamingMessage = '';
+                let streamingMessageElement = null;
+                
+                updateStatus('正在接收流式响应...');
+                
+                // 读取流式数据
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    // 如果流已完成，退出循环
+                    if (done) {
+                        updateStatus('响应接收完成');
+                        break;
+                    }
+                    
+                    // 解码接收到的数据块
+                    const chunk = decoder.decode(value, { stream: true });
+                    
+                    // 如果还没有创建流式消息元素，创建一个
+                    if (!streamingMessageElement) {
+                        streamingMessageElement = document.createElement('div');
+                        streamingMessageElement.className = 'message streaming-message';
+                        
+                        // 创建内容容器
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'markdown-content';
+                        streamingMessageElement.appendChild(contentDiv);
+                        
+                        chatContainer.appendChild(streamingMessageElement);
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                    
+                    // 更新流式消息内容
+                    streamingMessage += chunk;
+                    
+                    // 对于流式消息，我们直接显示文本内容，不解析Markdown
+                    const contentDiv = streamingMessageElement.querySelector('.markdown-content');
+                    if (contentDiv) {
+                        contentDiv.textContent = streamingMessage;
+                    }
+                    
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+                
+                // 将流式消息转换为最终消息并解析Markdown
+                if (streamingMessageElement) {
+                    streamingMessageElement.className = 'message assistant-message';
+                    const contentDiv = streamingMessageElement.querySelector('.markdown-content');
+                    if (contentDiv) {
+                        contentDiv.innerHTML = marked.parse(streamingMessage);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus('发生错误: ' + error.message);
+                addMessage('抱歉，发送消息时出现错误。请稍后再试。', false);
+            } finally {
+                // 重新启用发送按钮
+                sendButton.disabled = false;
+                updateStatus('');
+            }
+        }
+
+        // 表单提交事件处理程序
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (message) {
+                await sendMessage(message);
+            }
+        });
+
+        // 页面加载完成后添加欢迎消息
+        window.addEventListener('DOMContentLoaded', () => {
+            addMessage('您好！欢迎使用AI聊天室。请输入您的问题，我将为您流式回复。', false);
+        });
+    </script>
+</body>
+</html>

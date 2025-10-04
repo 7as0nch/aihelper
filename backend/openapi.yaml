@@ -3,29 +3,11 @@
 
 openapi: 3.0.3
 info:
-    title: ""
+    title: Chat API
+    description: The chat service definition.
     version: 0.0.1
 paths:
-    /helloworld/{name}:
-        get:
-            tags:
-                - Greeter
-            description: Sends a greeting
-            operationId: Greeter_SayHello
-            parameters:
-                - name: name
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/helloworld.v1.HelloReply'
-    /v1/chat/message:
+    /chat/msg:
         post:
             tags:
                 - Chat
@@ -35,7 +17,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/chat.v1.SendMessageRequest'
+                            $ref: '#/components/schemas/SendMessageRequest'
                 required: true
             responses:
                 "200":
@@ -43,7 +25,38 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/chat.v1.SendMessageReply'
+                                $ref: '#/components/schemas/SendMessageReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /chat/send:
+        post:
+            tags:
+                - Chat
+            description: Stream chat messages for real-time communication
+            operationId: Chat_StreamMessages
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/StreamMessagesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StreamMessagesReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/chat/messages:
         get:
             tags:
@@ -71,291 +84,16 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/chat.v1.GetMessagesReply'
-    /v1/chat/stream:
-        get:
-            tags:
-                - Chat
-            description: Stream chat messages for real-time communication
-            operationId: Chat_StreamMessages
-            parameters:
-                - name: sessionId
-                  in: query
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
+                                $ref: '#/components/schemas/GetMessagesReply'
+                default:
+                    description: Default error response
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/chat.v1.StreamMessagesReply'
-    /v1/report/export/download/{exportId}:
-        get:
-            tags:
-                - Report
-            description: Download exported file
-            operationId: Report_DownloadExport
-            parameters:
-                - name: exportId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/report.v1.DownloadExportReply'
-    /v1/report/export/status/{exportId}:
-        get:
-            tags:
-                - Report
-            description: Get export status
-            operationId: Report_GetExportStatus
-            parameters:
-                - name: exportId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/report.v1.GetExportStatusReply'
-    /v1/report/export/userfeedback:
-        post:
-            tags:
-                - Report
-            description: Export user feedback data as Excel
-            operationId: Report_ExportUserFeedback
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/report.v1.ExportUserFeedbackRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/report.v1.ExportUserFeedbackReply'
-    /v1/userfeedback:
-        get:
-            tags:
-                - UserFeedback
-            description: List user feedbacks with pagination
-            operationId: UserFeedback_ListFeedbacks
-            parameters:
-                - name: userId
-                  in: query
-                  schema:
-                    type: integer
-                    format: uint32
-                - name: page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/userfeedback.v1.ListFeedbacksReply'
-        post:
-            tags:
-                - UserFeedback
-            description: Create a new user feedback
-            operationId: UserFeedback_CreateFeedback
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/userfeedback.v1.CreateFeedbackRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/userfeedback.v1.CreateFeedbackReply'
-    /v1/userfeedback/status/{status}:
-        get:
-            tags:
-                - UserFeedback
-            description: List user feedbacks by status
-            operationId: UserFeedback_ListFeedbacksByStatus
-            parameters:
-                - name: status
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/userfeedback.v1.ListFeedbacksByStatusReply'
-    /v1/userfeedback/{id}:
-        get:
-            tags:
-                - UserFeedback
-            description: Get a user feedback by ID
-            operationId: UserFeedback_GetFeedback
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: integer
-                    format: uint32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/userfeedback.v1.GetFeedbackReply'
-        put:
-            tags:
-                - UserFeedback
-            description: Update a user feedback
-            operationId: UserFeedback_UpdateFeedback
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: integer
-                    format: uint32
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/userfeedback.v1.UpdateFeedbackRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/userfeedback.v1.UpdateFeedbackReply'
-        delete:
-            tags:
-                - UserFeedback
-            description: Delete a user feedback
-            operationId: UserFeedback_DeleteFeedback
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: integer
-                    format: uint32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/userfeedback.v1.DeleteFeedbackReply'
-    /v1/workflow/execute:
-        post:
-            tags:
-                - Workflow
-            description: Execute a workflow
-            operationId: Workflow_ExecuteWorkflow
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/workflow.v1.ExecuteWorkflowRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/workflow.v1.ExecuteWorkflowReply'
-    /v1/workflow/executions:
-        get:
-            tags:
-                - Workflow
-            description: List workflow executions
-            operationId: Workflow_ListWorkflowExecutions
-            parameters:
-                - name: userId
-                  in: query
-                  schema:
-                    type: string
-                - name: page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/workflow.v1.ListWorkflowExecutionsReply'
-    /v1/workflow/status/{executionId}:
-        get:
-            tags:
-                - Workflow
-            description: Get workflow execution status
-            operationId: Workflow_GetWorkflowStatus
-            parameters:
-                - name: executionId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/workflow.v1.GetWorkflowStatusReply'
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
-        chat.v1.ChatMessage:
+        ChatMessage:
             type: object
             properties:
                 id:
@@ -371,18 +109,36 @@ components:
                 type:
                     type: string
             description: Chat message structure
-        chat.v1.GetMessagesReply:
+        GetMessagesReply:
             type: object
             properties:
                 messages:
                     type: array
                     items:
-                        $ref: '#/components/schemas/chat.v1.ChatMessage'
+                        $ref: '#/components/schemas/ChatMessage'
                 total:
                     type: integer
                     format: int32
             description: Reply for getting messages
-        chat.v1.SendMessageReply:
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        Message:
+            type: object
+            properties:
+                role:
+                    type: string
+                    description: 消息发送者角色 ("system", "user", "assistant")
+                content:
+                    type: string
+                    description: 消息内容
+            description: Message structure for chat history
+        SendMessageReply:
             type: object
             properties:
                 messageId:
@@ -392,248 +148,87 @@ components:
                 errorMessage:
                     type: string
             description: Reply for sending a message
-        chat.v1.SendMessageRequest:
+        SendMessageRequest:
             type: object
             properties:
-                content:
+                maxTokens:
+                    type: integer
+                    description: |-
+                        // 用户输入的内容
+                         string content = 1;
+                         // 用户唯一标识符
+                         string user_id = 2;
+                         // 会话唯一标识符
+                         string session_id = 3;
+                         最大生成令牌数
+                    format: int32
+                model:
                     type: string
-                userId:
+                    description: 使用的AI模型名称
+                temperature:
+                    type: number
+                    description: 控制生成文本随机性的参数，值越高结果越随机
+                    format: float
+                topP:
+                    type: number
+                    description: 控制生成文本多样性的参数，0-1之间
+                    format: float
+                presencePenalty:
+                    type: number
+                    description: 存在惩罚因子，防止重复话题
+                    format: float
+                frequencyPenalty:
+                    type: number
+                    description: 频率惩罚因子，防止重复词汇
+                    format: float
+                messages:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Message'
+                    description: 聊天历史记录消息列表
+                stream:
+                    type: boolean
+                    description: 是否启用流式响应
+                kid:
                     type: string
+                    description: 密钥标识符
+                appId:
+                    type: string
+                    description: 应用程序标识符
+                hasAttachment:
+                    type: boolean
+                    description: 是否包含附件
+                autoSelectModel:
+                    type: boolean
+                    description: 是否自动选择模型
+            description: Request for sending a message
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        StreamMessagesReply:
+            type: object
+            properties:
+                message:
+                    $ref: '#/components/schemas/ChatMessage'
+            description: Reply for streaming messages
+        StreamMessagesRequest:
+            type: object
+            properties:
                 sessionId:
                     type: string
-            description: Request for sending a message
-        chat.v1.StreamMessagesReply:
-            type: object
-            properties:
-                message:
-                    $ref: '#/components/schemas/chat.v1.ChatMessage'
-            description: Reply for streaming messages
-        helloworld.v1.HelloReply:
-            type: object
-            properties:
-                message:
-                    type: string
-            description: The response message containing the greetings
-        report.v1.DownloadExportReply:
-            type: object
-            properties:
-                fileContent:
-                    type: string
-                    format: bytes
-                fileName:
-                    type: string
-                contentType:
-                    type: string
-            description: Reply for downloading export
-        report.v1.ExportUserFeedbackReply:
-            type: object
-            properties:
-                exportId:
-                    type: string
-                status:
-                    type: string
-                message:
-                    type: string
-            description: Reply for exporting user feedback
-        report.v1.ExportUserFeedbackRequest:
-            type: object
-            properties:
-                startDate:
-                    type: string
-                endDate:
-                    type: string
-                filters:
-                    type: array
-                    items:
-                        type: string
-                userId:
-                    type: string
-            description: Request for exporting user feedback
-        report.v1.GetExportStatusReply:
-            type: object
-            properties:
-                exportId:
-                    type: string
-                status:
-                    type: string
-                fileUrl:
-                    type: string
-                errorMessage:
-                    type: string
-                createdAt:
-                    type: string
-                updatedAt:
-                    type: string
-            description: Reply for getting export status
-        userfeedback.v1.CreateFeedbackReply:
-            type: object
-            properties:
-                feedback:
-                    $ref: '#/components/schemas/userfeedback.v1.UserFeedbackData'
-            description: Response messages
-        userfeedback.v1.CreateFeedbackRequest:
-            type: object
-            properties:
-                userId:
-                    type: integer
-                    format: uint32
-                content:
-                    type: string
-                type:
-                    type: string
-                status:
-                    type: string
-                rating:
-                    type: integer
-                    format: int32
-            description: Request messages
-        userfeedback.v1.DeleteFeedbackReply:
-            type: object
-            properties:
-                success:
-                    type: boolean
-        userfeedback.v1.GetFeedbackReply:
-            type: object
-            properties:
-                feedback:
-                    $ref: '#/components/schemas/userfeedback.v1.UserFeedbackData'
-        userfeedback.v1.ListFeedbacksByStatusReply:
-            type: object
-            properties:
-                feedbacks:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/userfeedback.v1.UserFeedbackData'
-                total:
-                    type: string
-        userfeedback.v1.ListFeedbacksReply:
-            type: object
-            properties:
-                feedbacks:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/userfeedback.v1.UserFeedbackData'
-                total:
-                    type: string
-        userfeedback.v1.UpdateFeedbackReply:
-            type: object
-            properties:
-                feedback:
-                    $ref: '#/components/schemas/userfeedback.v1.UserFeedbackData'
-        userfeedback.v1.UpdateFeedbackRequest:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    format: uint32
-                userId:
-                    type: integer
-                    format: uint32
-                content:
-                    type: string
-                type:
-                    type: string
-                status:
-                    type: string
-                rating:
-                    type: integer
-                    format: int32
-        userfeedback.v1.UserFeedbackData:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    format: uint32
-                userId:
-                    type: integer
-                    format: uint32
-                content:
-                    type: string
-                type:
-                    type: string
-                status:
-                    type: string
-                rating:
-                    type: integer
-                    format: int32
-                createdAt:
-                    type: string
-                updatedAt:
-                    type: string
-            description: Data structure
-        workflow.v1.ExecuteWorkflowReply:
-            type: object
-            properties:
-                executionId:
-                    type: string
-                status:
-                    type: string
-                message:
-                    type: string
-            description: Reply for executing a workflow
-        workflow.v1.ExecuteWorkflowRequest:
-            type: object
-            properties:
-                workflowType:
-                    type: string
-                parameters:
-                    type: object
-                    additionalProperties:
-                        type: string
-                userId:
-                    type: string
-            description: Request for executing a workflow
-        workflow.v1.GetWorkflowStatusReply:
-            type: object
-            properties:
-                executionId:
-                    type: string
-                status:
-                    type: string
-                result:
-                    type: string
-                errorMessage:
-                    type: string
-                createdAt:
-                    type: string
-                updatedAt:
-                    type: string
-            description: Reply for getting workflow status
-        workflow.v1.ListWorkflowExecutionsReply:
-            type: object
-            properties:
-                executions:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/workflow.v1.WorkflowExecution'
-                total:
-                    type: integer
-                    format: int32
-            description: Reply for listing workflow executions
-        workflow.v1.WorkflowExecution:
-            type: object
-            properties:
-                id:
-                    type: string
-                workflowType:
-                    type: string
-                status:
-                    type: string
-                userId:
-                    type: string
-                createdAt:
-                    type: string
-                updatedAt:
-                    type: string
-            description: Workflow execution structure
+            description: Request for streaming messages
 tags:
     - name: Chat
-      description: The chat service definition.
-    - name: Greeter
-      description: The greeting service definition.
-    - name: Report
-      description: The report service definition.
-    - name: UserFeedback
-      description: The user feedback service definition.
-    - name: Workflow
-      description: The workflow service definition.

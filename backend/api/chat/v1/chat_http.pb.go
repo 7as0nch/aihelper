@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v3.21.12
-// source: chat/v1/chat.proto
+// source: api/chat/v1/chat.proto
 
 package v1
 
@@ -31,7 +31,7 @@ type ChatHTTPServer interface {
 
 func RegisterChatHTTPServer(s *http.Server, srv ChatHTTPServer) {
 	r := s.Route("/")
-	r.POST("/v1/chat/message", _Chat_SendMessage0_HTTP_Handler(srv))
+	r.POST("/chat/msg", _Chat_SendMessage0_HTTP_Handler(srv))
 	r.GET("/v1/chat/messages", _Chat_GetMessages0_HTTP_Handler(srv))
 }
 
@@ -108,7 +108,7 @@ func (c *ChatHTTPClientImpl) GetMessages(ctx context.Context, in *GetMessagesReq
 // SendMessage Send a chat message
 func (c *ChatHTTPClientImpl) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...http.CallOption) (*SendMessageReply, error) {
 	var out SendMessageReply
-	pattern := "/v1/chat/message"
+	pattern := "/chat/msg"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationChatSendMessage))
 	opts = append(opts, http.PathTemplate(pattern))
