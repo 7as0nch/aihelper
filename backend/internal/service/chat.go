@@ -233,7 +233,7 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 		// 处理Markdown格式，确保标题和分割线等元素有正确的换行
 		content := fmt.Sprintf("%v", msg.Content)
 		// 确保标题前后有空行
-		content = ensureMarkdownLineBreaks(content)
+		// content = ensureMarkdownLineBreaks(content)
 		// 处理换行符，将其转换为\\n以便在SSE中正确传输
 		content = strings.ReplaceAll(content, "\n", "\\n")
 		event := "data: " + content + "\n\n"
