@@ -281,10 +281,13 @@
                     // 更新流式消息内容
                     streamingMessage += chunk;
                     
+                    // 处理换行符，将\\n转换为实际的换行符
+                    const processedMessage = streamingMessage.replace(/\\n/g, '\n');
+                    
                     // 对于流式消息，我们直接显示文本内容，不解析Markdown
                     const contentDiv = streamingMessageElement.querySelector('.markdown-content');
                     if (contentDiv) {
-                        contentDiv.textContent = streamingMessage;
+                        contentDiv.textContent = processedMessage;
                     }
                     
                     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -295,7 +298,9 @@
                     streamingMessageElement.className = 'message assistant-message';
                     const contentDiv = streamingMessageElement.querySelector('.markdown-content');
                     if (contentDiv) {
-                        contentDiv.innerHTML = marked.parse(streamingMessage);
+                        // 处理换行符，将\\n转换为实际的换行符后再解析Markdown
+                        const processedMessage = streamingMessage.replace(/\\n/g, '\n');
+                        contentDiv.innerHTML = marked.parse(processedMessage);
                     }
                 }
             } catch (error) {

@@ -220,7 +220,7 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 			if err == io.EOF {
 				log.Info("Stream completed")
 				event := "data: [DONE]\n\n"
-				if _, err := w.Write([]byte(event)); err != nil {
+				if _, err = w.Write([]byte(event)); err != nil {
 					log.Info("Write error:", err)
 					return
 				}
@@ -234,6 +234,8 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 		content := fmt.Sprintf("%v", msg.Content)
 		// 确保标题前后有空行
 		content = ensureMarkdownLineBreaks(content)
+		// 处理换行符，将其转换为\\n以便在SSE中正确传输
+		content = strings.ReplaceAll(content, "\n", "\\n")
 		event := "data: " + content + "\n\n"
 
 		
