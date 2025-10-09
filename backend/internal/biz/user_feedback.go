@@ -18,6 +18,21 @@ type UserFeedback struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }
 
+
+type ChannelRoiParam struct {
+	ChannelID int64 `json:"channel_id" jsonschema:"description=渠道id"`
+	StartTime string `json:"start_time" jsonschema:"description=开始时间"`
+	EndTime   string `json:"end_time" jsonschema:"description=结束时间"`
+}
+type ChannelRoi struct {
+	// 渠道id
+	ChannelID int64 `gorm:"type:bigint;not null" jsonschema:"description=渠道id"`
+	// 半流程分发收益
+	HalfProfit float64 `gorm:"type:decimal(10,2);not null" jsonschema:"description=半流程分发收益"`
+	// 半流程分发净收益
+	HalfNetProfit float64 `gorm:"type:decimal(10,2);not null" jsonschema:"description=半流程分发净收益"`
+}
+
 type UserFeedbackRepo interface {
 	Create(ctx context.Context, feedback *UserFeedback) error
 	Update(ctx context.Context, feedback *UserFeedback) error
@@ -25,6 +40,7 @@ type UserFeedbackRepo interface {
 	Get(ctx context.Context, id uint64) (*UserFeedback, error)
 	List(ctx context.Context, userID string, page, pageSize int32) ([]*UserFeedback, int64, error)
 	ListByStatus(ctx context.Context, status string, page, pageSize int32) ([]*UserFeedback, int64, error)
+	GetChannelRoi(ctx context.Context, param *ChannelRoiParam) ([]*ChannelRoi, error)
 }
 
 type UserFeedbackUsecase struct {
@@ -67,4 +83,9 @@ func (uc *UserFeedbackUsecase) DeleteFeedback(ctx context.Context, id uint64) er
 func (uc *UserFeedbackUsecase) ListFeedbacksByStatus(ctx context.Context, status string, page, pageSize int32) ([]*UserFeedback, int64, error) {
 	uc.log.Infof("Listing feedbacks by status: %s, page: %d, pageSize: %d", status, page, pageSize)
 	return uc.repo.ListByStatus(ctx, status, page, pageSize)
+}
+
+func (uc *UserFeedbackUsecase) GetChannelRoi(ctx context.Context, param *ChannelRoiParam) ([]*ChannelRoi, error) {
+	uc.log.Infof("Getting channel ROI for channel: %d, startTime: %s, endTime: %s", param.ChannelID, param.StartTime, param.EndTime)
+	return uc.repo.GetChannelRoi(ctx, param)
 }

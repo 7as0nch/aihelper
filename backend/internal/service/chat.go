@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
+	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/flow/agent"
 	"github.com/cloudwego/eino/schema"
 	"github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/pkg/chat"
@@ -127,52 +128,6 @@ func (s *ChatService) StreamMessagesToWebSocket(sessionId string, sendMessage fu
 	sendComplete()
 }
 
-// ensureMarkdownLineBreaks 确保Markdown格式元素有正确的换行
-func ensureMarkdownLineBreaks(content string) string {
-	// 处理标题，确保标题前后有空行
-	// 处理分割线，确保前后有空行
-	// 处理代码块，确保前后有空行
-	
-	// 在标题前添加空行（如果不在开头）
-	content = addLineBreakBeforePattern(content, `(?m)^#{1,6}\s`)
-	
-	// 在分割线前后添加空行
-	content = addLineBreakAroundPattern(content, `(?m)^[-*]{3,}\s*$`)
-	
-	// 在代码块前后添加空行
-	content = addLineBreakAroundPattern(content, "(?m)^ *```[a-z]* *\\s*$")
-	
-	return content
-}
-
-// addLineBreakBeforePattern 在匹配模式前添加空行
-func addLineBreakBeforePattern(content, pattern string) string {
-	// 编译正则表达式
-	re := regexp.MustCompile(pattern)
-	
-	// 在匹配模式前添加空行（如果不在开头）
-	return re.ReplaceAllStringFunc(content, func(match string) string {
-		// 如果匹配在开头，不需要添加空行
-		if strings.HasPrefix(content, match) {
-			return match
-		}
-		// 否则在前面添加空行
-		return "\n\n" + match
-	})
-}
-
-// addLineBreakAroundPattern 在匹配模式前后添加空行
-func addLineBreakAroundPattern(content, pattern string) string {
-	// 编译正则表达式
-	re := regexp.MustCompile(pattern)
-	
-	// 在匹配模式前后添加空行
-	return re.ReplaceAllStringFunc(content, func(match string) string {
-		// 在前后添加空行，但避免重复的空行
-		return "\n\n" + strings.TrimSpace(match) + "\n\n"
-	})
-}
-
 func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 
@@ -191,24 +146,27 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req v1.SendMessageRequest
-	if err := json.Unmarshal(bodyBytes, &req); err != nil {
+	if err = json.Unmarshal(bodyBytes, &req); err != nil {
 		log.Info("Unmarshal body error:", err)
 		return
 	}
-	chatAgent := chat.NewAiAgent()
+	chatAgent := chat.NewDeepseekAgent()
 	if chatAgent == nil {
 		log.Info("NewAiAgent failed")
 		return
 	}
 	var messages []*schema.Message
 	for _, msg := range req.Messages {
-		
+		if msg.Role == "system" {
+			continue
+		}
 		messages = append(messages, &schema.Message{
 			Role:    schema.RoleType(msg.Role),
 			Content: msg.Content,
 		})
 	}
-	agentStream, err := chatAgent.GetChatModel().Stream(context.Background(), messages)
+	agentStream, err := chatAgent.GetReActAgent().Stream(context.Background(),
+		messages, agent.WithComposeOptions(compose.WithCallbacks(chat.GetCallback())))
 	if err != nil {
 		log.Info("Stream failed:", err)
 		return
@@ -230,15 +188,16 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 			log.Info("Recv failed:", err)
 			return
 		}
-		// 处理Markdown格式，确保标题和分割线等元素有正确的换行
-		content := fmt.Sprintf("%v", msg.Content)
-		// 确保标题前后有空行
-		// content = ensureMarkdownLineBreaks(content)
+		var content string
+		if msg.ReasoningContent != "" {
+			content = fmt.Sprintf("</think>%v</think>", msg.ReasoningContent)
+		} else {
+			content = fmt.Sprintf("%v", msg.Content)
+		}
 		// 处理换行符，将其转换为\\n以便在SSE中正确传输
 		content = strings.ReplaceAll(content, "\n", "\\n")
 		event := "data: " + content + "\n\n"
 
-		
 		if _, err := w.Write([]byte(event)); err != nil {
 			log.Info("Write error:", err)
 			return

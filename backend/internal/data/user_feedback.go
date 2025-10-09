@@ -113,3 +113,44 @@ func (r *userFeedbackRepo) ListByStatus(ctx context.Context, status string, page
 
 	return feedbacks, total, nil
 }
+
+// -- 执行下面sql根据渠道id查询roi。
+// SELECT
+// 	aho.sub_channel_id AS '渠道ID',
+// 	SUM(price) AS '半流程api分发收益',
+// 	SUM(income) AS '半流程api分发净收益'
+// FROM
+// 	api_halfpro_order AS aho
+// 	LEFT JOIN api_halfpro_order_line AS ahol ON aho.id = ahol.order_id
+// WHERE
+// 	aho.channel_id = 2729
+// 	AND aho.created_at BETWEEN '2025-09-17 00:00:00'
+// 	AND '2025-09-18 00:00:00'
+// 	AND ahol.check_status = 1
+// 	AND ahol.push_status = 1 
+// GROUP BY
+// 	aho.sub_channel_id;
+func (r *userFeedbackRepo) GetChannelRoi(ctx context.Context, param *biz.ChannelRoiParam) ([]*biz.ChannelRoi, error) {
+	var channelRois []*biz.ChannelRoi
+	err := r.data.db.WithContext(ctx).Raw(`
+		SELECT
+			aho.sub_channel_id AS '渠道ID',
+			SUM(price) AS '半流程api分发收益',
+			SUM(income) AS '半流程api分发净收益'
+		FROM
+			api_halfpro_order AS aho
+			LEFT JOIN api_halfpro_order_line AS ahol ON aho.id = ahol.order_id
+		WHERE
+			aho.channel_id = ?
+			AND aho.created_at BETWEEN ?
+			AND ?
+			AND ahol.check_status = 1
+			AND ahol.push_status = 1 
+		GROUP BY
+			aho.sub_channel_id;
+	`, param.ChannelID, param.StartTime, param.EndTime).Scan(&channelRois).Error
+	if err != nil {
+		return nil, err
+	}
+	return channelRois, nil
+}
