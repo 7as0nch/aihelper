@@ -129,6 +129,10 @@ func (s *ChatService) StreamMessagesToWebSocket(sessionId string, sendMessage fu
 }
 
 func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
+	chat.NewAdkAgent().SSEHandler(w, r)
+}
+
+func (s *ChatService) SSEHandlerOld(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 
 	flusher, ok := w.(http.Flusher)

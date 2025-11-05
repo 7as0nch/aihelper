@@ -77,7 +77,7 @@ type ChannelRoiParam struct {
 }
 type ChannelRoi struct {
 	// 渠道id
-	ChannelID int64 `json:"channel_id" gorm:"type:int;not null" jsonschema:"description=渠道id"`
+	SubChannelID int64 `json:"sub_channel_id" gorm:"type:int;not null" jsonschema:"description=渠道id"`
 	// 半流程分发收益
 	HalfProfit float64 `json:"half_profit" gorm:"type:decimal(6,2);not null" jsonschema:"description=半流程分发收益"`
 	// 半流程分发净收益
@@ -92,7 +92,7 @@ func GetChannelRoi(ctx context.Context, param *ChannelRoiParam) ([]*ChannelRoi, 
 	}
 	err = data.db.WithContext(ctx).Raw(`
 		SELECT
-			aho.sub_channel_id AS 'channel_id',
+			aho.sub_channel_id AS 'sub_channel_id',
 			SUM(price) AS 'half_profit',
 			SUM(income) AS 'half_net_profit'
 		FROM

@@ -7,10 +7,12 @@ import (
 	"io"
 	"testing"
 
+	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/schema"
 	"github.com/example/aichat/backend/pkg/agenttools"
 	"github.com/example/aichat/backend/pkg/chat"
 	"github.com/example/aichat/backend/pkg/chat/graph"
+	"github.com/example/aichat/backend/pkg/prints"
 )
 
 /* *
@@ -106,9 +108,44 @@ func TestDB(t *testing.T) {
 			AND ahol.push_status = 1 
 		GROUP BY
 			aho.sub_channel_id;
-	`, 2729, "2025-09-17 00:00:00", "2025-09-18 23:59:59").Scan(&channelRois).Error
+	`, 2729, "2025-11-01 00:00:00", "2025-11-04 23:59:59").Scan(&channelRois).Error
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
 	t.Logf("ChannelRoi: %+v", channelRois)
+}
+
+func TestGraph_adk(t *testing.T) { 
+	event := chat.NewAdkAgent().Run(context.Background(), []adk.Message{
+		chat.PgHelperPrompt(),
+		{
+			Role:    schema.User,
+			Content: "现在几点了",
+		},
+	})
+	for {
+		ev, ok := event.Next()
+		if !ok {
+			break
+		}
+		// fmt.Println("is streaming?", ev.Output.MessageOutput.IsStreaming)
+		// if ev.Output.MessageOutput.MessageStream != nil {
+		// 	for {
+		// 		msg, err := ev.Output.MessageOutput.MessageStream.Recv()
+		// 		if err != nil {
+		// 			if err == io.EOF {
+		// 				break
+		// 			}
+		// 			t.Errorf("Recv failed: %v", err)
+		// 		}
+		// 		if msg.ReasoningContent != "" {
+		// 			fmt.Print(msg.ReasoningContent)
+		// 		}
+		// 		if msg.Content != "" {
+		// 			fmt.Print(msg.Content)
+		// 		}
+		// 	}
+		// }
+		prints.Event(ev)
+	}
 }

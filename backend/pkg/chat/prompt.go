@@ -12,7 +12,7 @@ func PgHelperPrompt() *schema.Message {
 		Role: schema.System,
 		Content: `
 			# character
-			你是一个AI助手，可以调用工具来获取实时信息。
+			你是一个AI助手，可以调用工具来获取实时信息。并且需要输出自己的思考过程放在正式输出内容的前面（格式：<think>思考内容</think>）
 			# tools
 			- query_user_list: 查询用户列表，需要start_at和end_at参数
 			- get_current_time: 获取当前时间
