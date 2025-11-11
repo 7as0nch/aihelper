@@ -16,6 +16,7 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino/adk"
+	// "github.com/cloudwego/eino/adk/prebuilt/supervisor"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -82,7 +83,7 @@ func NewAdkAgent() *AdkAgent {
 	bussinessAgent, err := adk.NewChatModelAgent(ctx, &adk.ChatModelAgentConfig{
 		Name:        "bussinessAgent",
 		Description: "你是一个业务工具调用助手:可查询用户报表，渠道ROI等。", // English description
-		Instruction: `可支持查询ROI，用户报表等功能，涉及到时间的需要globalAgent协助。`,
+		Instruction: `可支持查询ROI，用户报表等功能。`,
 		Model:       newAdkReActModel(ctx),
 		ToolsConfig: adk.ToolsConfig{
 			ToolsNodeConfig: compose.ToolsNodeConfig{
@@ -95,10 +96,26 @@ func NewAdkAgent() *AdkAgent {
 		// logs.Errorf("NewChatModelAgent failed, err=%v", err)
 		return nil
 	}
+	helloAgent, err := adk.NewChatModelAgent(ctx, &adk.ChatModelAgentConfig{
+		Name:        "helloAgent",
+		Description: "你是一个招呼智能体，打招呼的时候使用", // English description
+		Instruction: `客客气气打招呼，可以调用打招呼的工具`,
+		Model:       newAdkReActModel(ctx),
+		ToolsConfig: adk.ToolsConfig{
+			ToolsNodeConfig: compose.ToolsNodeConfig{
+				Tools: agenttools.McpTools(),
+			},
+		},
+	})
+	if err != nil {
+		fmt.Println(err)
+		// logs.Errorf("NewChatModelAgent failed, err=%v", err)
+		return nil
+	}
 	a, err := adk.NewChatModelAgent(ctx, &adk.ChatModelAgentConfig{
 		Name:        "HostAgent",
 		Description: "你是一个主管智能助手，可以调用其他智能体处理用户的需求", // English description
-		Instruction: `如果需要获取当前时间用globalAgent，业务（用户报表，ROI等）相关调用bussinessAgent进行相互协作，最后总结返回给用户。`,
+		Instruction: `如果需要获取当前时间用globalAgent，业务（用户报表，ROI等）相关调用bussinessAgent进行相互协作，最后总结由host主agent返回给用户。`,
 		Model:       newAdkReActModel(ctx),
 	})
 	if err != nil {
@@ -106,7 +123,11 @@ func NewAdkAgent() *AdkAgent {
 		// logs.Errorf("NewChatModelAgent failed, err=%v", err)
 		return nil
 	}
-	res, err := adk.SetSubAgents(ctx, a, []adk.Agent{globalAgent, bussinessAgent})
+	res, err := adk.SetSubAgents(ctx, a, []adk.Agent{globalAgent, bussinessAgent, helloAgent})
+	// res, err := supervisor.New(ctx, &supervisor.Config{
+	// 	Supervisor: a,
+	// 	SubAgents: []adk.Agent{globalAgent, bussinessAgent},
+	// })
 	if err != nil {
 		return nil
 	}

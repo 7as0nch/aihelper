@@ -2,9 +2,11 @@ package agenttools
 
 import (
 	"context"
-
+	"github.com/mark3labs/mcp-go/mcp"
+	emcp "github.com/cloudwego/eino-ext/components/tool/mcp"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
+	"github.com/mark3labs/mcp-go/client"
 )
 
 /* *
@@ -88,4 +90,31 @@ func GetStreamTools() []tool.StreamableTool {
 	return []tool.StreamableTool{
 		// {},
 	}
+}
+
+func McpTools() []tool.BaseTool {
+	cli, err := client.NewSSEMCPClient("http://localhost:8080/sse")
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	err = cli.Start(ctx)
+	if err != nil {
+		panic(err)
+	}
+	initRequest := mcp.InitializeRequest{}
+	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
+	initRequest.Params.ClientInfo = mcp.Implementation{
+		Name:    "Hello World Server",
+		Version: "1.0.0",
+	}
+	_, err = cli.Initialize(ctx, initRequest)
+	if err != nil {
+		panic(err)
+	}
+	tools, err := emcp.GetTools(ctx, &emcp.Config{Cli: cli})
+	if err != nil {
+		panic(err)
+	}
+	return tools
 }

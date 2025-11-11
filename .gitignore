@@ -59,3 +59,5 @@ vite.config.ts.*
 # 排除自动生成的类型文件
 apps/web-antd/types/components.d.ts
 .history
+
+__debug_bin*

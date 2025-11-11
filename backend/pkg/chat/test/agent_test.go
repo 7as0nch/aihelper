@@ -149,3 +149,8 @@ func TestGraph_adk(t *testing.T) {
 		prints.Event(ev)
 	}
 }
+
+func TestMCP(t *testing.T) {
+	tools := agenttools.McpTools()
+	t.Logf("MCP Tools: %+v", tools)
+}
