@@ -21,12 +21,12 @@ func TestDb(t *testing.T) {
 	gormdb, _ := gorm.Open(mysql.Open(URL))
 	g.UseDB(gormdb) // reuse your gorm db
 	// data type for protobuf
-	dataMap := map[string]func(detailType string) (dataType string){
-		"tinyint":   func(detailType string) (dataType string) { return "int64" },
-		"smallint":  func(detailType string) (dataType string) { return "int64" },
-		"mediumint": func(detailType string) (dataType string) { return "int64" },
-		"bigint":    func(detailType string) (dataType string) { return "int64" },
-		"int":       func(detailType string) (dataType string) { return "int64" },
+	dataMap := map[string]func(columnType gorm.ColumnType) (dataType string){
+		"tinyint":   func(columnType gorm.ColumnType) (dataType string) { return "int64" },
+		"smallint":  func(columnType gorm.ColumnType) (dataType string) { return "int64" },
+		"mediumint": func(columnType gorm.ColumnType) (dataType string) { return "int64" },
+		"bigint":    func(columnType gorm.ColumnType) (dataType string) { return "int64" },
+		"int":       func(columnType gorm.ColumnType) (dataType string) { return "int64" },
 	}
 	//
 	g.WithDataTypeMap(dataMap)
@@ -38,9 +38,9 @@ func TestDb(t *testing.T) {
 		}
 		return columnName
 	})
-	autoUpdateTimeField := gen.FieldGORMTag("update_date_time", "column:update_date_time;type:int unsigned;autoUpdateTime")
-	autoCreateTimeField := gen.FieldGORMTag("create_date_time", "column:create_date_time;type:int unsigned;autoCreateTime")
-	softDeleteField := gen.FieldGORMTag("is_soft_delete", "soft_delete.DeleteAt")
+	autoUpdateTimeField := gen.FieldJSONTag("update_date_time", "column:update_date_time;type:int unsigned;autoUpdateTime")
+	autoCreateTimeField := gen.FieldJSONTag("create_date_time", "column:create_date_time;type:int unsigned;autoCreateTime")
+	softDeleteField := gen.FieldJSONTag("is_soft_delete", "soft_delete.DeleteAt")
 	fieldOpts := []gen.ModelOpt{jsonField, autoCreateTimeField, autoUpdateTimeField, softDeleteField}
 	//Generate basic type-safe DAO API for struct `model.User` following conventions
 	//g.ApplyBasic(model.User{})
