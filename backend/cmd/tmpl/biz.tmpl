@@ -1,0 +1,31 @@
+package biz
+
+import (
+    "context"
+    "github.com/go-kratos/kratos/v2/log"
+    "gorm.io/gorm"
+    "{{.ModelPath}}"
+)
+
+type {{.ModelName}}Repo interface {
+	Create{{.ModelName}}(ctx context.Context, uModel *model.{{.ModelName}}, db *gorm.DB) error
+	Update{{.ModelName}}(ctx context.Context, uModel *model.{{.ModelName}}, db *gorm.DB) error
+	Delete{{.ModelName}}ByIds(ctx context.Context, ids []string, db *gorm.DB) error
+	Get{{.ModelName}}ById(ctx context.Context, id string) (*model.{{.ModelName}}, error)
+	Get{{.ModelName}}ByIds(ctx context.Context, ids []string) ([]*model.{{.ModelName}}, error)
+	Get{{.ModelName}}List(ctx context.Context, query string, pageNum, pageSize int64) ([]*model.{{.ModelName}}, int64, error)
+	// GetDB 得到db以方便事务处理
+	GetDB() *gorm.DB
+}
+
+type {{.ModelName}}UseCase struct{
+	{{.RepoName}} {{.ModelName}}Repo
+	log   *log.Helper
+}
+
+func New{{.ModelName}}UseCase({{.RepoName}} {{.ModelName}}Repo, logger log.Logger) *{{.ModelName}}UseCase {
+	return &{{.ModelName}}UseCase{
+		{{.RepoName}}: {{.RepoName}},
+		log:   log.NewHelper(logger),
+	}
+}
