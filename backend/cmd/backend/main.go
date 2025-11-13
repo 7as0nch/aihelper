@@ -16,6 +16,8 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 
 	_ "go.uber.org/automaxprocs"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -51,15 +53,6 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, ws *server.WebS
 
 func main() {
 	flag.Parse()
-	logger := log.With(log.NewStdLogger(os.Stdout),
-		"ts", log.DefaultTimestamp,
-		"caller", log.DefaultCaller,
-		"service.id", id,
-		"service.name", Name,
-		"service.version", Version,
-		"trace.id", tracing.TraceID(),
-		"span.id", tracing.SpanID(),
-	)
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),
@@ -75,6 +68,26 @@ func main() {
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
+
+	zapLogger := NewKratosLogger(
+        &bc,
+        zap.NewAtomicLevelAt(zapcore.DebugLevel),
+        zap.AddStacktrace(
+            zap.NewAtomicLevelAt(zapcore.WarnLevel)),
+        // zap.AddCaller(),
+        zap.AddCallerSkip(3),
+        zap.Development(),
+    )
+
+	logger := log.With(zapLogger,
+		"ts", log.DefaultTimestamp,
+		"caller", log.DefaultCaller,
+		"service.id", id,
+		"service.name", Name,
+		"service.version", Version,
+		"trace.id", tracing.TraceID(),
+		"span.id", tracing.SpanID(),
+	)
 
 	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
 	if err != nil {

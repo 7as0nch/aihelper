@@ -8,6 +8,16 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Log log = 3;
+}
+
+message Log {
+  string level = 1;
+  string format = 2;
+  bool showLine = 3;
+  string encodeLevel = 4;
+  string director = 5;
+  int32 maxAge = 6;
 }
 
 message Server {
@@ -30,12 +40,30 @@ message Data {
     string driver = 1;
     string source = 2;
   }
+  // # type Config struct {
+  // #   Host     string // 数据库主机地址
+  // #   Port     int    // 数据库端口
+  // #   User     string // 数据库用户名
+  // #   Password string // 数据库密码
+  // #   DBName   string // 数据库名称
+  // #   SSLMode  string // SSL模式 (disable, require, verify-ca, verify-full)
+  // # }
+  message PGDataBase {
+    string host = 1;
+    int32 port = 2;
+    string user = 3;
+    string password = 4;
+    string dbname = 5;
+    string sslmode = 6;
+  }
   message Redis {
     string network = 1;
     string addr = 2;
     google.protobuf.Duration read_timeout = 3;
     google.protobuf.Duration write_timeout = 4;
   }
+
   Database database = 1;
-  Redis redis = 2;
+  PGDataBase pg_database = 2;
+  Redis redis = 3;
 }

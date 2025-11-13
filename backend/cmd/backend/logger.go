@@ -8,6 +8,8 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/pkg/logger"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -20,10 +22,10 @@ type ZapLogger struct {
 	Sync func() error
 }
 
-func NewKratosLogger(level zap.AtomicLevel, opts ...zap.Option) *ZapLogger {
+func NewKratosLogger(conf *conf.Bootstrap, level zap.AtomicLevel, opts ...zap.Option) *ZapLogger {
 	// conf.Config.Log.Director conf.Config.Log.EncodeLevel
-	zapLogger := logger.NewZapLogger("", level, zapcore.EncoderConfig{
-		EncodeLevel: logger.GetEncoderLevel(""),
+	zapLogger := logger.NewZapLogger(conf.Log.Director, level, zapcore.EncoderConfig{
+		EncodeLevel: logger.GetEncoderLevel(conf.Log.EncodeLevel),
 	}, opts...)
 	return &ZapLogger{log: zapLogger, Sync: zapLogger.Sync}
 }
@@ -41,13 +43,13 @@ func (l *ZapLogger) Log(level log.Level, keyvals ...interface{}) error {
 	}
 	switch level {
 	case log.LevelDebug:
-		l.log.Debug("", data...)
+		l.log.Debug("\033[36m[DEBUG]\033[0m", data...)
 	case log.LevelInfo:
-		l.log.Info("", data...)
+		l.log.Info("\033[32m[INFO]\033[0m", data...)
 	case log.LevelWarn:
-		l.log.Warn("", data...)
+		l.log.Warn("\033[33m[WARN]\033[0m", data...)
 	case log.LevelError:
-		l.log.Error("", data...)
+		l.log.Error("\033[31m[ERROR]\033[0m", data...)
 	}
 	return nil
 }
