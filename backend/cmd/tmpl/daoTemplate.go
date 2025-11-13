@@ -19,7 +19,7 @@ type TemplateData struct {
 
 func main() {
 	// 从命令行参数中读取模型和数据访问接口的名称
-	md := model.SysParameter{}
+	md := model.User{}
 	split := strings.Split(md.TableName(), "_")
 	sb := myStrings.NewStrBuilder()
 	for _, s := range split {

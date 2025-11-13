@@ -22,6 +22,7 @@ require (
 	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.7
 	gorm.io/driver/mysql v1.6.0
+	gorm.io/driver/postgres v1.5.0
 	gorm.io/gen v0.3.27
 	gorm.io/gorm v1.31.0
 )
@@ -29,6 +30,10 @@ require (
 require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
+	github.com/jackc/pgx/v5 v5.5.5 // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/spf13/cast v1.7.1 // indirect

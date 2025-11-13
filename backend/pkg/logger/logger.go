@@ -39,8 +39,8 @@ func NewProdLoggger(fileName, level string, withLine bool, backupPath string, io
 	date = time.Now().Format(time.DateOnly)
 	hook := Logger{
 		Filename:   fileName, // 日志文件路径
-		MaxBackups: 30,       // 日志文件最多保存多少个备份
-		MaxAge:     90,       // 文件最多保存多少天
+		MaxBackups: 10,       // 日志文件最多保存多少个备份
+		MaxAge:     7,        // 文件最多保存多少天
 		Compress:   true,     // 是否压缩
 		SavePath:   backupPath,
 	}

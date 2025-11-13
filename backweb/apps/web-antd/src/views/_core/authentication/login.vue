@@ -33,6 +33,9 @@ const captchaInfo = ref<CaptchaResponse>({
 
 async function loadCaptcha() {
   const resp = await captchaImage();
+  if (!resp) {
+    return;
+  }
   if (resp.captchaEnabled) {
     resp.img = `data:image/png;base64,${resp.img}`;
   }
@@ -46,6 +49,9 @@ const tenantInfo = ref<TenantResp>({
 
 async function loadTenant() {
   const resp = await tenantList();
+  if (!resp) {
+    return;
+  }
   tenantInfo.value = resp;
   // 选中第一个租户
   if (resp.tenantEnabled && resp.voList.length > 0) {

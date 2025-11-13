@@ -81,18 +81,18 @@ export const accountBindList: BindItem[] = [
     source: 'github',
     title: 'Github',
   },
-  {
-    avatar: SvgMaxKeyIcon,
-    description: '绑定MaxKey账号',
-    source: 'maxkey',
-    title: 'MaxKey',
-  },
-  {
-    avatar: SvgTopiamIcon,
-    description: '绑定topiam账号',
-    source: 'topiam',
-    title: 'Topiam',
-  },
+  // {
+  //   avatar: SvgMaxKeyIcon,
+  //   description: '绑定MaxKey账号',
+  //   source: 'maxkey',
+  //   title: 'MaxKey',
+  // },
+  // {
+  //   avatar: SvgTopiamIcon,
+  //   description: '绑定topiam账号',
+  //   source: 'topiam',
+  //   title: 'Topiam',
+  // },
   {
     avatar: SvgWechatIcon,
     description: '绑定wechat账号',
