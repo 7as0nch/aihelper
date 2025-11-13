@@ -11,7 +11,7 @@ data:
     source: read_rentianhua:yNxruv24C26@tcp(rm-bp1hw1ynxruv24c26jo.mysql.rds.aliyuncs.com:3306)/rth?parseTime=True&loc=Local
   pg_database:
     driver: pgsql
-    source: postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable
+    source: pgdb://pgadmin:123456@115.120.248.67:31042/postgres?sslmode=disable
   redis:
     addr: 127.0.0.1:6379
     read_timeout: 0.2s
