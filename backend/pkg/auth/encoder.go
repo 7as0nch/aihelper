@@ -14,16 +14,16 @@ import (
 
 func DefaultResponseEncoder(w http.ResponseWriter, r *http.Request, v interface{}) error {
 	var response struct {
-		Code     string      `json:"code"`
+		Code     int         `json:"code"`
 		Data     interface{} `json:"data"`
-		Message  string      `json:"message"`
+		Msg      string      `json:"msg"`
 		NewToken string      `json:"newToken"`
 		DateTime time.Time   `json:"datetime"`
 	}
 
-	response.Code = "200"
+	response.Code = 200
 	response.DateTime = time.Now()
-	response.Message = "成功啦，宝子，你可真棒！"
+	response.Msg = "成功啦，宝子，你可真棒！"
 	if v == nil {
 		return nil
 	}
@@ -52,14 +52,14 @@ func DefaultResponseEncoder(w http.ResponseWriter, r *http.Request, v interface{
 
 func DefaultErrorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	var response struct {
-		Message  string `json:"message"`
-		Code     string `json:"code"`
+		Msg      string `json:"msg"`
+		Code     int    `json:"code"`
 		DateTime int64  `json:"datetime"`
 	}
 
-	response.Message = err.Error()
+	response.Msg = err.Error()
 	response.DateTime = time.Now().UnixMilli()
-	response.Code = "500"
+	response.Code = 500
 
 	codec, _ := http.CodecForRequest(r, "Accept")
 	body, err := json.Marshal(&response)

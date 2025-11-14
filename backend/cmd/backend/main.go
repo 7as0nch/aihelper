@@ -34,7 +34,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "/Users/mac/workplace/go1.24/my/aichat/backend/configs/config.yaml", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", "/Users/jasoncheng/go/project/aichat/backend/configs/config.yaml", "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, ws *server.WebSocketApp) *kratos.App {
