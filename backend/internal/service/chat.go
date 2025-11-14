@@ -14,18 +14,18 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/pkg/chat"
-	"github.com/go-kratos/kratos/v2/log"
+	"go.uber.org/zap"
 )
 
 type ChatService struct {
 	v1.UnimplementedChatServer
-	log *log.Helper
+	log *zap.Logger
 	// 可以添加消息存储或其他依赖
 }
 
-func NewChatService(logger log.Logger) *ChatService {
+func NewChatService(logger *zap.Logger) *ChatService {
 	return &ChatService{
-		log: log.NewHelper(logger),
+		log: logger,
 	}
 }
 
@@ -39,7 +39,7 @@ func (s *ChatService) SendMessage(ctx context.Context, req *v1.SendMessageReques
 	// 模拟处理时间
 	time.Sleep(10 * time.Millisecond)
 
-	s.log.WithContext(ctx).Infof("Message sent successfully with ID: %s", messageId)
+	s.log.Info("Message sent successfully with ID", zap.String("messageId", messageId))
 
 	return &v1.SendMessageReply{
 		MessageId: messageId,
@@ -48,7 +48,7 @@ func (s *ChatService) SendMessage(ctx context.Context, req *v1.SendMessageReques
 }
 
 func (s *ChatService) GetMessages(ctx context.Context, req *v1.GetMessagesRequest) (*v1.GetMessagesReply, error) {
-	s.log.WithContext(ctx).Infof("Getting messages for session %s, page %d", req.SessionId, req.Page)
+	s.log.Info("Getting messages for session", zap.String("sessionId", req.SessionId), zap.Int32("page", req.Page))
 
 	// 这里应该实现从数据库获取消息的逻辑
 	// 模拟返回一些消息
@@ -73,8 +73,7 @@ func (s *ChatService) GetMessages(ctx context.Context, req *v1.GetMessagesReques
 }
 
 func (s *ChatService) StreamMessages(req *v1.StreamMessagesRequest, stream v1.Chat_StreamMessagesServer) error {
-	ctx := stream.Context()
-	s.log.WithContext(ctx).Infof("Starting message stream for session %s", req.SessionId)
+	s.log.Info("Starting message stream for session", zap.String("sessionId", req.SessionId))
 
 	// 这里应该实现实际的流式消息推送逻辑
 	// 例如：从消息队列订阅消息并推送给客户端
@@ -92,7 +91,7 @@ func (s *ChatService) StreamMessages(req *v1.StreamMessagesRequest, stream v1.Ch
 		}
 
 		if err := stream.Send(message); err != nil {
-			s.log.Errorf("Failed to send streamed message: %v", err)
+			s.log.Error("Failed to send streamed message", zap.Error(err))
 			return err
 		}
 
@@ -100,13 +99,13 @@ func (s *ChatService) StreamMessages(req *v1.StreamMessagesRequest, stream v1.Ch
 		time.Sleep(1 * time.Second)
 	}
 
-	s.log.Infof("Message stream completed for session %s", req.SessionId)
+	s.log.Info("Message stream completed for session", zap.String("sessionId", req.SessionId))
 	return nil
 }
 
 // StreamMessagesToWebSocket streams messages to a WebSocket connection
 func (s *ChatService) StreamMessagesToWebSocket(sessionId string, sendMessage func(message map[string]interface{}), sendComplete func()) {
-	s.log.Infof("Starting message stream for session %s via WebSocket", sessionId)
+	s.log.Info("Starting message stream for session %s via WebSocket", zap.String("sessionId", sessionId))
 
 	// 模拟发送几条消息
 	for i := 0; i < 5; i++ {
@@ -146,17 +145,17 @@ func (s *ChatService) SSEHandlerOld(w http.ResponseWriter, r *http.Request) {
 	// 读取post body
 	bodyBytes, err := io.ReadAll(body)
 	if err != nil {
-		log.Info("Read body error:", err)
+		s.log.Error("Read body error:", zap.Error(err))
 		return
 	}
 	var req v1.SendMessageRequest
 	if err = json.Unmarshal(bodyBytes, &req); err != nil {
-		log.Info("Unmarshal body error:", err)
+		s.log.Error("Unmarshal body error:", zap.Error(err))
 		return
 	}
 	chatAgent := chat.NewDeepseekAgent()
 	if chatAgent == nil {
-		log.Info("NewAiAgent failed")
+		s.log.Info("NewAiAgent failed")
 		return
 	}
 	var messages []*schema.Message
@@ -172,7 +171,7 @@ func (s *ChatService) SSEHandlerOld(w http.ResponseWriter, r *http.Request) {
 	agentStream, err := chatAgent.GetReActAgent().Stream(context.Background(),
 		messages, agent.WithComposeOptions(compose.WithCallbacks(chat.GetCallback())))
 	if err != nil {
-		log.Info("Stream failed:", err)
+		s.log.Info("Stream failed:", zap.Error(err))
 		return
 	}
 	defer agentStream.Close()
@@ -180,16 +179,16 @@ func (s *ChatService) SSEHandlerOld(w http.ResponseWriter, r *http.Request) {
 		msg, err := agentStream.Recv()
 		if err != nil {
 			if err == io.EOF {
-				log.Info("Stream completed")
+				s.log.Info("Stream completed")
 				event := "data: [DONE]\n\n"
 				if _, err = w.Write([]byte(event)); err != nil {
-					log.Info("Write error:", err)
+					s.log.Error("Write error:", zap.Error(err))
 					return
 				}
 				flusher.Flush()
 				break
 			}
-			log.Info("Recv failed:", err)
+			s.log.Info("Recv failed:", zap.Error(err))
 			return
 		}
 		var content string
@@ -203,7 +202,7 @@ func (s *ChatService) SSEHandlerOld(w http.ResponseWriter, r *http.Request) {
 		event := "data: " + content + "\n\n"
 
 		if _, err := w.Write([]byte(event)); err != nil {
-			log.Info("Write error:", err)
+			s.log.Error("Write error:", zap.Error(err))
 			return
 		}
 		flusher.Flush()

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"go.uber.org/zap"
 )
 
 type UserFeedback struct {
@@ -45,47 +45,47 @@ type UserFeedbackRepo interface {
 
 type UserFeedbackUsecase struct {
 	repo UserFeedbackRepo
-	log  *log.Helper
+	log  *zap.Logger
 }
 
-func NewUserFeedbackUsecase(repo UserFeedbackRepo, logger log.Logger) *UserFeedbackUsecase {
+func NewUserFeedbackUsecase(repo UserFeedbackRepo, logger *zap.Logger) *UserFeedbackUsecase {
 	return &UserFeedbackUsecase{
 		repo: repo,
-		log:  log.NewHelper(logger),
+		log:  logger.Named("NewUserFeedbackUsecase"),
 	}
 }
 
 func (uc *UserFeedbackUsecase) CreateFeedback(ctx context.Context, feedback *UserFeedback) (*UserFeedback, error) {
-	uc.log.Infof("Creating feedback for user: %s", feedback.UserID)
+	uc.log.Info("Creating feedback for user", zap.String("userID", feedback.UserID))
 	return feedback, uc.repo.Create(ctx, feedback)
 }
 
 func (uc *UserFeedbackUsecase) GetFeedback(ctx context.Context, id uint64) (*UserFeedback, error) {
-	uc.log.Infof("Getting feedback: %d", id)
+	uc.log.Info("Getting feedback", zap.Uint64("id", id))
 	return uc.repo.Get(ctx, id)
 }
 
 func (uc *UserFeedbackUsecase) ListFeedbacks(ctx context.Context, userID string, page, pageSize int32) ([]*UserFeedback, int64, error) {
-	uc.log.Infof("Listing feedbacks for user: %s, page: %d, pageSize: %d", userID, page, pageSize)
+	uc.log.Info("Listing feedbacks for user", zap.String("userID", userID), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
 	return uc.repo.List(ctx, userID, page, pageSize)
 }
 
 func (uc *UserFeedbackUsecase) UpdateFeedback(ctx context.Context, feedback *UserFeedback) (*UserFeedback, error) {
-	uc.log.Infof("Updating feedback: %d", feedback.ID)
+	uc.log.Info("Updating feedback", zap.Uint64("id", feedback.ID))
 	return feedback, uc.repo.Update(ctx, feedback)
 }
 
 func (uc *UserFeedbackUsecase) DeleteFeedback(ctx context.Context, id uint64) error {
-	uc.log.Infof("Deleting feedback: %d", id)
+	uc.log.Info("Deleting feedback", zap.Uint64("id", id))
 	return uc.repo.Delete(ctx, id)
 }
 
 func (uc *UserFeedbackUsecase) ListFeedbacksByStatus(ctx context.Context, status string, page, pageSize int32) ([]*UserFeedback, int64, error) {
-	uc.log.Infof("Listing feedbacks by status: %s, page: %d, pageSize: %d", status, page, pageSize)
+	uc.log.Info("Listing feedbacks by status", zap.String("status", status), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
 	return uc.repo.ListByStatus(ctx, status, page, pageSize)
 }
 
 func (uc *UserFeedbackUsecase) GetChannelRoi(ctx context.Context, param *ChannelRoiParam) ([]*ChannelRoi, error) {
-	uc.log.Infof("Getting channel ROI for channel: %d, startTime: %s, endTime: %s", param.ChannelID, param.StartTime, param.EndTime)
+	uc.log.Info("Getting channel ROI", zap.Int64("channelID", param.ChannelID), zap.String("startTime", param.StartTime), zap.String("endTime", param.EndTime))
 	return uc.repo.GetChannelRoi(ctx, param)
 }

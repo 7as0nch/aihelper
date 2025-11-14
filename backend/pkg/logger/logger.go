@@ -66,15 +66,16 @@ func NewProdLoggger(fileName, level string, withLine bool, backupPath string, io
 
 	// 设置日志级别
 	atomicLevel := zap.NewAtomicLevel()
-	if level == "info" {
+	switch level {
+	case "info":
 		atomicLevel.SetLevel(zap.InfoLevel)
-	} else if level == "debug" {
+	case "debug":
 		atomicLevel.SetLevel(zap.DebugLevel)
-	} else if level == "warn" {
+	case "warn":
 		atomicLevel.SetLevel(zap.WarnLevel)
-	} else if level == "error" {
+	case "error":
 		atomicLevel.SetLevel(zap.ErrorLevel)
-	} else {
+	default:
 		atomicLevel.SetLevel(zap.DebugLevel)
 	}
 	var writers zapcore.WriteSyncer

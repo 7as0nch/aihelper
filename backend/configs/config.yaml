@@ -26,5 +26,5 @@ log:
   level: "debug"
   format: "console"
   director: "./logs"
-  encodeLevel: "LowercaseColorLevelEncoder"
+  encodeLevel: "CapitalColorLevelEncoder"
 

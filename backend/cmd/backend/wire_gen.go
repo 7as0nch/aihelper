@@ -12,8 +12,10 @@ import (
 	"github.com/example/aichat/backend/internal/data"
 	"github.com/example/aichat/backend/internal/server"
 	"github.com/example/aichat/backend/internal/service"
+	"github.com/example/aichat/backend/internal/service/base"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"go.uber.org/zap"
 )
 
 import (
@@ -23,25 +25,21 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
+func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Logger, logLogger log.Logger) (*kratos.App, func(), error) {
+	chatService := service.NewChatService(logger)
+	grpcServer := server.NewGRPCServer(confServer, chatService, logLogger)
+	dataData, cleanup, err := data.NewData(bootstrap, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	chatService := service.NewChatService(logger)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, chatService, logger)
 	userFeedbackRepo := data.NewUserFeedbackRepo(dataData, logger)
 	userFeedbackUsecase := biz.NewUserFeedbackUsecase(userFeedbackRepo, logger)
-	userFeedbackService := service.NewUserFeedbackService(userFeedbackUsecase, logger)
-	workflowAPIService := service.NewWorkflowAPIService(logger)
-	reportService := service.NewReportService(logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, userFeedbackService, chatService, workflowAPIService, reportService, logger)
+	userFeedbackService := service.NewUserFeedbackService(userFeedbackUsecase, logLogger)
+	authService := base.NewAuthService()
+	httpServer := server.NewHTTPServer(confServer, userFeedbackService, chatService, authService, logLogger)
 	webSocketServer := server.NewWebSocketServerWrapper(chatService, logger)
 	webSocketApp := server.NewWebSocketAppWrapper(webSocketServer, logger)
-	app := newApp(logger, grpcServer, httpServer, webSocketApp)
+	app := newApp(logLogger, grpcServer, httpServer, webSocketApp)
 	return app, func() {
 		cleanup()
 	}, nil

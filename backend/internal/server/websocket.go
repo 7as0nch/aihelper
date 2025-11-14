@@ -6,26 +6,26 @@ import (
 	"sync"
 
 	"github.com/example/aichat/backend/internal/service"
-	"github.com/go-kratos/kratos/v2/log"
+	"go.uber.org/zap"
 	socketio "github.com/googollee/go-socket.io"
 )
 
 type WebSocketServer struct {
 	engine *socketio.Server
-	log    *log.Helper
+	log    *zap.Logger
 	server *http.Server
 	chat   *service.ChatService
 	mu     sync.RWMutex
 	rooms  map[string]map[string]bool // room -> clientID -> bool
 }
 
-func NewWebSocketServer(chat *service.ChatService, logger log.Logger) *WebSocketServer {
+func NewWebSocketServer(chat *service.ChatService, logger *zap.Logger) *WebSocketServer {
 	// 创建Socket.IO服务器
 	server := socketio.NewServer(nil)
 
 	ws := &WebSocketServer{
 		engine: server,
-		log:    log.NewHelper(logger),
+		log:    logger,
 		chat:   chat,
 		rooms:  make(map[string]map[string]bool),
 	}
@@ -39,19 +39,19 @@ func (ws *WebSocketServer) configureServer() {
 	// 处理连接事件
 	ws.engine.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
-		ws.log.Infof("Client connected: %s", s.ID())
+		ws.log.Info("Client connected", zap.String("id", s.ID()))
 		return nil
 	})
 
 	// 处理断开连接事件
 	ws.engine.OnDisconnect("/", func(s socketio.Conn, reason string) {
-		ws.log.Infof("Client disconnected: %s, reason: %s", s.ID(), reason)
+		ws.log.Info("Client disconnected", zap.String("id", s.ID()), zap.String("reason", reason))
 		ws.removeClientFromAllRooms(s.ID())
 	})
 
 	// 处理聊天消息事件
 	ws.engine.OnEvent("/", "chat_message", func(s socketio.Conn, msg map[string]interface{}) {
-		ws.log.Infof("Received chat message from %s: %v", s.ID(), msg)
+		ws.log.Info("Received chat message from client", zap.String("id", s.ID()), zap.Any("message", msg))
 		
 		// 广播消息到指定房间
 		if room, ok := msg["room"].(string); ok {
@@ -62,7 +62,7 @@ func (ws *WebSocketServer) configureServer() {
 
 	// 处理加入房间事件
 	ws.engine.OnEvent("/", "join_room", func(s socketio.Conn, room string) {
-		ws.log.Infof("Client %s joining room: %s", s.ID(), room)
+		ws.log.Info("Client joining room", zap.String("id", s.ID()), zap.String("room", room))
 		s.Join(room)
 		ws.addClientToRoom(s.ID(), room)
 		
@@ -75,7 +75,7 @@ func (ws *WebSocketServer) configureServer() {
 
 	// 处理离开房间事件
 	ws.engine.OnEvent("/", "leave_room", func(s socketio.Conn, room string) {
-		ws.log.Infof("Client %s leaving room: %s", s.ID(), room)
+		ws.log.Info("Client leaving room", zap.String("id", s.ID()), zap.String("room", room))
 		s.Leave(room)
 		ws.removeClientFromRoom(s.ID(), room)
 		
@@ -93,7 +93,7 @@ func (ws *WebSocketServer) configureServer() {
 
 	// 处理流式消息请求事件
 	ws.engine.OnEvent("/", "stream_messages", func(s socketio.Conn, data map[string]interface{}) {
-		ws.log.Infof("Received stream messages request: %v", data)
+		ws.log.Info("Received stream messages request", zap.Any("data", data))
 		
 		// 从请求数据中获取sessionId
 		sessionId, ok := data["session_id"].(string)

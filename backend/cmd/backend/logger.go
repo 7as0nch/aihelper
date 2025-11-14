@@ -43,13 +43,13 @@ func (l *ZapLogger) Log(level log.Level, keyvals ...interface{}) error {
 	}
 	switch level {
 	case log.LevelDebug:
-		l.log.Debug("\033[36m[DEBUG]\033[0m", data...)
+		l.log.Debug("", data...)
 	case log.LevelInfo:
-		l.log.Info("\033[32m[INFO]\033[0m", data...)
+		l.log.Info("", data...)
 	case log.LevelWarn:
-		l.log.Warn("\033[33m[WARN]\033[0m", data...)
+		l.log.Warn("", data...)
 	case log.LevelError:
-		l.log.Error("\033[31m[ERROR]\033[0m", data...)
+		l.log.Error("", data...)
 	}
 	return nil
 }

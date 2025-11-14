@@ -2,6 +2,8 @@ package data
 
 import (
 	"github.com/example/aichat/backend/internal/conf"
+	"github.com/example/aichat/backend/internal/db"
+	"go.uber.org/zap"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -10,7 +12,9 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewGreeterRepo, NewUserFeedbackRepo)
+var ProviderSet = wire.NewSet(
+	NewSysUserRepo,
+	NewData, NewUserFeedbackRepo)
 
 // Data .
 type Data struct {
@@ -19,14 +23,14 @@ type Data struct {
 }
 
 // NewData .
-func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Bootstrap, logger *zap.Logger) (*Data, func(), error) {
 	cleanup := func() {
-		log.NewHelper(logger).Info("closing the data resources")
+		logger.Info("closing the data resources")
 	}
 	// 初始化mysqldb
-	db := NewMysqlDB(c.Database.Source)
+	db := db.MustNewPostgresDB(c, logger)
 	if db == nil {
-		log.NewHelper(logger).Error("NewMysqlDB failed")
+		logger.Error("NewMysqlDB failed")
 		return nil, nil, nil
 	}
 	return &Data{}, cleanup, nil

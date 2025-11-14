@@ -1,10 +1,11 @@
 package data
 
 import (
-	"github.com/example/aichat/backend/internal/biz"
 	"context"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/example/aichat/backend/internal/biz"
+	"go.uber.org/zap"
+
 )
 
 // UserFeedback 用户反馈数据模型
@@ -33,14 +34,14 @@ import (
 // userFeedbackRepo 用户反馈数据仓库实现
 type userFeedbackRepo struct {
 	data *Data
-	log  *log.Helper
+	log  *zap.Logger
 }
 
 // NewUserFeedbackRepo 创建用户反馈仓库实例
-func NewUserFeedbackRepo(data *Data, logger log.Logger) biz.UserFeedbackRepo {
+func NewUserFeedbackRepo(data *Data, logger *zap.Logger) biz.UserFeedbackRepo {
 	return &userFeedbackRepo{
 		data: data,
-		log:  log.NewHelper(logger),
+		log:  logger,
 	}
 }
 

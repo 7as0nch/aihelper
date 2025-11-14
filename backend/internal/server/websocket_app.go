@@ -3,20 +3,20 @@ package server
 import (
 	"context"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"go.uber.org/zap"
 )
 
 // WebSocketApp wraps the WebSocket server to implement the kratos.Server interface
 type WebSocketApp struct {
 	*WebSocketServer
-	log *log.Helper
+	log *zap.Logger
 }
 
 // NewWebSocketApp creates a new WebSocketApp
-func NewWebSocketApp(ws *WebSocketServer, logger log.Logger) *WebSocketApp {
+func NewWebSocketApp(ws *WebSocketServer, logger *zap.Logger) *WebSocketApp {
 	return &WebSocketApp{
 		WebSocketServer: ws,
-		log:             log.NewHelper(logger),
+		log:             logger,
 	}
 }
 

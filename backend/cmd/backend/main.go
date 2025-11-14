@@ -18,6 +18,7 @@ import (
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -80,16 +81,16 @@ func main() {
     )
 
 	logger := log.With(zapLogger,
-		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
-		"service.id", id,
-		"service.name", Name,
-		"service.version", Version,
+		"time", log.DefaultTimestamp,
+		// "service.id", id,
+		// "service.name", Name,
+		// "service.version", Version,
 		"trace.id", tracing.TraceID(),
 		"span.id", tracing.SpanID(),
 	)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	app, cleanup, err := wireApp(bc.Server, &bc, zapLogger.log, logger)
 	if err != nil {
 		panic(err)
 	}

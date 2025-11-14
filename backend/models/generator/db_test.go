@@ -1,57 +1,66 @@
 package generator
 
 import (
-	"gorm.io/driver/mysql"
+	"testing"
+
+	"github.com/example/aichat/backend/models/generator/model"
+	"gorm.io/driver/postgres"
 	"gorm.io/gen"
 	"gorm.io/gorm"
-	"strings"
-	"testing"
 )
 
-const URL = "admin:cjwy837..@(8.130.14.218:3306)/phm?charset=utf8mb4&parseTime=True&loc=Local"
+// PostgreSQL连接配置 - 使用项目中的配置
+const URL = "host=115.120.248.67 port=31042 user=pgadmin password=123456 dbname=pgdb sslmode=disable search_path=aichat"
+
+// Dynamic SQL
+type Querier interface {
+  // SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+  FilterWithNameAndRole(name, role string) ([]gen.T, error)
+}
 
 func TestDb(t *testing.T) {
 	g := gen.NewGenerator(gen.Config{
-		OutPath:        "./test/query",
-		Mode:           gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode gen.WithoutContext |
-		FieldNullable:  true,
-		FieldCoverable: false,
+		OutPath:        "./query",
+		Mode:           gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode gen.WithoutContext |
+		// FieldNullable:  true,
+		// FieldCoverable: false,
+		// WithUnitTest:   false, // 不生成单元测试
 	})
 
-	gormdb, _ := gorm.Open(mysql.Open(URL))
+	// 连接PostgreSQL数据库
+	gormdb, _ := gorm.Open(postgres.Open(URL))
 	g.UseDB(gormdb) // reuse your gorm db
-	// data type for protobuf
-	dataMap := map[string]func(columnType gorm.ColumnType) (dataType string){
-		"tinyint":   func(columnType gorm.ColumnType) (dataType string) { return "int64" },
-		"smallint":  func(columnType gorm.ColumnType) (dataType string) { return "int64" },
-		"mediumint": func(columnType gorm.ColumnType) (dataType string) { return "int64" },
-		"bigint":    func(columnType gorm.ColumnType) (dataType string) { return "int64" },
-		"int":       func(columnType gorm.ColumnType) (dataType string) { return "int64" },
-	}
-	//
-	g.WithDataTypeMap(dataMap)
-	// 将数字类型转为string
-	jsonField := gen.FieldJSONTagWithNS(func(columnName string) (tagContent string) {
-		toStringField := `balance, `
-		if strings.Contains(toStringField, columnName) {
-			return columnName + ",string"
-		}
-		return columnName
-	})
-	autoUpdateTimeField := gen.FieldJSONTag("update_date_time", "column:update_date_time;type:int unsigned;autoUpdateTime")
-	autoCreateTimeField := gen.FieldJSONTag("create_date_time", "column:create_date_time;type:int unsigned;autoCreateTime")
-	softDeleteField := gen.FieldJSONTag("is_soft_delete", "soft_delete.DeleteAt")
-	fieldOpts := []gen.ModelOpt{jsonField, autoCreateTimeField, autoUpdateTimeField, softDeleteField}
+
+	// PostgreSQL数据类型映射
+	// dataMap := map[string]func(columnType gorm.ColumnType) (dataType string){
+	// 	"smallint":         func(columnType gorm.ColumnType) (dataType string) { return "int64" },
+	// 	"integer":          func(columnType gorm.ColumnType) (dataType string) { return "int64" },
+	// 	"bigint":           func(columnType gorm.ColumnType) (dataType string) { return "int64" },
+	// 	"numeric":          func(columnType gorm.ColumnType) (dataType string) { return "float64" },
+	// 	"double precision": func(columnType gorm.ColumnType) (dataType string) { return "float64" },
+	// 	"float4":           func(columnType gorm.ColumnType) (dataType string) { return "float32" },
+	// }
+	// g.WithDataTypeMap(dataMap)
+
+	// PostgreSQL时间字段配置和其他生成选项将在GenerateAllTable中自动处理
+
+	// 生成特定表和所有表的模型 (PostgreSQL schema: aichat)
+	// 注意：GORM gen在当前版本中可能不支持WithSchema方法
+
 	//Generate basic type-safe DAO API for struct `model.User` following conventions
-	//g.ApplyBasic(model.User{})
-
-	IspUser := g.GenerateModel("sys_user")
-	allModel := g.GenerateAllTable(fieldOpts...)
-	g.ApplyBasic(IspUser)
-	g.ApplyBasic(allModel...)
-	// Generate Type Safe API with Dynamic SQL defined on Querier interface for `model.User` and `model.Company`
-
+	g.ApplyBasic(model.SysUser{})
+	g.ApplyInterface(func(Querier){}, model.SysUser{})
 	// Generate the code
 	g.Execute()
-	t.Log("db 生成成功")
+	t.Log("PostgreSQL数据库表结构生成成功，schema: aichat")
+}
+
+// CodeFirst: 将model下面的User生成到数据库表里去。
+// PostgreSQL数据库生成脚本 - 使用schema: aichat
+func TestMigrate(t *testing.T) {
+	// struct to db
+	// 连接PostgreSQL数据库
+	gormdb, _ := gorm.Open(postgres.Open(URL))
+	// 使用schema: aichat
+	gormdb.Migrator().AutoMigrate(&model.SysUser{})
 }

@@ -1,17 +1,19 @@
 package service
+
 /* *
  * @Author: chengjiang
  * @Date: 2025-10-02 15:21:17
- * @Description: 
+ * @Description:
 **/
 
-import "github.com/google/wire"
+import (
+	"github.com/example/aichat/backend/internal/service/base"
+	"github.com/google/wire"
+)
 
 // ProviderSet is service providers.
 var ProviderSet = wire.NewSet(
-	NewGreeterService, 
+	base.NewAuthService,
 	NewUserFeedbackService,
 	NewChatService,
-	NewWorkflowAPIService,
-	NewReportService,
 )

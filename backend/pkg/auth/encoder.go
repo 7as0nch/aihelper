@@ -50,7 +50,7 @@ func DefaultResponseEncoder(w http.ResponseWriter, r *http.Request, v interface{
 	return nil
 }
 
-func PHMDefaultErrorEncoder(w http.ResponseWriter, r *http.Request, err error) {
+func DefaultErrorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	var response struct {
 		Message  string `json:"message"`
 		Code     string `json:"code"`
