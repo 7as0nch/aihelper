@@ -1,8 +1,8 @@
-import type {Menu, MenuQuery, MenuResp} from './model';
+import type { Menu, MenuQuery, MenuResp } from './model';
 
-import type {ID, IDS} from '#/api/common';
+import type { ID, IDS } from '#/api/common';
 
-import {requestClient} from '#/api/request';
+import { requestClient } from '#/api/request';
 
 enum Api {
   menuList = '/system/menu/list',
@@ -12,13 +12,17 @@ enum Api {
   tenantPackageMenuTreeselect = '/system/menu/tenantPackageMenuTreeselect',
 }
 
+export interface MenuListReply {
+  menu: Menu[];
+}
+
 /**
  * 菜单列表
  * @param params 参数
  * @returns 列表
  */
 export function menuList(params?: MenuQuery) {
-  return requestClient.get<Menu[]>(Api.menuList, {params});
+  return requestClient.get<MenuListReply>(Api.menuList, { params });
 }
 
 /**

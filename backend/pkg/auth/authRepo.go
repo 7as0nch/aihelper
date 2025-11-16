@@ -13,6 +13,7 @@ import (
 
 	"github.com/example/aichat/backend/tools"
 	myStrings "github.com/example/aichat/backend/tools/strings"
+	"github.com/go-kratos/kratos/v2/metadata"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/golang-jwt/jwt/v4"
@@ -30,14 +31,14 @@ type authRepo struct {
 type AuthRepo interface {
 	CheckToken(ctx context.Context, token string) (*JwtClaims, error)
 	GetToken(ctx context.Context) (string, error)
-	NewToken(ctx context.Context, userId, username, phone string) (string, error)
+	NewToken(ctx context.Context, userId int64, username, phone string) (string, error)
 	//Server the middleware
 	Server() func(handler middleware.Handler) middleware.Handler
 }
 
 func NewAuthRepo() AuthRepo {
 	return &authRepo{
-		signingKey: []byte("2022/2023-CDU/PHM|author:chengjiang@stu.cdu.edu.cn"),
+		signingKey: []byte("2025/ai/chat|author:chengjiang@stu.cdu.edu.cn"),
 	}
 }
 
@@ -98,7 +99,7 @@ func (a *authRepo) GetToken(ctx context.Context) (string, error) {
 	return token, nil
 }
 
-func (a *authRepo) NewToken(ctx context.Context, userId, username, phone string) (string, error) {
+func (a *authRepo) NewToken(ctx context.Context, userId int64, username, phone string) (string, error) {
 	claims := JwtClaims{
 		UserId:    userId,
 		UserName:  username,
@@ -115,7 +116,7 @@ func (a *authRepo) NewToken(ctx context.Context, userId, username, phone string)
 	if err != nil {
 		return "", fmt.Errorf("创建token失败，%v", err)
 	}
-	token = fmt.Sprintf(BearerFormat, token)
+	// token = fmt.Sprintf(BearerFormat, token)
 	fmt.Println(token)
 	return token, err
 }
@@ -128,7 +129,7 @@ func (a *authRepo) Server() func(handler middleware.Handler) middleware.Handler 
 				token = header.RequestHeader().Get(AuthorizationKey)
 			}
 			if myStrings.IsEmpty(token) {
-				return myStrings.EmptyStr, errors.New("PHMToken is missing")
+				return myStrings.EmptyStr, errors.New("Token is missing")
 			}
 			//
 			claims, err := a.CheckToken(ctx, token)
@@ -136,7 +137,7 @@ func (a *authRepo) Server() func(handler middleware.Handler) middleware.Handler 
 				fmt.Println("token 无效是为什么：", err, claims)
 				//return nil, errors.New(" PHMToken is expired ")
 			}
-			ctx = context.WithValue(ctx, UserId, claims.UserId)
+			ctx = context.WithValue(ctx, UserId, int64(claims.UserId))
 			ctx = context.WithValue(ctx, UserName, claims.UserName)
 			ctx = context.WithValue(ctx, UserPhone, claims.UserPhone)
 			reply, err = handler(ctx, req)
@@ -152,4 +153,23 @@ func at(t time.Time, f func()) {
 	}
 	f()
 	jwt.TimeFunc = time.Now
+}
+
+
+func NewHeaderServer() func(handler middleware.Handler) middleware.Handler {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
+			var clientID string
+			if md, ok := metadata.FromServerContext(ctx); ok {
+				extra := md.Get("U-OrGniZaTiOn")
+				fmt.Println(extra)
+			}
+			if header, ok := transport.FromServerContext(ctx); ok {
+				clientID = header.RequestHeader().Get("Clientid")
+				ctx = context.WithValue(ctx, "Clientid", clientID)
+			}
+			reply, err = handler(ctx, req)
+			return
+		}
+	}
 }

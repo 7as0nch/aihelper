@@ -4,7 +4,7 @@ package base;
 
 import "google/api/annotations.proto";
 
-option go_package = "github.com/example/aichat/backend/api/base";
+option go_package = "github.com/example/aichat/backend/api;base";
 import "google/protobuf/empty.proto";
 option java_multiple_files = true;
 option java_package = "dev.kratos.api.base";
@@ -28,18 +28,32 @@ option java_outer_classname = "BaseProto";
 // The chat service definition.
 service Auth {
   // Login
-  rpc Login (LoginRequest) returns (google.protobuf.Empty) {
+  rpc Login (LoginRequest) returns (LoginReply) {
     option (google.api.http) = {
       post: "/auth/login"
       body: "*"
     };
   }
 
-  rpc Logout (LogoutRequest) returns (google.protobuf.Empty) {
+  // getInfo
+  rpc GetInfo (google.protobuf.Empty) returns (GetInfoReply) {
     option (google.api.http) = {
-      get: "/auth/logout"
+      get: "/auth/user/info"
     };
   }
+
+  rpc Logout (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/auth/logout"
+      body: "*"
+    };
+  }
+}
+
+message GetInfoReply {
+  User user = 1;
+  repeated string roles = 2;
+  repeated string permissions = 3;
 }
 
 message LoginRequest {
@@ -47,5 +61,41 @@ message LoginRequest {
   string password = 2;
 }
 
+message LoginReply {
+  string access_token = 1;
+  string token = 2;
+}
+
 message LogoutRequest {}
+
+message Role {
+  string data_scope = 1;
+  bool flag = 2;
+  int64 role_id = 3;
+  string role_key = 4;
+  string role_name = 5;
+  int32 role_sort = 6;
+  string status = 7;
+  bool super_admin = 8;
+}
+
+message User {
+  string avatar = 1;
+  string create_time = 2;
+  int64 dept_id = 3;
+  string dept_name = 4;
+  string email = 5;
+  string login_date = 6;
+  string login_ip = 7;
+  string nick_name = 8;
+  string phonenumber = 9;
+  string remark = 10;
+  repeated Role roles = 11;
+  string sex = 12;
+  string status = 13;
+  string tenant_id = 14;
+  int64 user_id = 15;
+  string user_name = 16;
+  string user_type = 17;
+}
 

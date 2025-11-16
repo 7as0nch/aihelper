@@ -40,7 +40,7 @@ func NewPostgresDB(conf *conf.Bootstrap, log *zap.Logger) (*gorm.DB, error) {
 		GormZapWriter{log: log},
 		logger.Config{
 			SlowThreshold:             time.Second, // 慢 SQL 阈值
-			LogLevel:                  1,           // 日志级别，控制 SQL 日志的详细程度
+			LogLevel:                  logger.Info, // 日志级别，控制 SQL 日志的详细程度
 			IgnoreRecordNotFoundError: true,        // 忽略记录未找到错误
 			Colorful:                  true,        // 彩色打印，增强可读性
 		},

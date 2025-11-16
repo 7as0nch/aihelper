@@ -35,12 +35,11 @@ export const useAuthStore = defineStore('auth', () => {
     let userInfo: null | UserInfo = null;
     try {
       loginLoading.value = true;
-      const { access_token } = await loginApi(params);
+      const { accessToken } = await loginApi(params);
 
       // 将 accessToken 存储到 accessStore 中
-      accessStore.setAccessToken(access_token);
-      accessStore.setRefreshToken(access_token);
-
+      accessStore.setAccessToken(accessToken);
+      accessStore.setRefreshToken(accessToken);
       // 获取用户信息并存储到 accessStore 中
       userInfo = await fetchUserInfo();
       /**

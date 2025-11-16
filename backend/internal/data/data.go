@@ -3,6 +3,7 @@ package data
 import (
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/db"
+	"github.com/example/aichat/backend/pkg/auth"
 	"go.uber.org/zap"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -14,6 +15,8 @@ import (
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(
 	NewSysUserRepo,
+	NewSysMenuRepo,
+	auth.NewAuthRepo,
 	NewData, NewUserFeedbackRepo)
 
 // Data .
@@ -33,7 +36,9 @@ func NewData(c *conf.Bootstrap, logger *zap.Logger) (*Data, func(), error) {
 		logger.Error("NewMysqlDB failed")
 		return nil, nil, nil
 	}
-	return &Data{}, cleanup, nil
+	return &Data{
+		db: db,
+	}, cleanup, nil
 }
 
 func NewMysqlDB(source string) *gorm.DB {

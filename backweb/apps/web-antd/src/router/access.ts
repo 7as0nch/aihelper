@@ -32,6 +32,7 @@ function backMenuToVbenMenu(
   parentPath = '',
 ): RouteRecordStringComponent[] {
   const resultList: RouteRecordStringComponent[] = [];
+  console.log('backMenuToVbenMenu', menuList);
   menuList.forEach((menu) => {
     // 根目录为菜单形式
     // 固定有一个children  children为当前菜单
@@ -204,7 +205,8 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
         duration: 1,
       });
       // 后台返回路由/菜单
-      const backMenuList = await getAllMenusApi();
+      const respone = await getAllMenusApi();
+      const backMenuList = respone.menu;
       // 转换为vben能用的路由
       const vbenMenuList = backMenuToVbenMenu(backMenuList);
       // 特别注意 这里要深拷贝

@@ -17,17 +17,20 @@ import (
 
 var (
 	Q       = new(Query)
+	SysMenu *sysMenu
 	SysUser *sysUser
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	SysMenu = &Q.SysMenu
 	SysUser = &Q.SysUser
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:      db,
+		SysMenu: newSysMenu(db, opts...),
 		SysUser: newSysUser(db, opts...),
 	}
 }
@@ -35,6 +38,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 type Query struct {
 	db *gorm.DB
 
+	SysMenu sysMenu
 	SysUser sysUser
 }
 
@@ -43,6 +47,7 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:      db,
+		SysMenu: q.SysMenu.clone(db),
 		SysUser: q.SysUser.clone(db),
 	}
 }
@@ -58,16 +63,19 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:      db,
+		SysMenu: q.SysMenu.replaceDB(db),
 		SysUser: q.SysUser.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
+	SysMenu ISysMenuDo
 	SysUser ISysUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		SysMenu: q.SysMenu.WithContext(ctx),
 		SysUser: q.SysUser.WithContext(ctx),
 	}
 }

@@ -21,7 +21,7 @@ const (
 	BearerFormat string = "Bearer %s"
 
 	// AuthorizationKey holds the key used to store the JWT Token in the request tokenHeader.
-	AuthorizationKey string = "PhmToken"
+	AuthorizationKey string = "Authorization"
 
 	// Reason holds the error Reason.
 	Reason string = "UNAUTHORIZED"
@@ -51,7 +51,7 @@ type options struct {
 	tokenHeader   map[string]interface{}
 }
 type JwtClaims struct {
-	UserId    string `json:"UserId"`
+	UserId    int64  `json:"UserId"`
 	UserName  string `json:"UserName"`
 	UserPhone string `json:"UserPhone"`
 	jwt.RegisteredClaims

@@ -18,17 +18,17 @@ func DefaultResponseEncoder(w http.ResponseWriter, r *http.Request, v interface{
 		Data     interface{} `json:"data"`
 		Msg      string      `json:"msg"`
 		NewToken string      `json:"newToken"`
-		DateTime time.Time   `json:"datetime"`
+		DateTime string      `json:"datetime"`
 	}
 
 	response.Code = 200
-	response.DateTime = time.Now()
+	response.DateTime = time.Now().Format(time.DateTime)
 	response.Msg = "成功啦，宝子，你可真棒！"
 	if v == nil {
 		return nil
 	}
 	var data []byte
-	if v != nil && !reflect.ValueOf(v).IsNil() {
+	if !reflect.ValueOf(v).IsNil() {
 		codec, _ := http.CodecForRequest(r, "Accept")
 		data, err := codec.Marshal(v)
 		response.Data = json.RawMessage(data)

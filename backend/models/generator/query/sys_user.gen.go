@@ -34,8 +34,16 @@ func newSysUser(db *gorm.DB, opts ...gen.DOOption) sysUser {
 	_sysUser.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_sysUser.UpdatedBy = field.NewInt64(tableName, "updater")
 	_sysUser.IsDeleted = field.NewBool(tableName, "is_soft_delete")
+	_sysUser.Type = field.NewString(tableName, "type")
 	_sysUser.Name = field.NewString(tableName, "name")
+	_sysUser.Account = field.NewString(tableName, "account")
 	_sysUser.Password = field.NewString(tableName, "password")
+	_sysUser.Avatar = field.NewString(tableName, "avatar")
+	_sysUser.Email = field.NewString(tableName, "email")
+	_sysUser.Phonenumber = field.NewString(tableName, "phonenumber")
+	_sysUser.Remark = field.NewString(tableName, "remark")
+	_sysUser.Sex = field.NewString(tableName, "sex")
+	_sysUser.Status = field.NewString(tableName, "status")
 
 	_sysUser.fillFieldMap()
 
@@ -45,15 +53,23 @@ func newSysUser(db *gorm.DB, opts ...gen.DOOption) sysUser {
 type sysUser struct {
 	sysUserDo
 
-	ALL       field.Asterisk
-	ID        field.Int64
-	CreatedAt field.Time
-	CreatedBy field.Int64
-	UpdatedAt field.Time
-	UpdatedBy field.Int64
-	IsDeleted field.Bool
-	Name      field.String
-	Password  field.String
+	ALL         field.Asterisk
+	ID          field.Int64
+	CreatedAt   field.Time
+	CreatedBy   field.Int64
+	UpdatedAt   field.Time
+	UpdatedBy   field.Int64
+	IsDeleted   field.Bool
+	Type        field.String
+	Name        field.String
+	Account     field.String
+	Password    field.String
+	Avatar      field.String
+	Email       field.String
+	Phonenumber field.String
+	Remark      field.String
+	Sex         field.String
+	Status      field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -76,8 +92,16 @@ func (s *sysUser) updateTableName(table string) *sysUser {
 	s.UpdatedAt = field.NewTime(table, "updated_at")
 	s.UpdatedBy = field.NewInt64(table, "updater")
 	s.IsDeleted = field.NewBool(table, "is_soft_delete")
+	s.Type = field.NewString(table, "type")
 	s.Name = field.NewString(table, "name")
+	s.Account = field.NewString(table, "account")
 	s.Password = field.NewString(table, "password")
+	s.Avatar = field.NewString(table, "avatar")
+	s.Email = field.NewString(table, "email")
+	s.Phonenumber = field.NewString(table, "phonenumber")
+	s.Remark = field.NewString(table, "remark")
+	s.Sex = field.NewString(table, "sex")
+	s.Status = field.NewString(table, "status")
 
 	s.fillFieldMap()
 
@@ -94,15 +118,23 @@ func (s *sysUser) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *sysUser) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 8)
+	s.fieldMap = make(map[string]field.Expr, 16)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["creator"] = s.CreatedBy
 	s.fieldMap["updated_at"] = s.UpdatedAt
 	s.fieldMap["updater"] = s.UpdatedBy
 	s.fieldMap["is_soft_delete"] = s.IsDeleted
+	s.fieldMap["type"] = s.Type
 	s.fieldMap["name"] = s.Name
+	s.fieldMap["account"] = s.Account
 	s.fieldMap["password"] = s.Password
+	s.fieldMap["avatar"] = s.Avatar
+	s.fieldMap["email"] = s.Email
+	s.fieldMap["phonenumber"] = s.Phonenumber
+	s.fieldMap["remark"] = s.Remark
+	s.fieldMap["sex"] = s.Sex
+	s.fieldMap["status"] = s.Status
 }
 
 func (s sysUser) clone(db *gorm.DB) sysUser {

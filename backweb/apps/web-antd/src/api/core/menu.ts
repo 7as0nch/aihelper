@@ -1,4 +1,4 @@
-import {requestClient} from '#/api/request';
+import { requestClient } from '#/api/request';
 
 /**
  * @description: 菜单meta
@@ -37,9 +37,13 @@ export interface Menu {
   redirect?: string;
 }
 
+export interface MenuReply {
+  menu: Menu[];
+}
+
 /**
  * 获取用户所有菜单
  */
 export async function getAllMenusApi() {
-  return requestClient.get<Menu[]>('/system/menu/getRouters');
+  return requestClient.get<MenuReply>('/system/menu');
 }

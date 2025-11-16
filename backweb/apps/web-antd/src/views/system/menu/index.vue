@@ -46,7 +46,7 @@ const gridOptions: VxeGridProps = {
         const resp = await menuList({
           ...formValues,
         });
-        return { rows: resp };
+        return { rows: resp.menu };
       },
     },
   },

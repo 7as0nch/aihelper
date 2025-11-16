@@ -37,7 +37,7 @@ const localRoutes: RouteRecordStringComponent[] = [
     },
     name: 'RoleAssign',
     path: '/system/role-assign/:roleId',
-  }
+  },
 ];
 
 /**

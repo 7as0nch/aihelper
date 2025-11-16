@@ -536,7 +536,7 @@ var repo = auth.NewAuthRepo()
 
 func TestToken(t *testing.T) {
 
-	token, err := repo.NewToken(context.Background(), "123", "cheng jiang", "13988009999")
+	token, err := repo.NewToken(context.Background(), 123, "cheng jiang", "13988009999")
 	if err != nil {
 		t.Log("error here")
 	}

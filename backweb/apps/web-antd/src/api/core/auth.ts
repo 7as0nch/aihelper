@@ -52,7 +52,7 @@ export namespace AuthApi {
 
   /** 登录接口返回值 */
   export interface LoginResult {
-    access_token: string;
+    accessToken: string;
     client_id: string;
     expire_in: number;
   }
@@ -81,7 +81,7 @@ export async function loginApi(data: AuthApi.LoginParams) {
  * @returns void
  */
 export function doLogout() {
-  return requestClient.post<void>('/auth/logout');
+  return requestClient.post<void>('/auth/logout', {});
 }
 
 /**

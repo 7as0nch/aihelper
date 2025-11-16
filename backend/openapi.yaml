@@ -3,41 +3,41 @@
 
 openapi: 3.0.3
 info:
-    title: Auth API
+    title: System API
     description: The chat service definition.
     version: 0.0.1
 paths:
-    /auth/login:
-        post:
+    /system/menu:
+        get:
             tags:
-                - Auth
-            description: Login
-            operationId: Auth_Login
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/LoginRequest'
-                required: true
+                - System
+            description: menu
+            operationId: System_Menu
             responses:
                 "200":
                     description: OK
-                    content: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MenuReply'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /auth/logout:
+    /system/menu/list:
         get:
             tags:
-                - Auth
-            operationId: Auth_Logout
+                - System
+            operationId: System_AllMenu
             responses:
                 "200":
                     description: OK
-                    content: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AllMenuReply'
                 default:
                     description: Default error response
                     content:
@@ -46,6 +46,13 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        AllMenuReply:
+            type: object
+            properties:
+                menus:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MenuItem'
         GoogleProtobufAny:
             type: object
             properties:
@@ -54,13 +61,99 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        LoginRequest:
+        Menu:
             type: object
             properties:
-                username:
+                alwaysShow:
+                    type: boolean
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Menu'
+                component:
                     type: string
-                password:
+                hidden:
+                    type: boolean
+                meta:
+                    $ref: '#/components/schemas/MenuMeta'
+                name:
                     type: string
+                path:
+                    type: string
+                query:
+                    type: string
+                redirect:
+                    type: string
+                id:
+                    type: string
+                parentID:
+                    type: string
+        MenuItem:
+            type: object
+            properties:
+                menuId:
+                    type: string
+                menuName:
+                    type: string
+                parentName:
+                    type: string
+                parentId:
+                    type: string
+                orderNum:
+                    type: integer
+                    format: int32
+                path:
+                    type: string
+                component:
+                    type: string
+                query:
+                    type: string
+                isFrame:
+                    type: string
+                isCache:
+                    type: string
+                menuType:
+                    type: string
+                visible:
+                    type: string
+                status:
+                    type: string
+                perms:
+                    type: string
+                icon:
+                    type: string
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MenuItem'
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+                createBy:
+                    type: string
+                updateBy:
+                    type: string
+                remark:
+                    type: string
+        MenuMeta:
+            type: object
+            properties:
+                icon:
+                    type: string
+                link:
+                    type: string
+                noCache:
+                    type: boolean
+                title:
+                    type: string
+        MenuReply:
+            type: object
+            properties:
+                menu:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Menu'
         Status:
             type: object
             properties:
@@ -78,4 +171,4 @@ components:
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
 tags:
-    - name: Auth
+    - name: System

@@ -8,11 +8,13 @@ package main
 
 import (
 	"github.com/example/aichat/backend/internal/biz"
+	"github.com/example/aichat/backend/internal/biz/base"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/data"
 	"github.com/example/aichat/backend/internal/server"
 	"github.com/example/aichat/backend/internal/service"
-	"github.com/example/aichat/backend/internal/service/base"
+	base2 "github.com/example/aichat/backend/internal/service/base"
+	"github.com/example/aichat/backend/pkg/auth"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.uber.org/zap"
@@ -26,17 +28,23 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Logger, logLogger log.Logger) (*kratos.App, func(), error) {
-	chatService := service.NewChatService(logger)
-	grpcServer := server.NewGRPCServer(confServer, chatService, logLogger)
 	dataData, cleanup, err := data.NewData(bootstrap, logger)
 	if err != nil {
 		return nil, nil, err
 	}
+	sysUserRepo := data.NewSysUserRepo(dataData)
+	authRepo := auth.NewAuthRepo()
+	sysUserUseCase := base.NewSysUserUseCase(sysUserRepo, authRepo)
+	authService := base2.NewAuthService(sysUserUseCase)
+	chatService := service.NewChatService(logger)
+	grpcServer := server.NewGRPCServer(confServer, authService, chatService, logLogger)
 	userFeedbackRepo := data.NewUserFeedbackRepo(dataData, logger)
 	userFeedbackUsecase := biz.NewUserFeedbackUsecase(userFeedbackRepo, logger)
 	userFeedbackService := service.NewUserFeedbackService(userFeedbackUsecase, logLogger)
-	authService := base.NewAuthService()
-	httpServer := server.NewHTTPServer(confServer, userFeedbackService, chatService, authService, logLogger)
+	sysMenuRepo := data.NewSysMenuRepo(dataData)
+	sysMenuUseCase := base.NewSysMenuUseCase(sysMenuRepo)
+	systemService := base2.NewSystemService(sysMenuUseCase)
+	httpServer := server.NewHTTPServer(confServer, userFeedbackService, chatService, authService, authRepo, systemService, logLogger)
 	webSocketServer := server.NewWebSocketServerWrapper(chatService, logger)
 	webSocketApp := server.NewWebSocketAppWrapper(webSocketServer, logger)
 	app := newApp(logLogger, grpcServer, httpServer, webSocketApp)

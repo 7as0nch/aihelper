@@ -11,6 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/middleware/selector"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/swagger-api/openapiv2"
@@ -26,6 +27,8 @@ func NewHTTPServer(c *conf.Server,
 	userFeedback *service.UserFeedbackService,
 	chat *service.ChatService,
 	authServ *base.AuthService,
+	authRepo auth.AuthRepo,
+	system *base.SystemService,
 	logg log.Logger) *kratoshttp.Server {
 
 	// 初始化 tracer provider（开发环境使用采样率100%，生产环境可调整）
@@ -45,6 +48,12 @@ func NewHTTPServer(c *conf.Server,
 			recovery.Recovery(),
 			logging.Server(logg),
 			tracing.Server(), // 启用分布式追踪中间件
+			selector.Server(
+				auth.NewHeaderServer(),
+				authRepo.Server()).
+				Match(auth.NewWhiteListMatcher(map[string]bool{
+					basepb.OperationAuthLogin:   true,
+				})).Build(),
 		),
 	}
 	if c.Http.Network != "" {
@@ -56,13 +65,14 @@ func NewHTTPServer(c *conf.Server,
 	if c.Http.Timeout != nil {
 		opts = append(opts, kratoshttp.Timeout(c.Http.Timeout.AsDuration()))
 	}
-	opts = append(opts, 
-		kratoshttp.ResponseEncoder(auth.DefaultResponseEncoder), 
+	opts = append(opts,
+		kratoshttp.ResponseEncoder(auth.DefaultResponseEncoder),
 		kratoshttp.ErrorEncoder(auth.DefaultErrorEncoder))
 	srv := kratoshttp.NewServer(opts...)
 	userfeedbackv1.RegisterUserFeedbackHTTPServer(srv, userFeedback)
 	chatv1.RegisterChatHTTPServer(srv, chat)
 	basepb.RegisterAuthHTTPServer(srv, authServ)
+	basepb.RegisterSystemHTTPServer(srv, system)
 	srv.HandleFunc("/chat/send", chat.SSEHandler)
 	srv.HandlePrefix("/q/", openapiv2.NewHandler())
 	return srv

@@ -1,25 +1,28 @@
 package server
 
 import (
+	basepb "github.com/example/aichat/backend/api/base"
 	chatv1 "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/service"
-	"go.opentelemetry.io/otel/trace/noop"
-
+	"github.com/example/aichat/backend/internal/service/base"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server,  chat *service.ChatService, logg log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server,
+	authServ *base.AuthService,
+	chat *service.ChatService, logg log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
 			logging.Server(logg),
-			tracing.Server(tracing.WithTracerProvider(noop.NewTracerProvider()),), // 启用分布式追踪中间件
+			tracing.Server(tracing.WithTracerProvider(noop.NewTracerProvider())), // 启用分布式追踪中间件
 		),
 	}
 	if c.Grpc.Network != "" {
@@ -33,5 +36,6 @@ func NewGRPCServer(c *conf.Server,  chat *service.ChatService, logg log.Logger) 
 	}
 	srv := grpc.NewServer(opts...)
 	chatv1.RegisterChatServer(srv, chat)
+	basepb.RegisterAuthServer(srv, authServ)
 	return srv
 }

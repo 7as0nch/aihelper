@@ -48,8 +48,8 @@ func TestDb(t *testing.T) {
 	// 注意：GORM gen在当前版本中可能不支持WithSchema方法
 
 	//Generate basic type-safe DAO API for struct `model.User` following conventions
-	g.ApplyBasic(model.SysUser{})
-	g.ApplyInterface(func(Querier){}, model.SysUser{})
+	g.ApplyBasic(model.SysUser{}, model.SysMenu{})
+	g.ApplyInterface(func(Querier){}, model.SysUser{}, model.SysMenu{})
 	// Generate the code
 	g.Execute()
 	t.Log("PostgreSQL数据库表结构生成成功，schema: aichat")
@@ -62,5 +62,7 @@ func TestMigrate(t *testing.T) {
 	// 连接PostgreSQL数据库
 	gormdb, _ := gorm.Open(postgres.Open(URL))
 	// 使用schema: aichat
-	gormdb.Migrator().AutoMigrate(&model.SysUser{})
+	// gormdb.Migrator().AutoMigrate(&model.SysMenu{})
+	gormdb.Migrator().DropTable(&model.SysUser{})
+	gormdb.Migrator().CreateTable(&model.SysUser{})
 }
