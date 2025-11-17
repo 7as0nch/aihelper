@@ -21,7 +21,7 @@ import (
 
 var (
 	// ExpiredTime Expired time, 失效时间：十分钟。
-	ExpiredTime = &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24 * 7)}
+	ExpiredTime = &jwt.NumericDate{Time: time.Now().Add(time.Minute * 10)}
 )
 
 type authRepo struct {

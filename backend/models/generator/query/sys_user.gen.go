@@ -43,7 +43,7 @@ func newSysUser(db *gorm.DB, opts ...gen.DOOption) sysUser {
 	_sysUser.Phonenumber = field.NewString(tableName, "phonenumber")
 	_sysUser.Remark = field.NewString(tableName, "remark")
 	_sysUser.Sex = field.NewString(tableName, "sex")
-	_sysUser.Status = field.NewString(tableName, "status")
+	_sysUser.Status = field.NewUint8(tableName, "status")
 
 	_sysUser.fillFieldMap()
 
@@ -69,7 +69,7 @@ type sysUser struct {
 	Phonenumber field.String
 	Remark      field.String
 	Sex         field.String
-	Status      field.String
+	Status      field.Uint8
 
 	fieldMap map[string]field.Expr
 }
@@ -101,7 +101,7 @@ func (s *sysUser) updateTableName(table string) *sysUser {
 	s.Phonenumber = field.NewString(table, "phonenumber")
 	s.Remark = field.NewString(table, "remark")
 	s.Sex = field.NewString(table, "sex")
-	s.Status = field.NewString(table, "status")
+	s.Status = field.NewUint8(table, "status")
 
 	s.fillFieldMap()
 

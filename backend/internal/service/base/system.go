@@ -56,26 +56,6 @@ func (s *SystemService) AllMenu(ctx context.Context, req *emptypb.Empty) (*pb.Al
 	}
 	var pbMenus = make([]*pb.MenuItem, 0, len(menus))
 	for _, m := range menus {
-		// 		createBy?: any;
-		//   createTime: string;
-		//   updateBy?: any;
-		//   updateTime?: any;
-		//   remark?: any;
-		//   menuId: number;
-		//   menuName: string;
-		//   parentName?: string;
-		//   parentId: number;
-		//   orderNum: number;
-		//   path: string;
-		//   component?: string;
-		//   query: string;
-		//   isFrame: string;
-		//   isCache: string;
-		//   menuType: string;
-		//   visible: string;
-		//   status: string;
-		//   perms: string;
-		//   icon: string;
 		pbMenus = append(pbMenus, &pb.MenuItem{
 			CreateBy:   "",
 			CreateTime: m.CreatedAt.String(),
