@@ -30,24 +30,55 @@ const (
 	MenuTypeButton                     // 按钮
 )
 
+// Tostring implements fmt.Stringer.
+func (m MenuType) String() string {
+	switch m {
+	case MenuTypeDir:
+		return "M"
+	case MenuTypeMenu:
+		return "C"
+	case MenuTypeButton:
+		return "F"
+	default:
+		return "-"
+	}
+}
+
+// ToMenuType 将字符串转换为 MenuType 枚举值
+func ToMenuType(str string) (MenuType) {
+	switch str {
+	case "M":
+		return MenuTypeDir
+	case "C":
+		return MenuTypeMenu
+	case "F":
+		return MenuTypeButton
+	default:
+		return 0
+	}
+}
+
 // Menu 菜单结构体（树形结构）
 type SysMenu struct {
 	models.Model
-	Name       string     `json:"name" db:"name"`
-	Path       string     `json:"path" db:"path"`
-	Hidden     bool       `json:"hidden" db:"hidden"`
-	Redirect   string     `json:"redirect" db:"redirect"`
-	Component  string     `json:"component" db:"component"`
-	AlwaysShow bool       `json:"alwaysShow" db:"always_show"`
-	Meta       *Meta      `json:"meta" gorm:"meta;type:jsonb" db:"meta"`
-	ParentID   int64      `json:"parentId" db:"parent_id"`
-	Sort       int        `json:"sort" db:"sort"`
-	Type       MenuType   `json:"type" db:"type"`
-	Children   []*SysMenu `json:"children" gorm:"-" db:"-"`
+	Name       string        `json:"name" db:"name"`
+	Path       string        `json:"path" db:"path"`
+	Hidden     bool          `json:"hidden" db:"hidden"`
+	Redirect   string        `json:"redirect" db:"redirect"`
+	Component  string        `json:"component" db:"component"`
+	AlwaysShow bool          `json:"alwaysShow" db:"always_show"`
+	Meta       *Meta         `json:"meta" gorm:"meta;type:jsonb" db:"meta"`
+	ParentID   int64         `json:"parentId" db:"parent_id"`
+	Sort       int           `json:"sort" db:"sort"`
+	Type       MenuType      `json:"type" gorm:"type:smallint" db:"type"`
+	Remark     string        `json:"remark" gorm:"remark" db:"remark"`
+	PermsCode  string        `json:"permsCode" gorm:"perms_code;type:varchar(10)" db:"perms_code"`
+	Status     models.Status `json:"status" gorm:"status;type:smallint;default:1" db:"status"`
+	Children   []*SysMenu    `json:"children" gorm:"-" db:"-"`
 }
 
 // TableName 指定表名
-func (m SysMenu) TableName() string {
+func (*SysMenu) TableName() string {
 	return TableNameSysMenu
 }
 

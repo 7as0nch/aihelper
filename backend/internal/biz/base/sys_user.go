@@ -38,9 +38,6 @@ func (s *SysUserUseCase) Login(ctx context.Context, account string) (string, err
 	if err != nil {
 		return "", err
 	}
-	if user == nil || user.ID == 0 {
-		return "", errors.New("用户不存在")
-	}
 	token, err := s.auth.NewToken(ctx, user.ID, user.Account, user.Phonenumber)
 	if err != nil {
 		log.Errorf("获取Token失败: %v", err)
@@ -61,5 +58,6 @@ func (s *SysUserUseCase) GetInfo(ctx context.Context) (*model.SysUser, error) {
 
 // Logout
 func (s *SysUserUseCase) Logout(ctx context.Context) error {
+	// TODO 实现登出逻辑
 	return nil
 }

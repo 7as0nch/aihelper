@@ -14,6 +14,7 @@ const (
 	UserId
 	UserName
 	UserPhone
+	ClientID
 )
 
 type Context getContextKeyimpl

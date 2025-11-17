@@ -7,6 +7,7 @@ import (
 
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/server"
+	"github.com/example/aichat/backend/pkg/auth"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
@@ -54,7 +55,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, ws *server.WebS
 
 func getClientID() log.Valuer {
 	return func(ctx context.Context) interface{} {
-		val, _ := ctx.Value("Clientid").(string)
+		val, _ := ctx.Value(auth.ClientID).(string)
 		return val
 	}
 }

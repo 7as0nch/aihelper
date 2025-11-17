@@ -18,11 +18,11 @@ import (
 )
 
 type sysUserRepo struct {
-	db *Data
+	db DataRepo
 }
 
 
-func NewSysUserRepo(db *Data) base.SysUserRepo {
+func NewSysUserRepo(db DataRepo) base.SysUserRepo {
 	return &sysUserRepo{
 		db: db,
 	}
@@ -30,7 +30,7 @@ func NewSysUserRepo(db *Data) base.SysUserRepo {
 
 // GetByAccount implements base.SysUserRepo.
 func (s *sysUserRepo) GetByAccount(ctx context.Context, account string) (*model.SysUser, error) {
-	u := query.Use(s.db.db).SysUser
+	u := query.Use(s.db.GetDB()).SysUser
 	user, err := u.Where(u.Name.Eq(account)).First()
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (s *sysUserRepo) GetByAccount(ctx context.Context, account string) (*model.
 }
 
 func (s *sysUserRepo) GetById(ctx context.Context, id int64) (*model.SysUser, error) {
-	u := query.Use(s.db.db).SysUser
+	u := query.Use(s.db.GetDB()).SysUser
 	user, err := u.Where(u.ID.Eq(id)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

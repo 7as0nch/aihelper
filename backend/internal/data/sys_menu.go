@@ -14,20 +14,76 @@ import (
 )
 
 type sysMenuRepo struct {
-	db *Data
+	db DataRepo
 }
 
 
-func NewSysMenuRepo(db *Data) base.SysMenuRepo {
+
+func NewSysMenuRepo(db DataRepo) base.SysMenuRepo {
 	return &sysMenuRepo{db: db}
 }
 
 // GetAll implements base.SysMenuRepo.
 func (s *sysMenuRepo) GetAll(ctx context.Context) ([]*model.SysMenu, error) {
-	u := query.Use(s.db.db).SysMenu
+	u := query.Use(s.db.GetDB()).SysMenu
+	u.Order(u.Sort.Asc())
 	menus, err := u.Find()
 	if err != nil {
 		return nil, err
 	}
 	return menus, nil
+}
+
+// GetRouter implements base.SysMenuRepo.
+func (s *sysMenuRepo) GetRouter(ctx context.Context) ([]*model.SysMenu, error) {
+	u := query.Use(s.db.GetDB()).SysMenu
+	menus, err := u.WithContext(ctx).Where(u.Type.In(uint8(model.MenuTypeDir), uint8(model.MenuTypeMenu))).Find()
+	if err != nil {
+		return nil, err
+	}
+	return menus, nil
+}
+
+// Add implements base.SysMenuRepo.
+func (s *sysMenuRepo) Add(ctx context.Context, menu *model.SysMenu) error {
+	u := query.Use(s.db.GetDB()).SysMenu
+	return u.WithContext(ctx).Create(menu)
+}
+
+// Update implements base.SysMenuRepo.
+func (s *sysMenuRepo) Update(ctx context.Context, menu *model.SysMenu) error {
+	u := query.Use(s.db.GetDB()).SysMenu
+	rowsAffected, err := u.WithContext(ctx).Where(u.ID.Eq(menu.ID)).Updates(menu)
+	if err != nil {
+		return err
+	}
+	if rowsAffected.RowsAffected == 0 {
+		return nil
+	}
+	return nil
+}
+
+// Delete implements base.SysMenuRepo.
+func (s *sysMenuRepo) Delete(ctx context.Context, id int64) error {
+	u := query.Use(s.db.GetDB()).SysMenu
+	rowsAffected, err := u.WithContext(ctx).
+	Where(u.ID.Eq(id)).
+	Or(u.ParentID.Eq(id)).Delete()
+	if err != nil {
+		return err
+	}
+	if rowsAffected.RowsAffected == 0 {
+		return nil
+	}
+	return nil
+}
+
+// Get implements base.SysMenuRepo.
+func (s *sysMenuRepo) Get(ctx context.Context, id int64) (*model.SysMenu, error) {
+	u := query.Use(s.db.GetDB()).SysMenu
+	menu, err := u.WithContext(ctx).Where(u.ID.Eq(id)).First()
+	if err != nil {
+		return nil, err
+	}
+	return menu, nil
 }

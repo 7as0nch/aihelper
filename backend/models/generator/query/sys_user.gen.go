@@ -29,9 +29,9 @@ func newSysUser(db *gorm.DB, opts ...gen.DOOption) sysUser {
 	tableName := _sysUser.sysUserDo.TableName()
 	_sysUser.ALL = field.NewAsterisk(tableName)
 	_sysUser.ID = field.NewInt64(tableName, "id")
-	_sysUser.CreatedAt = field.NewTime(tableName, "created_at")
+	_sysUser.CreatedAt = field.NewField(tableName, "created_at")
 	_sysUser.CreatedBy = field.NewInt64(tableName, "creator")
-	_sysUser.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_sysUser.UpdatedAt = field.NewField(tableName, "updated_at")
 	_sysUser.UpdatedBy = field.NewInt64(tableName, "updater")
 	_sysUser.IsDeleted = field.NewBool(tableName, "is_soft_delete")
 	_sysUser.Type = field.NewString(tableName, "type")
@@ -55,9 +55,9 @@ type sysUser struct {
 
 	ALL         field.Asterisk
 	ID          field.Int64
-	CreatedAt   field.Time
+	CreatedAt   field.Field
 	CreatedBy   field.Int64
-	UpdatedAt   field.Time
+	UpdatedAt   field.Field
 	UpdatedBy   field.Int64
 	IsDeleted   field.Bool
 	Type        field.String
@@ -87,9 +87,9 @@ func (s sysUser) As(alias string) *sysUser {
 func (s *sysUser) updateTableName(table string) *sysUser {
 	s.ALL = field.NewAsterisk(table)
 	s.ID = field.NewInt64(table, "id")
-	s.CreatedAt = field.NewTime(table, "created_at")
+	s.CreatedAt = field.NewField(table, "created_at")
 	s.CreatedBy = field.NewInt64(table, "creator")
-	s.UpdatedAt = field.NewTime(table, "updated_at")
+	s.UpdatedAt = field.NewField(table, "updated_at")
 	s.UpdatedBy = field.NewInt64(table, "updater")
 	s.IsDeleted = field.NewBool(table, "is_soft_delete")
 	s.Type = field.NewString(table, "type")

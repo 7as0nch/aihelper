@@ -80,6 +80,8 @@ help:
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
 
 .DEFAULT_GOAL := help
-
-mwire:
+# 使用 Wire 生成依赖注入代码
+.PHONY: wire
+# wire
+wire:
 	cd cmd/backend && wire

@@ -33,12 +33,12 @@ import (
 
 // userFeedbackRepo 用户反馈数据仓库实现
 type userFeedbackRepo struct {
-	data *Data
+	data DataRepo
 	log  *zap.Logger
 }
 
 // NewUserFeedbackRepo 创建用户反馈仓库实例
-func NewUserFeedbackRepo(data *Data, logger *zap.Logger) biz.UserFeedbackRepo {
+func NewUserFeedbackRepo(data DataRepo, logger *zap.Logger) biz.UserFeedbackRepo {
 	return &userFeedbackRepo{
 		data: data,
 		log:  logger,
@@ -47,23 +47,23 @@ func NewUserFeedbackRepo(data *Data, logger *zap.Logger) biz.UserFeedbackRepo {
 
 // Create 创建用户反馈
 func (r *userFeedbackRepo) Create(ctx context.Context, feedback *biz.UserFeedback) error {
-	return r.data.db.WithContext(ctx).Create(feedback).Error
+	return r.data.GetDB().WithContext(ctx).Create(feedback).Error
 }
 
 // Update 更新用户反馈
 func (r *userFeedbackRepo) Update(ctx context.Context, feedback *biz.UserFeedback) error {
-	return r.data.db.WithContext(ctx).Save(feedback).Error
+	return r.data.GetDB().WithContext(ctx).Save(feedback).Error
 }
 
 // Delete 删除用户反馈
 func (r *userFeedbackRepo) Delete(ctx context.Context, id uint64) error {
-	return r.data.db.WithContext(ctx).Delete(&biz.UserFeedback{}, id).Error
+	return r.data.GetDB().WithContext(ctx).Delete(&biz.UserFeedback{}, id).Error
 }
 
 // Get 获取用户反馈
 func (r *userFeedbackRepo) Get(ctx context.Context, id uint64) (*biz.UserFeedback, error) {
 	var feedback biz.UserFeedback
-	err := r.data.db.WithContext(ctx).First(&feedback, id).Error
+	err := r.data.GetDB().WithContext(ctx).First(&feedback, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (r *userFeedbackRepo) List(ctx context.Context, userID string, page, pageSi
 	var feedbacks []*biz.UserFeedback
 	var total int64
 
-	db := r.data.db.WithContext(ctx).Model(&biz.UserFeedback{})
+	db := r.data.GetDB().WithContext(ctx).Model(&biz.UserFeedback{})
 	if userID != "" {
 		db = db.Where("user_id = ?", userID)
 	}
@@ -99,7 +99,7 @@ func (r *userFeedbackRepo) ListByStatus(ctx context.Context, status string, page
 	var feedbacks []*biz.UserFeedback
 	var total int64
 
-	db := r.data.db.WithContext(ctx).Model(&biz.UserFeedback{}).Where("status = ?", status)
+	db := r.data.GetDB().WithContext(ctx).Model(&biz.UserFeedback{}).Where("status = ?", status)
 
 	err := db.Count(&total).Error
 	if err != nil {
@@ -133,7 +133,7 @@ func (r *userFeedbackRepo) ListByStatus(ctx context.Context, status string, page
 // 	aho.sub_channel_id;
 func (r *userFeedbackRepo) GetChannelRoi(ctx context.Context, param *biz.ChannelRoiParam) ([]*biz.ChannelRoi, error) {
 	var channelRois []*biz.ChannelRoi
-	err := r.data.db.WithContext(ctx).Raw(`
+	err := r.data.GetDB().WithContext(ctx).Raw(`
 		SELECT
 			aho.sub_channel_id AS '渠道ID',
 			SUM(price) AS '半流程api分发收益',

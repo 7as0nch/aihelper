@@ -134,8 +134,7 @@ func (a *authRepo) Server() func(handler middleware.Handler) middleware.Handler 
 			//
 			claims, err := a.CheckToken(ctx, token)
 			if err != nil || claims == nil {
-				fmt.Println("token 无效是为什么：", err, claims)
-				//return nil, errors.New(" PHMToken is expired ")
+				return nil, errors.New(" PHMToken is expired ")
 			}
 			ctx = context.WithValue(ctx, UserId, int64(claims.UserId))
 			ctx = context.WithValue(ctx, UserName, claims.UserName)
@@ -166,7 +165,7 @@ func NewHeaderServer() func(handler middleware.Handler) middleware.Handler {
 			}
 			if header, ok := transport.FromServerContext(ctx); ok {
 				clientID = header.RequestHeader().Get("Clientid")
-				ctx = context.WithValue(ctx, "Clientid", clientID)
+				ctx = context.WithValue(ctx, ClientID, clientID)
 			}
 			reply, err = handler(ctx, req)
 			return

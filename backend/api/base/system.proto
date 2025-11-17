@@ -25,7 +25,39 @@ service System {
             get: "/system/menu/list"
         };
     }
+
+    // sysMenu
+    rpc AddSysMenu (AddSysMenuRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/system/menu"
+            body: "*"
+        };
+    }
+
+    // UpdateSysMenu implements base.SysMenuRepo.
+    rpc UpdateSysMenu (AddSysMenuRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/system/menu"
+            body: "*"
+        };
+    } 
+
+    // DeleteSysMenu implements base.SysMenuRepo.
+    rpc DeleteSysMenu (DeleteSysMenuRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/system/menu/{id}"
+        };
+    } 
+
+    // GetSysMenu implements base.SysMenuRepo.
+    rpc GetSysMenu (GetSysMenuRequest) returns (MenuItem) {
+        option (google.api.http) = {
+            get: "/system/menu/{id}"
+        };
+    } 
 }
+
+
 
 message MenuReply {
   repeated Menu menu = 1;
@@ -51,6 +83,38 @@ message Menu {
   string redirect = 9;
   int64 id = 10;
   int64 parentID = 11;
+}
+
+message AddSysMenuRequest {
+  int64 menuId = 1;
+  string menuName = 2;
+  string parentName = 3;
+  int64 parentId = 4;
+  int32 orderNum = 5;
+  string path = 6;
+  string component = 7;
+  string query = 8;
+  string isFrame = 9;
+  string isCache = 10;
+  string menuType = 11;
+  string visible = 12;
+  string status = 13;
+  string perms = 14;
+  string icon = 15;
+  repeated MenuItem children = 16;
+  string createTime = 17;
+  string updateTime = 18;
+  string createBy = 19;
+  string updateBy = 20;
+  string remark = 21; 
+}
+
+message DeleteSysMenuRequest {
+  int64 id = 1;
+}
+
+message GetSysMenuRequest {
+  int64 id = 1;
 }
 
 message AllMenuReply {

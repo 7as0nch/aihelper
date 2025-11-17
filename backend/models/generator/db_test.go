@@ -63,6 +63,32 @@ func TestMigrate(t *testing.T) {
 	gormdb, _ := gorm.Open(postgres.Open(URL))
 	// 使用schema: aichat
 	// gormdb.Migrator().AutoMigrate(&model.SysMenu{})
-	gormdb.Migrator().DropTable(&model.SysUser{})
-	gormdb.Migrator().CreateTable(&model.SysUser{})
+	// var modelInterface ModelInterface = &model.SysMenu{}
+    
+	err := gormdb.Migrator().AutoMigrate(&model.SysMenu{})
+	if err != nil {
+		t.Logf("迁移失败: %v", err)
+		return
+	}
+    // // 1. 创建备份表并复制数据
+    // err := gormdb.Exec(fmt.Sprintf("CREATE TABLE %s_backup AS SELECT * FROM %s", 
+    //     modelInterface.TableName(), modelInterface.TableName())).Error
+    // if err != nil {
+    //     t.Logf("备份失败: %v", err)
+    //     return
+    // }
+	// gormdb.Migrator().DropTable(modelInterface)
+	// gormdb.Migrator().CreateTable(modelInterface)
+	// // 4. 恢复数据
+    // gormdb.Exec(fmt.Sprintf("INSERT INTO %s SELECT * FROM %s_backup", 
+    //     modelInterface.TableName(), modelInterface.TableName()))
+    
+    // // 5. 清理备份表
+    // gormdb.Exec(fmt.Sprintf("DROP TABLE %s_backup", modelInterface.TableName()))
+    
+    t.Log("安全迁移完成，数据已保留")
+}
+
+type ModelInterface interface {
+	TableName() string
 }

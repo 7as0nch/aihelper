@@ -26,6 +26,48 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - System
+            description: UpdateSysMenu implements base.SysMenuRepo.
+            operationId: System_UpdateSysMenu
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddSysMenuRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - System
+            description: sysMenu
+            operationId: System_AddSysMenu
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddSysMenuRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /system/menu/list:
         get:
             tags:
@@ -44,8 +86,102 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /system/menu/{id}:
+        get:
+            tags:
+                - System
+            description: GetSysMenu implements base.SysMenuRepo.
+            operationId: System_GetSysMenu
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MenuItem'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - System
+            description: DeleteSysMenu implements base.SysMenuRepo.
+            operationId: System_DeleteSysMenu
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
+        AddSysMenuRequest:
+            type: object
+            properties:
+                menuId:
+                    type: string
+                menuName:
+                    type: string
+                parentName:
+                    type: string
+                parentId:
+                    type: string
+                orderNum:
+                    type: integer
+                    format: int32
+                path:
+                    type: string
+                component:
+                    type: string
+                query:
+                    type: string
+                isFrame:
+                    type: string
+                isCache:
+                    type: string
+                menuType:
+                    type: string
+                visible:
+                    type: string
+                status:
+                    type: string
+                perms:
+                    type: string
+                icon:
+                    type: string
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MenuItem'
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+                createBy:
+                    type: string
+                updateBy:
+                    type: string
+                remark:
+                    type: string
         AllMenuReply:
             type: object
             properties:

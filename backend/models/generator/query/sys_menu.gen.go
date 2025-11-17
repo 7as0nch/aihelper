@@ -29,9 +29,9 @@ func newSysMenu(db *gorm.DB, opts ...gen.DOOption) sysMenu {
 	tableName := _sysMenu.sysMenuDo.TableName()
 	_sysMenu.ALL = field.NewAsterisk(tableName)
 	_sysMenu.ID = field.NewInt64(tableName, "id")
-	_sysMenu.CreatedAt = field.NewTime(tableName, "created_at")
+	_sysMenu.CreatedAt = field.NewField(tableName, "created_at")
 	_sysMenu.CreatedBy = field.NewInt64(tableName, "creator")
-	_sysMenu.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_sysMenu.UpdatedAt = field.NewField(tableName, "updated_at")
 	_sysMenu.UpdatedBy = field.NewInt64(tableName, "updater")
 	_sysMenu.IsDeleted = field.NewBool(tableName, "is_soft_delete")
 	_sysMenu.Name = field.NewString(tableName, "name")
@@ -43,6 +43,10 @@ func newSysMenu(db *gorm.DB, opts ...gen.DOOption) sysMenu {
 	_sysMenu.Meta = field.NewField(tableName, "meta")
 	_sysMenu.ParentID = field.NewInt64(tableName, "parent_id")
 	_sysMenu.Sort = field.NewInt(tableName, "sort")
+	_sysMenu.Type = field.NewUint8(tableName, "type")
+	_sysMenu.Remark = field.NewString(tableName, "remark")
+	_sysMenu.PermsCode = field.NewString(tableName, "perms_code")
+	_sysMenu.Status = field.NewUint8(tableName, "status")
 
 	_sysMenu.fillFieldMap()
 
@@ -54,9 +58,9 @@ type sysMenu struct {
 
 	ALL        field.Asterisk
 	ID         field.Int64
-	CreatedAt  field.Time
+	CreatedAt  field.Field
 	CreatedBy  field.Int64
-	UpdatedAt  field.Time
+	UpdatedAt  field.Field
 	UpdatedBy  field.Int64
 	IsDeleted  field.Bool
 	Name       field.String
@@ -68,6 +72,10 @@ type sysMenu struct {
 	Meta       field.Field
 	ParentID   field.Int64
 	Sort       field.Int
+	Type       field.Uint8
+	Remark     field.String
+	PermsCode  field.String
+	Status     field.Uint8
 
 	fieldMap map[string]field.Expr
 }
@@ -85,9 +93,9 @@ func (s sysMenu) As(alias string) *sysMenu {
 func (s *sysMenu) updateTableName(table string) *sysMenu {
 	s.ALL = field.NewAsterisk(table)
 	s.ID = field.NewInt64(table, "id")
-	s.CreatedAt = field.NewTime(table, "created_at")
+	s.CreatedAt = field.NewField(table, "created_at")
 	s.CreatedBy = field.NewInt64(table, "creator")
-	s.UpdatedAt = field.NewTime(table, "updated_at")
+	s.UpdatedAt = field.NewField(table, "updated_at")
 	s.UpdatedBy = field.NewInt64(table, "updater")
 	s.IsDeleted = field.NewBool(table, "is_soft_delete")
 	s.Name = field.NewString(table, "name")
@@ -99,6 +107,10 @@ func (s *sysMenu) updateTableName(table string) *sysMenu {
 	s.Meta = field.NewField(table, "meta")
 	s.ParentID = field.NewInt64(table, "parent_id")
 	s.Sort = field.NewInt(table, "sort")
+	s.Type = field.NewUint8(table, "type")
+	s.Remark = field.NewString(table, "remark")
+	s.PermsCode = field.NewString(table, "perms_code")
+	s.Status = field.NewUint8(table, "status")
 
 	s.fillFieldMap()
 
@@ -115,7 +127,7 @@ func (s *sysMenu) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *sysMenu) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 15)
+	s.fieldMap = make(map[string]field.Expr, 19)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["creator"] = s.CreatedBy
@@ -131,6 +143,10 @@ func (s *sysMenu) fillFieldMap() {
 	s.fieldMap["meta"] = s.Meta
 	s.fieldMap["parent_id"] = s.ParentID
 	s.fieldMap["sort"] = s.Sort
+	s.fieldMap["type"] = s.Type
+	s.fieldMap["remark"] = s.Remark
+	s.fieldMap["perms_code"] = s.PermsCode
+	s.fieldMap["status"] = s.Status
 }
 
 func (s sysMenu) clone(db *gorm.DB) sysMenu {

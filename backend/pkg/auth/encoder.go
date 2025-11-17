@@ -5,6 +5,8 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
+	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"reflect"
 	"strings"
 	"time"
@@ -27,14 +29,13 @@ func DefaultResponseEncoder(w http.ResponseWriter, r *http.Request, v interface{
 	if v == nil {
 		return nil
 	}
-	var data []byte
 	if !reflect.ValueOf(v).IsNil() {
 		codec, _ := http.CodecForRequest(r, "Accept")
 		data, err := codec.Marshal(v)
-		response.Data = json.RawMessage(data)
 		if err != nil {
 			return err
 		}
+		response.Data = json.RawMessage(data)
 	}
 	codec, _ := http.CodecForRequest(r, "Accept")
 	data, err := codec.Marshal(&response)
@@ -55,11 +56,19 @@ func DefaultErrorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 		Msg      string `json:"msg"`
 		Code     int    `json:"code"`
 		DateTime int64  `json:"datetime"`
+		ClientID string `json:"clientID"`
 	}
 
 	response.Msg = err.Error()
 	response.DateTime = time.Now().UnixMilli()
 	response.Code = 500
+	if se := new(kerrors.Error); errors.As(err, &se) {
+		se = kerrors.FromError(err)
+		w.WriteHeader(int(se.Code))
+		response.Msg = se.Message
+	} else {
+		w.WriteHeader(200)
+	}
 
 	codec, _ := http.CodecForRequest(r, "Accept")
 	body, err := json.Marshal(&response)
@@ -67,7 +76,7 @@ func DefaultErrorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 		panic(err)
 	}
 	w.Header().Set("Content-Type", ContentType(codec.Name()))
-	w.WriteHeader(200)
+	// w.WriteHeader(200)
 	w.Write(body)
 }
 

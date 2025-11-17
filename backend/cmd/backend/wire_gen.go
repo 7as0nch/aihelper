@@ -28,20 +28,20 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Logger, logLogger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(bootstrap, logger)
+	dataRepo, cleanup, err := data.NewData(bootstrap, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	sysUserRepo := data.NewSysUserRepo(dataData)
+	sysUserRepo := data.NewSysUserRepo(dataRepo)
 	authRepo := auth.NewAuthRepo()
 	sysUserUseCase := base.NewSysUserUseCase(sysUserRepo, authRepo)
 	authService := base2.NewAuthService(sysUserUseCase)
 	chatService := service.NewChatService(logger)
 	grpcServer := server.NewGRPCServer(confServer, authService, chatService, logLogger)
-	userFeedbackRepo := data.NewUserFeedbackRepo(dataData, logger)
+	userFeedbackRepo := data.NewUserFeedbackRepo(dataRepo, logger)
 	userFeedbackUsecase := biz.NewUserFeedbackUsecase(userFeedbackRepo, logger)
 	userFeedbackService := service.NewUserFeedbackService(userFeedbackUsecase, logLogger)
-	sysMenuRepo := data.NewSysMenuRepo(dataData)
+	sysMenuRepo := data.NewSysMenuRepo(dataRepo)
 	sysMenuUseCase := base.NewSysMenuUseCase(sysMenuRepo)
 	systemService := base2.NewSystemService(sysMenuUseCase)
 	httpServer := server.NewHTTPServer(confServer, userFeedbackService, chatService, authService, authRepo, systemService, logLogger)

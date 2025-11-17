@@ -5,6 +5,7 @@ import (
 
 	pb "github.com/example/aichat/backend/api/base"
 	"github.com/example/aichat/backend/internal/biz/base"
+	"github.com/example/aichat/backend/models/generator/model"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -20,7 +21,7 @@ func NewSystemService(menu *base.SysMenuUseCase) *SystemService {
 }
 
 func (s *SystemService) Menu(ctx context.Context, req *emptypb.Empty) (*pb.MenuReply, error) {
-	menus, err := s.menu.GetAll(ctx)
+	menus, err := s.menu.GetRouter(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -76,22 +77,22 @@ func (s *SystemService) AllMenu(ctx context.Context, req *emptypb.Empty) (*pb.Al
 		//   perms: string;
 		//   icon: string;
 		pbMenus = append(pbMenus, &pb.MenuItem{
-			CreateBy:   string(m.CreatedBy),
+			CreateBy:   "",
 			CreateTime: m.CreatedAt.String(),
-			UpdateBy:   string(m.UpdatedBy),
+			UpdateBy:   "",
 			UpdateTime: m.UpdatedAt.String(),
 			Remark:     "",
 			MenuId:     m.ID,
-			MenuName:   m.Name,
+			MenuName:   m.Meta.Title,
 			ParentId:   m.ParentID,
 			ParentName: "",
 			OrderNum:   int32(m.Sort),
 			Path:       m.Path,
 			Component:  m.Component,
 			Query:      "",
-			IsFrame:    "0",
+			IsFrame:    "1",
 			IsCache:    "1",
-			MenuType:   "M",
+			MenuType:   m.Type.String(),
 			Visible:    "1",
 			Status:     "1",
 			Perms:      "",
@@ -114,4 +115,101 @@ func pbMenusToTree(menus []*pb.Menu, parentID int64) []*pb.Menu {
 		}
 	}
 	return tree
+}
+
+// add
+func (s *SystemService) AddSysMenu(ctx context.Context, req *pb.AddSysMenuRequest) (*emptypb.Empty, error) {
+	t := &model.SysMenu{
+		Name:      req.Component,
+		Component: req.Component,
+		Path:      req.Path,
+		// Query:     req.Query,
+		// Redirect:  req.Redirect,
+		ParentID: req.ParentId,
+		Sort:     int(req.OrderNum),
+		Type:     model.ToMenuType(req.MenuType),
+		Hidden:   req.Visible == "2",
+		// AlwaysShow: req.AlwaysShow,
+		Meta: &model.Meta{
+			Title:   req.MenuName,
+			Icon:    req.Icon,
+			NoCache: req.IsCache == "2",
+		},
+		PermsCode: req.Perms,
+		Remark:    req.Remark,
+	}
+	t.New()
+	err := s.menu.Add(ctx, t)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+// UpdateSysMenu
+func (s *SystemService) UpdateSysMenu(ctx context.Context, req *pb.AddSysMenuRequest) (*emptypb.Empty, error) {
+	t := &model.SysMenu{
+		Name:      req.Component,
+		Component: req.Component,
+		Path:      req.Path,
+		// Query:     req.Query,
+		// Redirect:  req.Redirect,
+		ParentID: req.ParentId,
+		Sort:     int(req.OrderNum),
+		Type:     model.ToMenuType(req.MenuType),
+		Hidden:   req.Visible == "2",
+		// AlwaysShow: req.AlwaysShow,
+		Meta: &model.Meta{
+			Title:   req.MenuName,
+			Icon:    req.Icon,
+			NoCache: req.IsCache == "2",
+		},
+		PermsCode: req.Perms,
+		Remark:    req.Remark,
+	}
+	t.ID = req.MenuId
+	err := s.menu.Update(ctx, t)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+// DeleteSysMenu
+func (s *SystemService) DeleteSysMenu(ctx context.Context, req *pb.DeleteSysMenuRequest) (*emptypb.Empty, error) {
+	err := s.menu.Delete(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+// GetSysMenu
+func (s *SystemService) GetSysMenu(ctx context.Context, req *pb.GetSysMenuRequest) (*pb.MenuItem, error) {
+	m, err := s.menu.Get(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.MenuItem{
+			CreateBy:   "",
+			CreateTime: m.CreatedAt.String(),
+			UpdateBy:   "",
+			UpdateTime: m.UpdatedAt.String(),
+			Remark:     "",
+			MenuId:     m.ID,
+			MenuName:   m.Meta.Title,
+			ParentId:   m.ParentID,
+			ParentName: "",
+			OrderNum:   int32(m.Sort),
+			Path:       m.Path,
+			Component:  m.Component,
+			Query:      "",
+			IsFrame:    "1",
+			IsCache:    "1",
+			MenuType:   m.Type.String(),
+			Visible:    "1",
+			Status:     "1",
+			Perms:      "",
+			Icon:       m.Meta.Icon,
+		}, nil
 }
