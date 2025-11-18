@@ -13,7 +13,7 @@ enum Api {
 }
 
 export interface MenuListReply {
-  menu: Menu[];
+  menus: Menu[];
 }
 
 /**
