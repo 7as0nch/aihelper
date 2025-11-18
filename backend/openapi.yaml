@@ -7,6 +7,281 @@ info:
     description: The chat service definition.
     version: 0.0.1
 paths:
+    /system/dict/data:
+        put:
+            tags:
+                - System
+            description: edit dict data
+            operationId: System_UpdateDictData
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DictData'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - System
+            description: add dict data
+            operationId: System_AddDictData
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DictData'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /system/dict/data/list:
+        get:
+            tags:
+                - System
+            description: system/dict/data/list
+            operationId: System_DictDataList
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: dictDataLabel
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DictDataListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /system/dict/data/type/{dictType}:
+        get:
+            tags:
+                - System
+            description: data list by type
+            operationId: System_DictDataListByType
+            parameters:
+                - name: dictType
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DictDataListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /system/dict/data/{id}:
+        get:
+            tags:
+                - System
+            description: data by id
+            operationId: System_DictDataById
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DictData'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - System
+            description: delete dict data
+            operationId: System_DeleteDictData
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /system/dict/type:
+        put:
+            tags:
+                - System
+            description: edit dict type
+            operationId: System_UpdateDictType
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DictType'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - System
+            description: add dict type
+            operationId: System_AddDictType
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DictType'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /system/dict/type/list:
+        get:
+            tags:
+                - System
+            description: system/dict/type/list
+            operationId: System_DictTypeList
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: dictType
+                  in: query
+                  schema:
+                    type: string
+                - name: dictName
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DictTypeListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /system/dict/type/{id}:
+        get:
+            tags:
+                - System
+            description: by id
+            operationId: System_DictTypeById
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DictType'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - System
+            description: delete dict type
+            operationId: System_DeleteDictType
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /system/menu:
         get:
             tags:
@@ -189,6 +464,78 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/MenuItem'
+        DictData:
+            type: object
+            properties:
+                dictCode:
+                    type: string
+                    description: '"dictCode": "1954098808913211393",'
+                dictSort:
+                    type: integer
+                    description: '"dictSort": 0,'
+                    format: int32
+                dictLabel:
+                    type: string
+                    description: '"dictLabel": "STDIO",'
+                dictValue:
+                    type: string
+                    description: '"dictValue": "STDIO",'
+                dictType:
+                    type: string
+                    description: '"dictType": "mcp_transport_type",'
+                listClass:
+                    type: string
+                    description: '"listClass": "",'
+                isDefault:
+                    type: string
+                    description: '"isDefault": "N",'
+                status:
+                    type: string
+                    description: '"status": "0",'
+                createTime:
+                    type: string
+                    description: '"createTime": 1754728436000'
+        DictDataListReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DictData'
+                total:
+                    type: integer
+                    format: int32
+        DictType:
+            type: object
+            properties:
+                dictId:
+                    type: string
+                    description: '"dictId": "1",'
+                dictName:
+                    type: string
+                    description: '"dictName": "用户性别",'
+                dictType:
+                    type: string
+                    description: '"dictType": "sys_user_sex",'
+                status:
+                    type: string
+                    description: '"status": "0",'
+                remark:
+                    type: string
+                    description: '"remark": "用户性别列表",'
+                createTime:
+                    type: string
+                    description: '"createTime": 1684048781000'
+        DictTypeListReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DictType'
+                total:
+                    type: integer
+                    format: int32
         GoogleProtobufAny:
             type: object
             properties:

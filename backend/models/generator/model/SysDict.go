@@ -36,3 +36,23 @@ type SysDict struct {
 func (*SysDict) TableName() string {
 	return "sys_dict"
 }
+
+//	export interface DictType {
+//	  createTime: string;
+//	  dictId: number;
+//	  dictName: string;
+//	  dictType: string;
+//	  remark: string;
+//	  status: string;
+//	}
+type SysDictType struct {
+	models.Model
+	DictType string        `json:"dictType" gorm:"column:dict_type;type:varchar(64)" db:"dict_type"`
+	DictName string        `json:"dictName" gorm:"column:dict_name;type:varchar(64)" db:"dict_name"`
+	Remark   string        `json:"remark" gorm:"column:remark;type:varchar(255)" db:"remark"`
+	Status   models.Status `json:"status" gorm:"column:status;type:smallint;default:2" db:"status"`
+}
+
+func (*SysDictType) TableName() string {
+	return "sys_dict_type"
+}

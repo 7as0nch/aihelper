@@ -23,6 +23,533 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type DictDataListByTypeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DictType      string                 `protobuf:"bytes,1,opt,name=dictType,proto3" json:"dictType,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DictDataListByTypeRequest) Reset() {
+	*x = DictDataListByTypeRequest{}
+	mi := &file_api_base_system_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DictDataListByTypeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DictDataListByTypeRequest) ProtoMessage() {}
+
+func (x *DictDataListByTypeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_base_system_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DictDataListByTypeRequest.ProtoReflect.Descriptor instead.
+func (*DictDataListByTypeRequest) Descriptor() ([]byte, []int) {
+	return file_api_base_system_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *DictDataListByTypeRequest) GetDictType() string {
+	if x != nil {
+		return x.DictType
+	}
+	return ""
+}
+
+type DictRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DictRequest) Reset() {
+	*x = DictRequest{}
+	mi := &file_api_base_system_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DictRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DictRequest) ProtoMessage() {}
+
+func (x *DictRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_base_system_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DictRequest.ProtoReflect.Descriptor instead.
+func (*DictRequest) Descriptor() ([]byte, []int) {
+	return file_api_base_system_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *DictRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type DictDataListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PageNum       int32                  `protobuf:"varint,1,opt,name=pageNum,proto3" json:"pageNum,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=pageSize,proto3" json:"pageSize,omitempty"`
+	DictDataLabel string                 `protobuf:"bytes,3,opt,name=dictDataLabel,proto3" json:"dictDataLabel,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DictDataListRequest) Reset() {
+	*x = DictDataListRequest{}
+	mi := &file_api_base_system_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DictDataListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DictDataListRequest) ProtoMessage() {}
+
+func (x *DictDataListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_base_system_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DictDataListRequest.ProtoReflect.Descriptor instead.
+func (*DictDataListRequest) Descriptor() ([]byte, []int) {
+	return file_api_base_system_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *DictDataListRequest) GetPageNum() int32 {
+	if x != nil {
+		return x.PageNum
+	}
+	return 0
+}
+
+func (x *DictDataListRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *DictDataListRequest) GetDictDataLabel() string {
+	if x != nil {
+		return x.DictDataLabel
+	}
+	return ""
+}
+
+type DictDataListReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	List          []*DictData            `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DictDataListReply) Reset() {
+	*x = DictDataListReply{}
+	mi := &file_api_base_system_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DictDataListReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DictDataListReply) ProtoMessage() {}
+
+func (x *DictDataListReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_base_system_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DictDataListReply.ProtoReflect.Descriptor instead.
+func (*DictDataListReply) Descriptor() ([]byte, []int) {
+	return file_api_base_system_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *DictDataListReply) GetList() []*DictData {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+func (x *DictDataListReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type DictData struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// "dictCode": "1954098808913211393",
+	DictCode string `protobuf:"bytes,1,opt,name=dictCode,proto3" json:"dictCode,omitempty"`
+	// "dictSort": 0,
+	DictSort int32 `protobuf:"varint,2,opt,name=dictSort,proto3" json:"dictSort,omitempty"`
+	// "dictLabel": "STDIO",
+	DictLabel string `protobuf:"bytes,3,opt,name=dictLabel,proto3" json:"dictLabel,omitempty"`
+	// "dictValue": "STDIO",
+	DictValue string `protobuf:"bytes,4,opt,name=dictValue,proto3" json:"dictValue,omitempty"`
+	// "dictType": "mcp_transport_type",
+	DictType string `protobuf:"bytes,5,opt,name=dictType,proto3" json:"dictType,omitempty"`
+	// "listClass": "",
+	ListClass string `protobuf:"bytes,6,opt,name=listClass,proto3" json:"listClass,omitempty"`
+	// "isDefault": "N",
+	IsDefault string `protobuf:"bytes,7,opt,name=isDefault,proto3" json:"isDefault,omitempty"`
+	// "status": "0",
+	Status string `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	// "createTime": 1754728436000
+	CreateTime    string `protobuf:"bytes,9,opt,name=createTime,proto3" json:"createTime,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DictData) Reset() {
+	*x = DictData{}
+	mi := &file_api_base_system_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DictData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DictData) ProtoMessage() {}
+
+func (x *DictData) ProtoReflect() protoreflect.Message {
+	mi := &file_api_base_system_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DictData.ProtoReflect.Descriptor instead.
+func (*DictData) Descriptor() ([]byte, []int) {
+	return file_api_base_system_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DictData) GetDictCode() string {
+	if x != nil {
+		return x.DictCode
+	}
+	return ""
+}
+
+func (x *DictData) GetDictSort() int32 {
+	if x != nil {
+		return x.DictSort
+	}
+	return 0
+}
+
+func (x *DictData) GetDictLabel() string {
+	if x != nil {
+		return x.DictLabel
+	}
+	return ""
+}
+
+func (x *DictData) GetDictValue() string {
+	if x != nil {
+		return x.DictValue
+	}
+	return ""
+}
+
+func (x *DictData) GetDictType() string {
+	if x != nil {
+		return x.DictType
+	}
+	return ""
+}
+
+func (x *DictData) GetListClass() string {
+	if x != nil {
+		return x.ListClass
+	}
+	return ""
+}
+
+func (x *DictData) GetIsDefault() string {
+	if x != nil {
+		return x.IsDefault
+	}
+	return ""
+}
+
+func (x *DictData) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *DictData) GetCreateTime() string {
+	if x != nil {
+		return x.CreateTime
+	}
+	return ""
+}
+
+type DictTypeListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PageNum       int32                  `protobuf:"varint,1,opt,name=pageNum,proto3" json:"pageNum,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=pageSize,proto3" json:"pageSize,omitempty"`
+	DictType      string                 `protobuf:"bytes,3,opt,name=dictType,proto3" json:"dictType,omitempty"`
+	DictName      string                 `protobuf:"bytes,4,opt,name=dictName,proto3" json:"dictName,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DictTypeListRequest) Reset() {
+	*x = DictTypeListRequest{}
+	mi := &file_api_base_system_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DictTypeListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DictTypeListRequest) ProtoMessage() {}
+
+func (x *DictTypeListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_base_system_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DictTypeListRequest.ProtoReflect.Descriptor instead.
+func (*DictTypeListRequest) Descriptor() ([]byte, []int) {
+	return file_api_base_system_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *DictTypeListRequest) GetPageNum() int32 {
+	if x != nil {
+		return x.PageNum
+	}
+	return 0
+}
+
+func (x *DictTypeListRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *DictTypeListRequest) GetDictType() string {
+	if x != nil {
+		return x.DictType
+	}
+	return ""
+}
+
+func (x *DictTypeListRequest) GetDictName() string {
+	if x != nil {
+		return x.DictName
+	}
+	return ""
+}
+
+type DictTypeListReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	List          []*DictType            `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DictTypeListReply) Reset() {
+	*x = DictTypeListReply{}
+	mi := &file_api_base_system_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DictTypeListReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DictTypeListReply) ProtoMessage() {}
+
+func (x *DictTypeListReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_base_system_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DictTypeListReply.ProtoReflect.Descriptor instead.
+func (*DictTypeListReply) Descriptor() ([]byte, []int) {
+	return file_api_base_system_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DictTypeListReply) GetList() []*DictType {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+func (x *DictTypeListReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type DictType struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// "dictId": "1",
+	DictId int64 `protobuf:"varint,1,opt,name=dictId,proto3" json:"dictId,omitempty"`
+	// "dictName": "用户性别",
+	DictName string `protobuf:"bytes,2,opt,name=dictName,proto3" json:"dictName,omitempty"`
+	// "dictType": "sys_user_sex",
+	DictType string `protobuf:"bytes,3,opt,name=dictType,proto3" json:"dictType,omitempty"`
+	// "status": "0",
+	Status string `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	// "remark": "用户性别列表",
+	Remark string `protobuf:"bytes,5,opt,name=remark,proto3" json:"remark,omitempty"`
+	// "createTime": 1684048781000
+	CreateTime    int64 `protobuf:"varint,6,opt,name=createTime,proto3" json:"createTime,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DictType) Reset() {
+	*x = DictType{}
+	mi := &file_api_base_system_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DictType) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DictType) ProtoMessage() {}
+
+func (x *DictType) ProtoReflect() protoreflect.Message {
+	mi := &file_api_base_system_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DictType.ProtoReflect.Descriptor instead.
+func (*DictType) Descriptor() ([]byte, []int) {
+	return file_api_base_system_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DictType) GetDictId() int64 {
+	if x != nil {
+		return x.DictId
+	}
+	return 0
+}
+
+func (x *DictType) GetDictName() string {
+	if x != nil {
+		return x.DictName
+	}
+	return ""
+}
+
+func (x *DictType) GetDictType() string {
+	if x != nil {
+		return x.DictType
+	}
+	return ""
+}
+
+func (x *DictType) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *DictType) GetRemark() string {
+	if x != nil {
+		return x.Remark
+	}
+	return ""
+}
+
+func (x *DictType) GetCreateTime() int64 {
+	if x != nil {
+		return x.CreateTime
+	}
+	return 0
+}
+
 type MenuReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Menu          []*Menu                `protobuf:"bytes,1,rep,name=menu,proto3" json:"menu,omitempty"`
@@ -32,7 +559,7 @@ type MenuReply struct {
 
 func (x *MenuReply) Reset() {
 	*x = MenuReply{}
-	mi := &file_api_base_system_proto_msgTypes[0]
+	mi := &file_api_base_system_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +571,7 @@ func (x *MenuReply) String() string {
 func (*MenuReply) ProtoMessage() {}
 
 func (x *MenuReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_base_system_proto_msgTypes[0]
+	mi := &file_api_base_system_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +584,7 @@ func (x *MenuReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MenuReply.ProtoReflect.Descriptor instead.
 func (*MenuReply) Descriptor() ([]byte, []int) {
-	return file_api_base_system_proto_rawDescGZIP(), []int{0}
+	return file_api_base_system_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *MenuReply) GetMenu() []*Menu {
@@ -79,7 +606,7 @@ type MenuMeta struct {
 
 func (x *MenuMeta) Reset() {
 	*x = MenuMeta{}
-	mi := &file_api_base_system_proto_msgTypes[1]
+	mi := &file_api_base_system_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -91,7 +618,7 @@ func (x *MenuMeta) String() string {
 func (*MenuMeta) ProtoMessage() {}
 
 func (x *MenuMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_api_base_system_proto_msgTypes[1]
+	mi := &file_api_base_system_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -104,7 +631,7 @@ func (x *MenuMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MenuMeta.ProtoReflect.Descriptor instead.
 func (*MenuMeta) Descriptor() ([]byte, []int) {
-	return file_api_base_system_proto_rawDescGZIP(), []int{1}
+	return file_api_base_system_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *MenuMeta) GetIcon() string {
@@ -154,7 +681,7 @@ type Menu struct {
 
 func (x *Menu) Reset() {
 	*x = Menu{}
-	mi := &file_api_base_system_proto_msgTypes[2]
+	mi := &file_api_base_system_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -166,7 +693,7 @@ func (x *Menu) String() string {
 func (*Menu) ProtoMessage() {}
 
 func (x *Menu) ProtoReflect() protoreflect.Message {
-	mi := &file_api_base_system_proto_msgTypes[2]
+	mi := &file_api_base_system_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -179,7 +706,7 @@ func (x *Menu) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Menu.ProtoReflect.Descriptor instead.
 func (*Menu) Descriptor() ([]byte, []int) {
-	return file_api_base_system_proto_rawDescGZIP(), []int{2}
+	return file_api_base_system_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Menu) GetAlwaysShow() bool {
@@ -288,7 +815,7 @@ type AddSysMenuRequest struct {
 
 func (x *AddSysMenuRequest) Reset() {
 	*x = AddSysMenuRequest{}
-	mi := &file_api_base_system_proto_msgTypes[3]
+	mi := &file_api_base_system_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -300,7 +827,7 @@ func (x *AddSysMenuRequest) String() string {
 func (*AddSysMenuRequest) ProtoMessage() {}
 
 func (x *AddSysMenuRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_base_system_proto_msgTypes[3]
+	mi := &file_api_base_system_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -313,7 +840,7 @@ func (x *AddSysMenuRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddSysMenuRequest.ProtoReflect.Descriptor instead.
 func (*AddSysMenuRequest) Descriptor() ([]byte, []int) {
-	return file_api_base_system_proto_rawDescGZIP(), []int{3}
+	return file_api_base_system_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *AddSysMenuRequest) GetMenuId() int64 {
@@ -472,7 +999,7 @@ type DeleteSysMenuRequest struct {
 
 func (x *DeleteSysMenuRequest) Reset() {
 	*x = DeleteSysMenuRequest{}
-	mi := &file_api_base_system_proto_msgTypes[4]
+	mi := &file_api_base_system_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -484,7 +1011,7 @@ func (x *DeleteSysMenuRequest) String() string {
 func (*DeleteSysMenuRequest) ProtoMessage() {}
 
 func (x *DeleteSysMenuRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_base_system_proto_msgTypes[4]
+	mi := &file_api_base_system_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -497,7 +1024,7 @@ func (x *DeleteSysMenuRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSysMenuRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSysMenuRequest) Descriptor() ([]byte, []int) {
-	return file_api_base_system_proto_rawDescGZIP(), []int{4}
+	return file_api_base_system_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DeleteSysMenuRequest) GetId() int64 {
@@ -516,7 +1043,7 @@ type GetSysMenuRequest struct {
 
 func (x *GetSysMenuRequest) Reset() {
 	*x = GetSysMenuRequest{}
-	mi := &file_api_base_system_proto_msgTypes[5]
+	mi := &file_api_base_system_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -528,7 +1055,7 @@ func (x *GetSysMenuRequest) String() string {
 func (*GetSysMenuRequest) ProtoMessage() {}
 
 func (x *GetSysMenuRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_base_system_proto_msgTypes[5]
+	mi := &file_api_base_system_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -541,7 +1068,7 @@ func (x *GetSysMenuRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSysMenuRequest.ProtoReflect.Descriptor instead.
 func (*GetSysMenuRequest) Descriptor() ([]byte, []int) {
-	return file_api_base_system_proto_rawDescGZIP(), []int{5}
+	return file_api_base_system_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetSysMenuRequest) GetId() int64 {
@@ -560,7 +1087,7 @@ type AllMenuReply struct {
 
 func (x *AllMenuReply) Reset() {
 	*x = AllMenuReply{}
-	mi := &file_api_base_system_proto_msgTypes[6]
+	mi := &file_api_base_system_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -572,7 +1099,7 @@ func (x *AllMenuReply) String() string {
 func (*AllMenuReply) ProtoMessage() {}
 
 func (x *AllMenuReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_base_system_proto_msgTypes[6]
+	mi := &file_api_base_system_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -585,7 +1112,7 @@ func (x *AllMenuReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AllMenuReply.ProtoReflect.Descriptor instead.
 func (*AllMenuReply) Descriptor() ([]byte, []int) {
-	return file_api_base_system_proto_rawDescGZIP(), []int{6}
+	return file_api_base_system_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *AllMenuReply) GetMenus() []*MenuItem {
@@ -624,7 +1151,7 @@ type MenuItem struct {
 
 func (x *MenuItem) Reset() {
 	*x = MenuItem{}
-	mi := &file_api_base_system_proto_msgTypes[7]
+	mi := &file_api_base_system_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -636,7 +1163,7 @@ func (x *MenuItem) String() string {
 func (*MenuItem) ProtoMessage() {}
 
 func (x *MenuItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_base_system_proto_msgTypes[7]
+	mi := &file_api_base_system_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -649,7 +1176,7 @@ func (x *MenuItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MenuItem.ProtoReflect.Descriptor instead.
 func (*MenuItem) Descriptor() ([]byte, []int) {
-	return file_api_base_system_proto_rawDescGZIP(), []int{7}
+	return file_api_base_system_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *MenuItem) GetMenuId() int64 {
@@ -803,7 +1330,47 @@ var File_api_base_system_proto protoreflect.FileDescriptor
 
 const file_api_base_system_proto_rawDesc = "" +
 	"\n" +
-	"\x15api/base/system.proto\x12\x04base\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"+\n" +
+	"\x15api/base/system.proto\x12\x04base\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"7\n" +
+	"\x19DictDataListByTypeRequest\x12\x1a\n" +
+	"\bdictType\x18\x01 \x01(\tR\bdictType\"\x1d\n" +
+	"\vDictRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"q\n" +
+	"\x13DictDataListRequest\x12\x18\n" +
+	"\apageNum\x18\x01 \x01(\x05R\apageNum\x12\x1a\n" +
+	"\bpageSize\x18\x02 \x01(\x05R\bpageSize\x12$\n" +
+	"\rdictDataLabel\x18\x03 \x01(\tR\rdictDataLabel\"M\n" +
+	"\x11DictDataListReply\x12\"\n" +
+	"\x04list\x18\x01 \x03(\v2\x0e.base.DictDataR\x04list\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\x8e\x02\n" +
+	"\bDictData\x12\x1a\n" +
+	"\bdictCode\x18\x01 \x01(\tR\bdictCode\x12\x1a\n" +
+	"\bdictSort\x18\x02 \x01(\x05R\bdictSort\x12\x1c\n" +
+	"\tdictLabel\x18\x03 \x01(\tR\tdictLabel\x12\x1c\n" +
+	"\tdictValue\x18\x04 \x01(\tR\tdictValue\x12\x1a\n" +
+	"\bdictType\x18\x05 \x01(\tR\bdictType\x12\x1c\n" +
+	"\tlistClass\x18\x06 \x01(\tR\tlistClass\x12\x1c\n" +
+	"\tisDefault\x18\a \x01(\tR\tisDefault\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06status\x12\x1e\n" +
+	"\n" +
+	"createTime\x18\t \x01(\tR\n" +
+	"createTime\"\x83\x01\n" +
+	"\x13DictTypeListRequest\x12\x18\n" +
+	"\apageNum\x18\x01 \x01(\x05R\apageNum\x12\x1a\n" +
+	"\bpageSize\x18\x02 \x01(\x05R\bpageSize\x12\x1a\n" +
+	"\bdictType\x18\x03 \x01(\tR\bdictType\x12\x1a\n" +
+	"\bdictName\x18\x04 \x01(\tR\bdictName\"M\n" +
+	"\x11DictTypeListReply\x12\"\n" +
+	"\x04list\x18\x01 \x03(\v2\x0e.base.DictTypeR\x04list\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xaa\x01\n" +
+	"\bDictType\x12\x16\n" +
+	"\x06dictId\x18\x01 \x01(\x03R\x06dictId\x12\x1a\n" +
+	"\bdictName\x18\x02 \x01(\tR\bdictName\x12\x1a\n" +
+	"\bdictType\x18\x03 \x01(\tR\bdictType\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12\x16\n" +
+	"\x06remark\x18\x05 \x01(\tR\x06remark\x12\x1e\n" +
+	"\n" +
+	"createTime\x18\x06 \x01(\x03R\n" +
+	"createTime\"+\n" +
 	"\tMenuReply\x12\x1e\n" +
 	"\x04menu\x18\x01 \x03(\v2\n" +
 	".base.MenuR\x04menu\"b\n" +
@@ -891,7 +1458,7 @@ const file_api_base_system_proto_rawDesc = "" +
 	"updateTime\x12\x1a\n" +
 	"\bcreateBy\x18\x13 \x01(\tR\bcreateBy\x12\x1a\n" +
 	"\bupdateBy\x18\x14 \x01(\tR\bupdateBy\x12\x16\n" +
-	"\x06remark\x18\x15 \x01(\tR\x06remark2\x86\x04\n" +
+	"\x06remark\x18\x15 \x01(\tR\x06remark2\x83\f\n" +
 	"\x06System\x12E\n" +
 	"\x04Menu\x12\x16.google.protobuf.Empty\x1a\x0f.base.MenuReply\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/system/menu\x12P\n" +
 	"\aAllMenu\x12\x16.google.protobuf.Empty\x1a\x12.base.AllMenuReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/system/menu/list\x12V\n" +
@@ -900,7 +1467,18 @@ const file_api_base_system_proto_rawDesc = "" +
 	"\rUpdateSysMenu\x12\x17.base.AddSysMenuRequest\x1a\x16.google.protobuf.Empty\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\x1a\f/system/menu\x12^\n" +
 	"\rDeleteSysMenu\x12\x1a.base.DeleteSysMenuRequest\x1a\x16.google.protobuf.Empty\"\x19\x82\xd3\xe4\x93\x02\x13*\x11/system/menu/{id}\x12P\n" +
 	"\n" +
-	"GetSysMenu\x12\x17.base.GetSysMenuRequest\x1a\x0e.base.MenuItem\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/system/menu/{id}BN\n" +
+	"GetSysMenu\x12\x17.base.GetSysMenuRequest\x1a\x0e.base.MenuItem\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/system/menu/{id}\x12b\n" +
+	"\fDictTypeList\x12\x19.base.DictTypeListRequest\x1a\x17.base.DictTypeListReply\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/system/dict/type/list\x12b\n" +
+	"\fDictDataList\x12\x19.base.DictDataListRequest\x1a\x17.base.DictDataListReply\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/system/dict/data/list\x12Q\n" +
+	"\fDictTypeById\x12\x11.base.DictRequest\x1a\x0e.base.DictType\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/system/dict/type/{id}\x12S\n" +
+	"\vAddDictType\x12\x0e.base.DictType\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/system/dict/type\x12V\n" +
+	"\x0eUpdateDictType\x12\x0e.base.DictType\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\x1a\x11/system/dict/type\x12[\n" +
+	"\x0eDeleteDictType\x12\x11.base.DictRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18*\x16/system/dict/type/{id}\x12S\n" +
+	"\vAddDictData\x12\x0e.base.DictData\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/system/dict/data\x12V\n" +
+	"\x0eUpdateDictData\x12\x0e.base.DictData\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\x1a\x11/system/dict/data\x12[\n" +
+	"\x0eDeleteDictData\x12\x11.base.DictRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18*\x16/system/dict/data/{id}\x12Q\n" +
+	"\fDictDataById\x12\x11.base.DictRequest\x1a\x0e.base.DictData\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/system/dict/data/{id}\x12y\n" +
+	"\x12DictDataListByType\x12\x1f.base.DictDataListByTypeRequest\x1a\x17.base.DictDataListReply\")\x82\xd3\xe4\x93\x02#\x12!/system/dict/data/type/{dictType}BN\n" +
 	"\x13dev.kratos.api.baseB\tBaseProtoP\x01Z*github.com/example/aichat/backend/api;baseb\x06proto3"
 
 var (
@@ -915,42 +1493,74 @@ func file_api_base_system_proto_rawDescGZIP() []byte {
 	return file_api_base_system_proto_rawDescData
 }
 
-var file_api_base_system_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_api_base_system_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_api_base_system_proto_goTypes = []any{
-	(*MenuReply)(nil),            // 0: base.MenuReply
-	(*MenuMeta)(nil),             // 1: base.MenuMeta
-	(*Menu)(nil),                 // 2: base.Menu
-	(*AddSysMenuRequest)(nil),    // 3: base.AddSysMenuRequest
-	(*DeleteSysMenuRequest)(nil), // 4: base.DeleteSysMenuRequest
-	(*GetSysMenuRequest)(nil),    // 5: base.GetSysMenuRequest
-	(*AllMenuReply)(nil),         // 6: base.AllMenuReply
-	(*MenuItem)(nil),             // 7: base.MenuItem
-	(*emptypb.Empty)(nil),        // 8: google.protobuf.Empty
+	(*DictDataListByTypeRequest)(nil), // 0: base.DictDataListByTypeRequest
+	(*DictRequest)(nil),               // 1: base.DictRequest
+	(*DictDataListRequest)(nil),       // 2: base.DictDataListRequest
+	(*DictDataListReply)(nil),         // 3: base.DictDataListReply
+	(*DictData)(nil),                  // 4: base.DictData
+	(*DictTypeListRequest)(nil),       // 5: base.DictTypeListRequest
+	(*DictTypeListReply)(nil),         // 6: base.DictTypeListReply
+	(*DictType)(nil),                  // 7: base.DictType
+	(*MenuReply)(nil),                 // 8: base.MenuReply
+	(*MenuMeta)(nil),                  // 9: base.MenuMeta
+	(*Menu)(nil),                      // 10: base.Menu
+	(*AddSysMenuRequest)(nil),         // 11: base.AddSysMenuRequest
+	(*DeleteSysMenuRequest)(nil),      // 12: base.DeleteSysMenuRequest
+	(*GetSysMenuRequest)(nil),         // 13: base.GetSysMenuRequest
+	(*AllMenuReply)(nil),              // 14: base.AllMenuReply
+	(*MenuItem)(nil),                  // 15: base.MenuItem
+	(*emptypb.Empty)(nil),             // 16: google.protobuf.Empty
 }
 var file_api_base_system_proto_depIdxs = []int32{
-	2,  // 0: base.MenuReply.menu:type_name -> base.Menu
-	2,  // 1: base.Menu.children:type_name -> base.Menu
-	1,  // 2: base.Menu.meta:type_name -> base.MenuMeta
-	7,  // 3: base.AddSysMenuRequest.children:type_name -> base.MenuItem
-	7,  // 4: base.AllMenuReply.menus:type_name -> base.MenuItem
-	7,  // 5: base.MenuItem.children:type_name -> base.MenuItem
-	8,  // 6: base.System.Menu:input_type -> google.protobuf.Empty
-	8,  // 7: base.System.AllMenu:input_type -> google.protobuf.Empty
-	3,  // 8: base.System.AddSysMenu:input_type -> base.AddSysMenuRequest
-	3,  // 9: base.System.UpdateSysMenu:input_type -> base.AddSysMenuRequest
-	4,  // 10: base.System.DeleteSysMenu:input_type -> base.DeleteSysMenuRequest
-	5,  // 11: base.System.GetSysMenu:input_type -> base.GetSysMenuRequest
-	0,  // 12: base.System.Menu:output_type -> base.MenuReply
-	6,  // 13: base.System.AllMenu:output_type -> base.AllMenuReply
-	8,  // 14: base.System.AddSysMenu:output_type -> google.protobuf.Empty
-	8,  // 15: base.System.UpdateSysMenu:output_type -> google.protobuf.Empty
-	8,  // 16: base.System.DeleteSysMenu:output_type -> google.protobuf.Empty
-	7,  // 17: base.System.GetSysMenu:output_type -> base.MenuItem
-	12, // [12:18] is the sub-list for method output_type
-	6,  // [6:12] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	4,  // 0: base.DictDataListReply.list:type_name -> base.DictData
+	7,  // 1: base.DictTypeListReply.list:type_name -> base.DictType
+	10, // 2: base.MenuReply.menu:type_name -> base.Menu
+	10, // 3: base.Menu.children:type_name -> base.Menu
+	9,  // 4: base.Menu.meta:type_name -> base.MenuMeta
+	15, // 5: base.AddSysMenuRequest.children:type_name -> base.MenuItem
+	15, // 6: base.AllMenuReply.menus:type_name -> base.MenuItem
+	15, // 7: base.MenuItem.children:type_name -> base.MenuItem
+	16, // 8: base.System.Menu:input_type -> google.protobuf.Empty
+	16, // 9: base.System.AllMenu:input_type -> google.protobuf.Empty
+	11, // 10: base.System.AddSysMenu:input_type -> base.AddSysMenuRequest
+	11, // 11: base.System.UpdateSysMenu:input_type -> base.AddSysMenuRequest
+	12, // 12: base.System.DeleteSysMenu:input_type -> base.DeleteSysMenuRequest
+	13, // 13: base.System.GetSysMenu:input_type -> base.GetSysMenuRequest
+	5,  // 14: base.System.DictTypeList:input_type -> base.DictTypeListRequest
+	2,  // 15: base.System.DictDataList:input_type -> base.DictDataListRequest
+	1,  // 16: base.System.DictTypeById:input_type -> base.DictRequest
+	7,  // 17: base.System.AddDictType:input_type -> base.DictType
+	7,  // 18: base.System.UpdateDictType:input_type -> base.DictType
+	1,  // 19: base.System.DeleteDictType:input_type -> base.DictRequest
+	4,  // 20: base.System.AddDictData:input_type -> base.DictData
+	4,  // 21: base.System.UpdateDictData:input_type -> base.DictData
+	1,  // 22: base.System.DeleteDictData:input_type -> base.DictRequest
+	1,  // 23: base.System.DictDataById:input_type -> base.DictRequest
+	0,  // 24: base.System.DictDataListByType:input_type -> base.DictDataListByTypeRequest
+	8,  // 25: base.System.Menu:output_type -> base.MenuReply
+	14, // 26: base.System.AllMenu:output_type -> base.AllMenuReply
+	16, // 27: base.System.AddSysMenu:output_type -> google.protobuf.Empty
+	16, // 28: base.System.UpdateSysMenu:output_type -> google.protobuf.Empty
+	16, // 29: base.System.DeleteSysMenu:output_type -> google.protobuf.Empty
+	15, // 30: base.System.GetSysMenu:output_type -> base.MenuItem
+	6,  // 31: base.System.DictTypeList:output_type -> base.DictTypeListReply
+	3,  // 32: base.System.DictDataList:output_type -> base.DictDataListReply
+	7,  // 33: base.System.DictTypeById:output_type -> base.DictType
+	16, // 34: base.System.AddDictType:output_type -> google.protobuf.Empty
+	16, // 35: base.System.UpdateDictType:output_type -> google.protobuf.Empty
+	16, // 36: base.System.DeleteDictType:output_type -> google.protobuf.Empty
+	16, // 37: base.System.AddDictData:output_type -> google.protobuf.Empty
+	16, // 38: base.System.UpdateDictData:output_type -> google.protobuf.Empty
+	16, // 39: base.System.DeleteDictData:output_type -> google.protobuf.Empty
+	4,  // 40: base.System.DictDataById:output_type -> base.DictData
+	3,  // 41: base.System.DictDataListByType:output_type -> base.DictDataListReply
+	25, // [25:42] is the sub-list for method output_type
+	8,  // [8:25] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_api_base_system_proto_init() }
@@ -964,7 +1574,7 @@ func file_api_base_system_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_base_system_proto_rawDesc), len(file_api_base_system_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

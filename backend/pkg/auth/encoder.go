@@ -65,6 +65,7 @@ func DefaultErrorEncoder(w http.ResponseWriter, r *http.Request, err error) {
 	if se := new(kerrors.Error); errors.As(err, &se) {
 		se = kerrors.FromError(err)
 		w.WriteHeader(int(se.Code))
+		response.Code = int(se.Code)
 		response.Msg = se.Message
 	} else {
 		w.WriteHeader(200)

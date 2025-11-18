@@ -34,10 +34,12 @@ func newSysUser(db *gorm.DB, opts ...gen.DOOption) sysUser {
 	_sysUser.UpdatedAt = field.NewField(tableName, "updated_at")
 	_sysUser.UpdatedBy = field.NewInt64(tableName, "updated_by")
 	_sysUser.IsDeleted = field.NewUint(tableName, "is_deleted")
+	_sysUser.DeletedAt = field.NewField(tableName, "deleted_at")
+	_sysUser.DeletedBy = field.NewInt64(tableName, "deleted_by")
 	_sysUser.Type = field.NewString(tableName, "type")
-	_sysUser.Name = field.NewString(tableName, "name")
 	_sysUser.Account = field.NewString(tableName, "account")
 	_sysUser.Password = field.NewString(tableName, "password")
+	_sysUser.Name = field.NewString(tableName, "name")
 	_sysUser.Avatar = field.NewString(tableName, "avatar")
 	_sysUser.Email = field.NewString(tableName, "email")
 	_sysUser.Phonenumber = field.NewString(tableName, "phonenumber")
@@ -60,10 +62,12 @@ type sysUser struct {
 	UpdatedAt   field.Field
 	UpdatedBy   field.Int64
 	IsDeleted   field.Uint
+	DeletedAt   field.Field
+	DeletedBy   field.Int64
 	Type        field.String
-	Name        field.String
 	Account     field.String
 	Password    field.String
+	Name        field.String
 	Avatar      field.String
 	Email       field.String
 	Phonenumber field.String
@@ -92,10 +96,12 @@ func (s *sysUser) updateTableName(table string) *sysUser {
 	s.UpdatedAt = field.NewField(table, "updated_at")
 	s.UpdatedBy = field.NewInt64(table, "updated_by")
 	s.IsDeleted = field.NewUint(table, "is_deleted")
+	s.DeletedAt = field.NewField(table, "deleted_at")
+	s.DeletedBy = field.NewInt64(table, "deleted_by")
 	s.Type = field.NewString(table, "type")
-	s.Name = field.NewString(table, "name")
 	s.Account = field.NewString(table, "account")
 	s.Password = field.NewString(table, "password")
+	s.Name = field.NewString(table, "name")
 	s.Avatar = field.NewString(table, "avatar")
 	s.Email = field.NewString(table, "email")
 	s.Phonenumber = field.NewString(table, "phonenumber")
@@ -118,17 +124,19 @@ func (s *sysUser) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *sysUser) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 16)
+	s.fieldMap = make(map[string]field.Expr, 18)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["created_by"] = s.CreatedBy
 	s.fieldMap["updated_at"] = s.UpdatedAt
 	s.fieldMap["updated_by"] = s.UpdatedBy
 	s.fieldMap["is_deleted"] = s.IsDeleted
+	s.fieldMap["deleted_at"] = s.DeletedAt
+	s.fieldMap["deleted_by"] = s.DeletedBy
 	s.fieldMap["type"] = s.Type
-	s.fieldMap["name"] = s.Name
 	s.fieldMap["account"] = s.Account
 	s.fieldMap["password"] = s.Password
+	s.fieldMap["name"] = s.Name
 	s.fieldMap["avatar"] = s.Avatar
 	s.fieldMap["email"] = s.Email
 	s.fieldMap["phonenumber"] = s.Phonenumber

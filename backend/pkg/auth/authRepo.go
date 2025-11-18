@@ -7,22 +7,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/example/aichat/backend/tools"
 	myStrings "github.com/example/aichat/backend/tools/strings"
+	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/metadata"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/golang-jwt/jwt/v4"
+	"strconv"
+	"strings"
+	"time"
 )
 
-var (
-	// ExpiredTime Expired time, 失效时间：十分钟。
-	ExpiredTime = &jwt.NumericDate{Time: time.Now().Add(time.Minute * 10)}
-)
 
 type authRepo struct {
 	signingKey []byte
@@ -100,6 +96,8 @@ func (a *authRepo) GetToken(ctx context.Context) (string, error) {
 }
 
 func (a *authRepo) NewToken(ctx context.Context, userId int64, username, phone string) (string, error) {
+	// ExpiredTime Expired time, 失效时间：十分钟。
+	ExpiredTime := &jwt.NumericDate{Time: time.Now().Add(time.Minute * 10)}
 	claims := JwtClaims{
 		UserId:    userId,
 		UserName:  username,
@@ -134,7 +132,7 @@ func (a *authRepo) Server() func(handler middleware.Handler) middleware.Handler 
 			//
 			claims, err := a.CheckToken(ctx, token)
 			if err != nil || claims == nil {
-				return nil, errors.New(" PHMToken is expired ")
+				return nil, kerrors.New(401, " PHMToken is expired ", " PHMToken is expired ")
 			}
 			ctx = context.WithValue(ctx, UserId, int64(claims.UserId))
 			ctx = context.WithValue(ctx, UserName, claims.UserName)
@@ -153,7 +151,6 @@ func at(t time.Time, f func()) {
 	f()
 	jwt.TimeFunc = time.Now
 }
-
 
 func NewHeaderServer() func(handler middleware.Handler) middleware.Handler {
 	return func(handler middleware.Handler) middleware.Handler {

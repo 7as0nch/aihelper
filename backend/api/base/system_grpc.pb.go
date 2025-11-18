@@ -20,12 +20,23 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	System_Menu_FullMethodName          = "/base.System/Menu"
-	System_AllMenu_FullMethodName       = "/base.System/AllMenu"
-	System_AddSysMenu_FullMethodName    = "/base.System/AddSysMenu"
-	System_UpdateSysMenu_FullMethodName = "/base.System/UpdateSysMenu"
-	System_DeleteSysMenu_FullMethodName = "/base.System/DeleteSysMenu"
-	System_GetSysMenu_FullMethodName    = "/base.System/GetSysMenu"
+	System_Menu_FullMethodName               = "/base.System/Menu"
+	System_AllMenu_FullMethodName            = "/base.System/AllMenu"
+	System_AddSysMenu_FullMethodName         = "/base.System/AddSysMenu"
+	System_UpdateSysMenu_FullMethodName      = "/base.System/UpdateSysMenu"
+	System_DeleteSysMenu_FullMethodName      = "/base.System/DeleteSysMenu"
+	System_GetSysMenu_FullMethodName         = "/base.System/GetSysMenu"
+	System_DictTypeList_FullMethodName       = "/base.System/DictTypeList"
+	System_DictDataList_FullMethodName       = "/base.System/DictDataList"
+	System_DictTypeById_FullMethodName       = "/base.System/DictTypeById"
+	System_AddDictType_FullMethodName        = "/base.System/AddDictType"
+	System_UpdateDictType_FullMethodName     = "/base.System/UpdateDictType"
+	System_DeleteDictType_FullMethodName     = "/base.System/DeleteDictType"
+	System_AddDictData_FullMethodName        = "/base.System/AddDictData"
+	System_UpdateDictData_FullMethodName     = "/base.System/UpdateDictData"
+	System_DeleteDictData_FullMethodName     = "/base.System/DeleteDictData"
+	System_DictDataById_FullMethodName       = "/base.System/DictDataById"
+	System_DictDataListByType_FullMethodName = "/base.System/DictDataListByType"
 )
 
 // SystemClient is the client API for System service.
@@ -45,6 +56,28 @@ type SystemClient interface {
 	DeleteSysMenu(ctx context.Context, in *DeleteSysMenuRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// GetSysMenu implements base.SysMenuRepo.
 	GetSysMenu(ctx context.Context, in *GetSysMenuRequest, opts ...grpc.CallOption) (*MenuItem, error)
+	// system/dict/type/list
+	DictTypeList(ctx context.Context, in *DictTypeListRequest, opts ...grpc.CallOption) (*DictTypeListReply, error)
+	// system/dict/data/list
+	DictDataList(ctx context.Context, in *DictDataListRequest, opts ...grpc.CallOption) (*DictDataListReply, error)
+	// by id
+	DictTypeById(ctx context.Context, in *DictRequest, opts ...grpc.CallOption) (*DictType, error)
+	// add dict type
+	AddDictType(ctx context.Context, in *DictType, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// edit dict type
+	UpdateDictType(ctx context.Context, in *DictType, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// delete dict type
+	DeleteDictType(ctx context.Context, in *DictRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// add dict data
+	AddDictData(ctx context.Context, in *DictData, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// edit dict data
+	UpdateDictData(ctx context.Context, in *DictData, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// delete dict data
+	DeleteDictData(ctx context.Context, in *DictRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// data by id
+	DictDataById(ctx context.Context, in *DictRequest, opts ...grpc.CallOption) (*DictData, error)
+	// data list by type
+	DictDataListByType(ctx context.Context, in *DictDataListByTypeRequest, opts ...grpc.CallOption) (*DictDataListReply, error)
 }
 
 type systemClient struct {
@@ -115,6 +148,116 @@ func (c *systemClient) GetSysMenu(ctx context.Context, in *GetSysMenuRequest, op
 	return out, nil
 }
 
+func (c *systemClient) DictTypeList(ctx context.Context, in *DictTypeListRequest, opts ...grpc.CallOption) (*DictTypeListReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DictTypeListReply)
+	err := c.cc.Invoke(ctx, System_DictTypeList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) DictDataList(ctx context.Context, in *DictDataListRequest, opts ...grpc.CallOption) (*DictDataListReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DictDataListReply)
+	err := c.cc.Invoke(ctx, System_DictDataList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) DictTypeById(ctx context.Context, in *DictRequest, opts ...grpc.CallOption) (*DictType, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DictType)
+	err := c.cc.Invoke(ctx, System_DictTypeById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) AddDictType(ctx context.Context, in *DictType, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, System_AddDictType_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) UpdateDictType(ctx context.Context, in *DictType, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, System_UpdateDictType_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) DeleteDictType(ctx context.Context, in *DictRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, System_DeleteDictType_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) AddDictData(ctx context.Context, in *DictData, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, System_AddDictData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) UpdateDictData(ctx context.Context, in *DictData, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, System_UpdateDictData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) DeleteDictData(ctx context.Context, in *DictRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, System_DeleteDictData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) DictDataById(ctx context.Context, in *DictRequest, opts ...grpc.CallOption) (*DictData, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DictData)
+	err := c.cc.Invoke(ctx, System_DictDataById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) DictDataListByType(ctx context.Context, in *DictDataListByTypeRequest, opts ...grpc.CallOption) (*DictDataListReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DictDataListReply)
+	err := c.cc.Invoke(ctx, System_DictDataListByType_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SystemServer is the server API for System service.
 // All implementations must embed UnimplementedSystemServer
 // for forward compatibility.
@@ -132,6 +275,28 @@ type SystemServer interface {
 	DeleteSysMenu(context.Context, *DeleteSysMenuRequest) (*emptypb.Empty, error)
 	// GetSysMenu implements base.SysMenuRepo.
 	GetSysMenu(context.Context, *GetSysMenuRequest) (*MenuItem, error)
+	// system/dict/type/list
+	DictTypeList(context.Context, *DictTypeListRequest) (*DictTypeListReply, error)
+	// system/dict/data/list
+	DictDataList(context.Context, *DictDataListRequest) (*DictDataListReply, error)
+	// by id
+	DictTypeById(context.Context, *DictRequest) (*DictType, error)
+	// add dict type
+	AddDictType(context.Context, *DictType) (*emptypb.Empty, error)
+	// edit dict type
+	UpdateDictType(context.Context, *DictType) (*emptypb.Empty, error)
+	// delete dict type
+	DeleteDictType(context.Context, *DictRequest) (*emptypb.Empty, error)
+	// add dict data
+	AddDictData(context.Context, *DictData) (*emptypb.Empty, error)
+	// edit dict data
+	UpdateDictData(context.Context, *DictData) (*emptypb.Empty, error)
+	// delete dict data
+	DeleteDictData(context.Context, *DictRequest) (*emptypb.Empty, error)
+	// data by id
+	DictDataById(context.Context, *DictRequest) (*DictData, error)
+	// data list by type
+	DictDataListByType(context.Context, *DictDataListByTypeRequest) (*DictDataListReply, error)
 	mustEmbedUnimplementedSystemServer()
 }
 
@@ -159,6 +324,39 @@ func (UnimplementedSystemServer) DeleteSysMenu(context.Context, *DeleteSysMenuRe
 }
 func (UnimplementedSystemServer) GetSysMenu(context.Context, *GetSysMenuRequest) (*MenuItem, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSysMenu not implemented")
+}
+func (UnimplementedSystemServer) DictTypeList(context.Context, *DictTypeListRequest) (*DictTypeListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DictTypeList not implemented")
+}
+func (UnimplementedSystemServer) DictDataList(context.Context, *DictDataListRequest) (*DictDataListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DictDataList not implemented")
+}
+func (UnimplementedSystemServer) DictTypeById(context.Context, *DictRequest) (*DictType, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DictTypeById not implemented")
+}
+func (UnimplementedSystemServer) AddDictType(context.Context, *DictType) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDictType not implemented")
+}
+func (UnimplementedSystemServer) UpdateDictType(context.Context, *DictType) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDictType not implemented")
+}
+func (UnimplementedSystemServer) DeleteDictType(context.Context, *DictRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDictType not implemented")
+}
+func (UnimplementedSystemServer) AddDictData(context.Context, *DictData) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDictData not implemented")
+}
+func (UnimplementedSystemServer) UpdateDictData(context.Context, *DictData) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDictData not implemented")
+}
+func (UnimplementedSystemServer) DeleteDictData(context.Context, *DictRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDictData not implemented")
+}
+func (UnimplementedSystemServer) DictDataById(context.Context, *DictRequest) (*DictData, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DictDataById not implemented")
+}
+func (UnimplementedSystemServer) DictDataListByType(context.Context, *DictDataListByTypeRequest) (*DictDataListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DictDataListByType not implemented")
 }
 func (UnimplementedSystemServer) mustEmbedUnimplementedSystemServer() {}
 func (UnimplementedSystemServer) testEmbeddedByValue()                {}
@@ -289,6 +487,204 @@ func _System_GetSysMenu_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _System_DictTypeList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictTypeListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).DictTypeList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_DictTypeList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).DictTypeList(ctx, req.(*DictTypeListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_DictDataList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictDataListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).DictDataList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_DictDataList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).DictDataList(ctx, req.(*DictDataListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_DictTypeById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).DictTypeById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_DictTypeById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).DictTypeById(ctx, req.(*DictRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_AddDictType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictType)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).AddDictType(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_AddDictType_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).AddDictType(ctx, req.(*DictType))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_UpdateDictType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictType)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).UpdateDictType(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_UpdateDictType_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).UpdateDictType(ctx, req.(*DictType))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_DeleteDictType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).DeleteDictType(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_DeleteDictType_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).DeleteDictType(ctx, req.(*DictRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_AddDictData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictData)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).AddDictData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_AddDictData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).AddDictData(ctx, req.(*DictData))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_UpdateDictData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictData)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).UpdateDictData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_UpdateDictData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).UpdateDictData(ctx, req.(*DictData))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_DeleteDictData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).DeleteDictData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_DeleteDictData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).DeleteDictData(ctx, req.(*DictRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_DictDataById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).DictDataById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_DictDataById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).DictDataById(ctx, req.(*DictRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_DictDataListByType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DictDataListByTypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).DictDataListByType(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: System_DictDataListByType_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).DictDataListByType(ctx, req.(*DictDataListByTypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // System_ServiceDesc is the grpc.ServiceDesc for System service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -319,6 +715,50 @@ var System_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSysMenu",
 			Handler:    _System_GetSysMenu_Handler,
+		},
+		{
+			MethodName: "DictTypeList",
+			Handler:    _System_DictTypeList_Handler,
+		},
+		{
+			MethodName: "DictDataList",
+			Handler:    _System_DictDataList_Handler,
+		},
+		{
+			MethodName: "DictTypeById",
+			Handler:    _System_DictTypeById_Handler,
+		},
+		{
+			MethodName: "AddDictType",
+			Handler:    _System_AddDictType_Handler,
+		},
+		{
+			MethodName: "UpdateDictType",
+			Handler:    _System_UpdateDictType_Handler,
+		},
+		{
+			MethodName: "DeleteDictType",
+			Handler:    _System_DeleteDictType_Handler,
+		},
+		{
+			MethodName: "AddDictData",
+			Handler:    _System_AddDictData_Handler,
+		},
+		{
+			MethodName: "UpdateDictData",
+			Handler:    _System_UpdateDictData_Handler,
+		},
+		{
+			MethodName: "DeleteDictData",
+			Handler:    _System_DeleteDictData_Handler,
+		},
+		{
+			MethodName: "DictDataById",
+			Handler:    _System_DictDataById_Handler,
+		},
+		{
+			MethodName: "DictDataListByType",
+			Handler:    _System_DictDataListByType_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

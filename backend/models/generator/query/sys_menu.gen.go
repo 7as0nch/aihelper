@@ -34,6 +34,8 @@ func newSysMenu(db *gorm.DB, opts ...gen.DOOption) sysMenu {
 	_sysMenu.UpdatedAt = field.NewField(tableName, "updated_at")
 	_sysMenu.UpdatedBy = field.NewInt64(tableName, "updated_by")
 	_sysMenu.IsDeleted = field.NewUint(tableName, "is_deleted")
+	_sysMenu.DeletedAt = field.NewField(tableName, "deleted_at")
+	_sysMenu.DeletedBy = field.NewInt64(tableName, "deleted_by")
 	_sysMenu.Name = field.NewString(tableName, "name")
 	_sysMenu.Path = field.NewString(tableName, "path")
 	_sysMenu.Hidden = field.NewBool(tableName, "hidden")
@@ -63,6 +65,8 @@ type sysMenu struct {
 	UpdatedAt  field.Field
 	UpdatedBy  field.Int64
 	IsDeleted  field.Uint
+	DeletedAt  field.Field
+	DeletedBy  field.Int64
 	Name       field.String
 	Path       field.String
 	Hidden     field.Bool
@@ -98,6 +102,8 @@ func (s *sysMenu) updateTableName(table string) *sysMenu {
 	s.UpdatedAt = field.NewField(table, "updated_at")
 	s.UpdatedBy = field.NewInt64(table, "updated_by")
 	s.IsDeleted = field.NewUint(table, "is_deleted")
+	s.DeletedAt = field.NewField(table, "deleted_at")
+	s.DeletedBy = field.NewInt64(table, "deleted_by")
 	s.Name = field.NewString(table, "name")
 	s.Path = field.NewString(table, "path")
 	s.Hidden = field.NewBool(table, "hidden")
@@ -127,13 +133,15 @@ func (s *sysMenu) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *sysMenu) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 19)
+	s.fieldMap = make(map[string]field.Expr, 21)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["created_by"] = s.CreatedBy
 	s.fieldMap["updated_at"] = s.UpdatedAt
 	s.fieldMap["updated_by"] = s.UpdatedBy
 	s.fieldMap["is_deleted"] = s.IsDeleted
+	s.fieldMap["deleted_at"] = s.DeletedAt
+	s.fieldMap["deleted_by"] = s.DeletedBy
 	s.fieldMap["name"] = s.Name
 	s.fieldMap["path"] = s.Path
 	s.fieldMap["hidden"] = s.Hidden

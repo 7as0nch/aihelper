@@ -20,23 +20,56 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationSystemAddDictData = "/base.System/AddDictData"
+const OperationSystemAddDictType = "/base.System/AddDictType"
 const OperationSystemAddSysMenu = "/base.System/AddSysMenu"
 const OperationSystemAllMenu = "/base.System/AllMenu"
+const OperationSystemDeleteDictData = "/base.System/DeleteDictData"
+const OperationSystemDeleteDictType = "/base.System/DeleteDictType"
 const OperationSystemDeleteSysMenu = "/base.System/DeleteSysMenu"
+const OperationSystemDictDataById = "/base.System/DictDataById"
+const OperationSystemDictDataList = "/base.System/DictDataList"
+const OperationSystemDictDataListByType = "/base.System/DictDataListByType"
+const OperationSystemDictTypeById = "/base.System/DictTypeById"
+const OperationSystemDictTypeList = "/base.System/DictTypeList"
 const OperationSystemGetSysMenu = "/base.System/GetSysMenu"
 const OperationSystemMenu = "/base.System/Menu"
+const OperationSystemUpdateDictData = "/base.System/UpdateDictData"
+const OperationSystemUpdateDictType = "/base.System/UpdateDictType"
 const OperationSystemUpdateSysMenu = "/base.System/UpdateSysMenu"
 
 type SystemHTTPServer interface {
+	// AddDictData add dict data
+	AddDictData(context.Context, *DictData) (*emptypb.Empty, error)
+	// AddDictType add dict type
+	AddDictType(context.Context, *DictType) (*emptypb.Empty, error)
 	// AddSysMenu sysMenu
 	AddSysMenu(context.Context, *AddSysMenuRequest) (*emptypb.Empty, error)
 	AllMenu(context.Context, *emptypb.Empty) (*AllMenuReply, error)
+	// DeleteDictData delete dict data
+	DeleteDictData(context.Context, *DictRequest) (*emptypb.Empty, error)
+	// DeleteDictType delete dict type
+	DeleteDictType(context.Context, *DictRequest) (*emptypb.Empty, error)
 	// DeleteSysMenu DeleteSysMenu implements base.SysMenuRepo.
 	DeleteSysMenu(context.Context, *DeleteSysMenuRequest) (*emptypb.Empty, error)
+	// DictDataById data by id
+	DictDataById(context.Context, *DictRequest) (*DictData, error)
+	// DictDataList system/dict/data/list
+	DictDataList(context.Context, *DictDataListRequest) (*DictDataListReply, error)
+	// DictDataListByType data list by type
+	DictDataListByType(context.Context, *DictDataListByTypeRequest) (*DictDataListReply, error)
+	// DictTypeById by id
+	DictTypeById(context.Context, *DictRequest) (*DictType, error)
+	// DictTypeList system/dict/type/list
+	DictTypeList(context.Context, *DictTypeListRequest) (*DictTypeListReply, error)
 	// GetSysMenu GetSysMenu implements base.SysMenuRepo.
 	GetSysMenu(context.Context, *GetSysMenuRequest) (*MenuItem, error)
 	// Menu menu
 	Menu(context.Context, *emptypb.Empty) (*MenuReply, error)
+	// UpdateDictData edit dict data
+	UpdateDictData(context.Context, *DictData) (*emptypb.Empty, error)
+	// UpdateDictType edit dict type
+	UpdateDictType(context.Context, *DictType) (*emptypb.Empty, error)
 	// UpdateSysMenu UpdateSysMenu implements base.SysMenuRepo.
 	UpdateSysMenu(context.Context, *AddSysMenuRequest) (*emptypb.Empty, error)
 }
@@ -49,6 +82,17 @@ func RegisterSystemHTTPServer(s *http.Server, srv SystemHTTPServer) {
 	r.PUT("/system/menu", _System_UpdateSysMenu0_HTTP_Handler(srv))
 	r.DELETE("/system/menu/{id}", _System_DeleteSysMenu0_HTTP_Handler(srv))
 	r.GET("/system/menu/{id}", _System_GetSysMenu0_HTTP_Handler(srv))
+	r.GET("/system/dict/type/list", _System_DictTypeList0_HTTP_Handler(srv))
+	r.GET("/system/dict/data/list", _System_DictDataList0_HTTP_Handler(srv))
+	r.GET("/system/dict/type/{id}", _System_DictTypeById0_HTTP_Handler(srv))
+	r.POST("/system/dict/type", _System_AddDictType0_HTTP_Handler(srv))
+	r.PUT("/system/dict/type", _System_UpdateDictType0_HTTP_Handler(srv))
+	r.DELETE("/system/dict/type/{id}", _System_DeleteDictType0_HTTP_Handler(srv))
+	r.POST("/system/dict/data", _System_AddDictData0_HTTP_Handler(srv))
+	r.PUT("/system/dict/data", _System_UpdateDictData0_HTTP_Handler(srv))
+	r.DELETE("/system/dict/data/{id}", _System_DeleteDictData0_HTTP_Handler(srv))
+	r.GET("/system/dict/data/{id}", _System_DictDataById0_HTTP_Handler(srv))
+	r.GET("/system/dict/data/type/{dictType}", _System_DictDataListByType0_HTTP_Handler(srv))
 }
 
 func _System_Menu0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
@@ -177,16 +221,274 @@ func _System_GetSysMenu0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Contex
 	}
 }
 
+func _System_DictTypeList0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictTypeListRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemDictTypeList)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DictTypeList(ctx, req.(*DictTypeListRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DictTypeListReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_DictDataList0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictDataListRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemDictDataList)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DictDataList(ctx, req.(*DictDataListRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DictDataListReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_DictTypeById0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemDictTypeById)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DictTypeById(ctx, req.(*DictRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DictType)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_AddDictType0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictType
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemAddDictType)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.AddDictType(ctx, req.(*DictType))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_UpdateDictType0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictType
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemUpdateDictType)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateDictType(ctx, req.(*DictType))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_DeleteDictType0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemDeleteDictType)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteDictType(ctx, req.(*DictRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_AddDictData0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictData
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemAddDictData)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.AddDictData(ctx, req.(*DictData))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_UpdateDictData0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictData
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemUpdateDictData)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateDictData(ctx, req.(*DictData))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_DeleteDictData0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemDeleteDictData)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteDictData(ctx, req.(*DictRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_DictDataById0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemDictDataById)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DictDataById(ctx, req.(*DictRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DictData)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _System_DictDataListByType0_HTTP_Handler(srv SystemHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DictDataListByTypeRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSystemDictDataListByType)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DictDataListByType(ctx, req.(*DictDataListByTypeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DictDataListReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type SystemHTTPClient interface {
+	// AddDictData add dict data
+	AddDictData(ctx context.Context, req *DictData, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	// AddDictType add dict type
+	AddDictType(ctx context.Context, req *DictType, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// AddSysMenu sysMenu
 	AddSysMenu(ctx context.Context, req *AddSysMenuRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	AllMenu(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *AllMenuReply, err error)
+	// DeleteDictData delete dict data
+	DeleteDictData(ctx context.Context, req *DictRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	// DeleteDictType delete dict type
+	DeleteDictType(ctx context.Context, req *DictRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// DeleteSysMenu DeleteSysMenu implements base.SysMenuRepo.
 	DeleteSysMenu(ctx context.Context, req *DeleteSysMenuRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	// DictDataById data by id
+	DictDataById(ctx context.Context, req *DictRequest, opts ...http.CallOption) (rsp *DictData, err error)
+	// DictDataList system/dict/data/list
+	DictDataList(ctx context.Context, req *DictDataListRequest, opts ...http.CallOption) (rsp *DictDataListReply, err error)
+	// DictDataListByType data list by type
+	DictDataListByType(ctx context.Context, req *DictDataListByTypeRequest, opts ...http.CallOption) (rsp *DictDataListReply, err error)
+	// DictTypeById by id
+	DictTypeById(ctx context.Context, req *DictRequest, opts ...http.CallOption) (rsp *DictType, err error)
+	// DictTypeList system/dict/type/list
+	DictTypeList(ctx context.Context, req *DictTypeListRequest, opts ...http.CallOption) (rsp *DictTypeListReply, err error)
 	// GetSysMenu GetSysMenu implements base.SysMenuRepo.
 	GetSysMenu(ctx context.Context, req *GetSysMenuRequest, opts ...http.CallOption) (rsp *MenuItem, err error)
 	// Menu menu
 	Menu(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *MenuReply, err error)
+	// UpdateDictData edit dict data
+	UpdateDictData(ctx context.Context, req *DictData, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	// UpdateDictType edit dict type
+	UpdateDictType(ctx context.Context, req *DictType, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// UpdateSysMenu UpdateSysMenu implements base.SysMenuRepo.
 	UpdateSysMenu(ctx context.Context, req *AddSysMenuRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 }
@@ -197,6 +499,34 @@ type SystemHTTPClientImpl struct {
 
 func NewSystemHTTPClient(client *http.Client) SystemHTTPClient {
 	return &SystemHTTPClientImpl{client}
+}
+
+// AddDictData add dict data
+func (c *SystemHTTPClientImpl) AddDictData(ctx context.Context, in *DictData, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/system/dict/data"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSystemAddDictData))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// AddDictType add dict type
+func (c *SystemHTTPClientImpl) AddDictType(ctx context.Context, in *DictType, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/system/dict/type"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSystemAddDictType))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // AddSysMenu sysMenu
@@ -226,6 +556,34 @@ func (c *SystemHTTPClientImpl) AllMenu(ctx context.Context, in *emptypb.Empty, o
 	return &out, nil
 }
 
+// DeleteDictData delete dict data
+func (c *SystemHTTPClientImpl) DeleteDictData(ctx context.Context, in *DictRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/system/dict/data/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSystemDeleteDictData))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DeleteDictType delete dict type
+func (c *SystemHTTPClientImpl) DeleteDictType(ctx context.Context, in *DictRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/system/dict/type/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSystemDeleteDictType))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // DeleteSysMenu DeleteSysMenu implements base.SysMenuRepo.
 func (c *SystemHTTPClientImpl) DeleteSysMenu(ctx context.Context, in *DeleteSysMenuRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
@@ -234,6 +592,76 @@ func (c *SystemHTTPClientImpl) DeleteSysMenu(ctx context.Context, in *DeleteSysM
 	opts = append(opts, http.Operation(OperationSystemDeleteSysMenu))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DictDataById data by id
+func (c *SystemHTTPClientImpl) DictDataById(ctx context.Context, in *DictRequest, opts ...http.CallOption) (*DictData, error) {
+	var out DictData
+	pattern := "/system/dict/data/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSystemDictDataById))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DictDataList system/dict/data/list
+func (c *SystemHTTPClientImpl) DictDataList(ctx context.Context, in *DictDataListRequest, opts ...http.CallOption) (*DictDataListReply, error) {
+	var out DictDataListReply
+	pattern := "/system/dict/data/list"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSystemDictDataList))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DictDataListByType data list by type
+func (c *SystemHTTPClientImpl) DictDataListByType(ctx context.Context, in *DictDataListByTypeRequest, opts ...http.CallOption) (*DictDataListReply, error) {
+	var out DictDataListReply
+	pattern := "/system/dict/data/type/{dictType}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSystemDictDataListByType))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DictTypeById by id
+func (c *SystemHTTPClientImpl) DictTypeById(ctx context.Context, in *DictRequest, opts ...http.CallOption) (*DictType, error) {
+	var out DictType
+	pattern := "/system/dict/type/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSystemDictTypeById))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DictTypeList system/dict/type/list
+func (c *SystemHTTPClientImpl) DictTypeList(ctx context.Context, in *DictTypeListRequest, opts ...http.CallOption) (*DictTypeListReply, error) {
+	var out DictTypeListReply
+	pattern := "/system/dict/type/list"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSystemDictTypeList))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -262,6 +690,34 @@ func (c *SystemHTTPClientImpl) Menu(ctx context.Context, in *emptypb.Empty, opts
 	opts = append(opts, http.Operation(OperationSystemMenu))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UpdateDictData edit dict data
+func (c *SystemHTTPClientImpl) UpdateDictData(ctx context.Context, in *DictData, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/system/dict/data"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSystemUpdateDictData))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UpdateDictType edit dict type
+func (c *SystemHTTPClientImpl) UpdateDictType(ctx context.Context, in *DictType, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/system/dict/type"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSystemUpdateDictType))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
