@@ -67,7 +67,11 @@ paths:
                   schema:
                     type: integer
                     format: int32
-                - name: dictDataLabel
+                - name: dictLabel
+                  in: query
+                  schema:
+                    type: string
+                - name: dictType
                   in: query
                   schema:
                     type: string

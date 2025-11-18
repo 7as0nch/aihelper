@@ -15,7 +15,7 @@ export interface BaseEntity {
  * @param total 总数
  */
 export interface PageResult<T = any> {
-  rows: T[];
+  list: T[];
   total: number;
 }
 

@@ -97,7 +97,7 @@ func (a *authRepo) GetToken(ctx context.Context) (string, error) {
 
 func (a *authRepo) NewToken(ctx context.Context, userId int64, username, phone string) (string, error) {
 	// ExpiredTime Expired time, 失效时间：十分钟。
-	ExpiredTime := &jwt.NumericDate{Time: time.Now().Add(time.Minute * 10)}
+	ExpiredTime := &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)}
 	claims := JwtClaims{
 		UserId:    userId,
 		UserName:  username,

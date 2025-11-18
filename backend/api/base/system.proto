@@ -147,7 +147,8 @@ message DictRequest {
 message DictDataListRequest {
   int32 pageNum = 1;
   int32 pageSize = 2;
-  string dictDataLabel = 3;
+  string dictLabel = 3;
+  string dictType = 4;
 }
 message DictDataListReply {
   repeated DictData list = 1;

@@ -56,3 +56,26 @@ const (
 	Status_Enabled  Status = iota + 1 // 启用
 	Status_Disabled                   // 禁用
 )
+
+func (s Status) String() string {
+	switch s {
+	case Status_Enabled:
+		return "1"
+	case Status_Disabled:
+		return "2"
+	default:
+		return "-"
+	}
+}
+
+// str to Status
+func ToStatus(str string) Status {
+	switch str {
+	case "1":
+		return Status_Enabled
+	case "2":
+		return Status_Disabled
+	default:
+		return 0
+	}
+}

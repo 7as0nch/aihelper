@@ -11,13 +11,17 @@ enum Api {
   root = '/system/dict/data',
 }
 
+export interface dictDataInfoReply {
+  list: DictData[];
+}
+
 /**
  * 主要是DictTag组件使用
  * @param dictType 字典类型
  * @returns 字典数据
  */
 export function dictDataInfo(dictType: string) {
-  return requestClient.get<DictData[]>(`${Api.root}/type/${dictType}`);
+  return requestClient.get<dictDataInfoReply>(`${Api.root}/type/${dictType}`);
 }
 
 /**

@@ -115,7 +115,8 @@ type DictDataListRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PageNum       int32                  `protobuf:"varint,1,opt,name=pageNum,proto3" json:"pageNum,omitempty"`
 	PageSize      int32                  `protobuf:"varint,2,opt,name=pageSize,proto3" json:"pageSize,omitempty"`
-	DictDataLabel string                 `protobuf:"bytes,3,opt,name=dictDataLabel,proto3" json:"dictDataLabel,omitempty"`
+	DictLabel     string                 `protobuf:"bytes,3,opt,name=dictLabel,proto3" json:"dictLabel,omitempty"`
+	DictType      string                 `protobuf:"bytes,4,opt,name=dictType,proto3" json:"dictType,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -164,9 +165,16 @@ func (x *DictDataListRequest) GetPageSize() int32 {
 	return 0
 }
 
-func (x *DictDataListRequest) GetDictDataLabel() string {
+func (x *DictDataListRequest) GetDictLabel() string {
 	if x != nil {
-		return x.DictDataLabel
+		return x.DictLabel
+	}
+	return ""
+}
+
+func (x *DictDataListRequest) GetDictType() string {
+	if x != nil {
+		return x.DictType
 	}
 	return ""
 }
@@ -1334,11 +1342,12 @@ const file_api_base_system_proto_rawDesc = "" +
 	"\x19DictDataListByTypeRequest\x12\x1a\n" +
 	"\bdictType\x18\x01 \x01(\tR\bdictType\"\x1d\n" +
 	"\vDictRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"q\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x85\x01\n" +
 	"\x13DictDataListRequest\x12\x18\n" +
 	"\apageNum\x18\x01 \x01(\x05R\apageNum\x12\x1a\n" +
-	"\bpageSize\x18\x02 \x01(\x05R\bpageSize\x12$\n" +
-	"\rdictDataLabel\x18\x03 \x01(\tR\rdictDataLabel\"M\n" +
+	"\bpageSize\x18\x02 \x01(\x05R\bpageSize\x12\x1c\n" +
+	"\tdictLabel\x18\x03 \x01(\tR\tdictLabel\x12\x1a\n" +
+	"\bdictType\x18\x04 \x01(\tR\bdictType\"M\n" +
 	"\x11DictDataListReply\x12\"\n" +
 	"\x04list\x18\x01 \x03(\v2\x0e.base.DictDataR\x04list\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\"\x8e\x02\n" +
