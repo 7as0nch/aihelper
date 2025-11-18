@@ -5,8 +5,13 @@ package tools
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/bwmarrin/snowflake"
+	"github.com/example/aichat/backend/pkg/lib"
 )
 
 // 支持 2 ^ 8 - 1 台机器
@@ -68,4 +73,32 @@ func testGetId() {
 		arr = append(arr, worker.GetId())
 	}
 	fmt.Printf("%+v\n", arr)
+}
+
+
+var Node *snowflake.Node
+
+func init() {
+    ip := lib.GetIP()
+    var seed int
+    var err error
+    if ip == "" {
+        seed = 1
+    } else {
+        arr := strings.Split(ip, ".")
+        lastOne := arr[3]
+        seed, err = strconv.Atoi(lastOne)
+        if err != nil {
+            panic(err)
+        }
+    }
+    idGenerator, err := snowflake.NewNode(int64(seed))
+    if err != nil {
+        panic(err)
+    }
+    Node = idGenerator
+}
+
+func GetSFID() int64 {
+    return Node.Generate().Int64()
 }

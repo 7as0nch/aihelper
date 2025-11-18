@@ -41,7 +41,7 @@ func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Log
 	userFeedbackRepo := data.NewUserFeedbackRepo(dataRepo, logger)
 	userFeedbackUsecase := biz.NewUserFeedbackUsecase(userFeedbackRepo, logger)
 	userFeedbackService := service.NewUserFeedbackService(userFeedbackUsecase, logLogger)
-	sysMenuRepo := data.NewSysMenuRepo(dataRepo)
+	sysMenuRepo := data.NewSysMenuRepo(dataRepo, logger)
 	sysMenuUseCase := base.NewSysMenuUseCase(sysMenuRepo)
 	systemService := base2.NewSystemService(sysMenuUseCase)
 	httpServer := server.NewHTTPServer(confServer, userFeedbackService, chatService, authService, authRepo, systemService, logLogger)

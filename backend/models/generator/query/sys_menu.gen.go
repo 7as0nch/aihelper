@@ -30,10 +30,10 @@ func newSysMenu(db *gorm.DB, opts ...gen.DOOption) sysMenu {
 	_sysMenu.ALL = field.NewAsterisk(tableName)
 	_sysMenu.ID = field.NewInt64(tableName, "id")
 	_sysMenu.CreatedAt = field.NewField(tableName, "created_at")
-	_sysMenu.CreatedBy = field.NewInt64(tableName, "creator")
+	_sysMenu.CreatedBy = field.NewInt64(tableName, "created_by")
 	_sysMenu.UpdatedAt = field.NewField(tableName, "updated_at")
-	_sysMenu.UpdatedBy = field.NewInt64(tableName, "updater")
-	_sysMenu.IsDeleted = field.NewBool(tableName, "is_soft_delete")
+	_sysMenu.UpdatedBy = field.NewInt64(tableName, "updated_by")
+	_sysMenu.IsDeleted = field.NewUint(tableName, "is_deleted")
 	_sysMenu.Name = field.NewString(tableName, "name")
 	_sysMenu.Path = field.NewString(tableName, "path")
 	_sysMenu.Hidden = field.NewBool(tableName, "hidden")
@@ -62,7 +62,7 @@ type sysMenu struct {
 	CreatedBy  field.Int64
 	UpdatedAt  field.Field
 	UpdatedBy  field.Int64
-	IsDeleted  field.Bool
+	IsDeleted  field.Uint
 	Name       field.String
 	Path       field.String
 	Hidden     field.Bool
@@ -94,10 +94,10 @@ func (s *sysMenu) updateTableName(table string) *sysMenu {
 	s.ALL = field.NewAsterisk(table)
 	s.ID = field.NewInt64(table, "id")
 	s.CreatedAt = field.NewField(table, "created_at")
-	s.CreatedBy = field.NewInt64(table, "creator")
+	s.CreatedBy = field.NewInt64(table, "created_by")
 	s.UpdatedAt = field.NewField(table, "updated_at")
-	s.UpdatedBy = field.NewInt64(table, "updater")
-	s.IsDeleted = field.NewBool(table, "is_soft_delete")
+	s.UpdatedBy = field.NewInt64(table, "updated_by")
+	s.IsDeleted = field.NewUint(table, "is_deleted")
 	s.Name = field.NewString(table, "name")
 	s.Path = field.NewString(table, "path")
 	s.Hidden = field.NewBool(table, "hidden")
@@ -130,10 +130,10 @@ func (s *sysMenu) fillFieldMap() {
 	s.fieldMap = make(map[string]field.Expr, 19)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["created_at"] = s.CreatedAt
-	s.fieldMap["creator"] = s.CreatedBy
+	s.fieldMap["created_by"] = s.CreatedBy
 	s.fieldMap["updated_at"] = s.UpdatedAt
-	s.fieldMap["updater"] = s.UpdatedBy
-	s.fieldMap["is_soft_delete"] = s.IsDeleted
+	s.fieldMap["updated_by"] = s.UpdatedBy
+	s.fieldMap["is_deleted"] = s.IsDeleted
 	s.fieldMap["name"] = s.Name
 	s.fieldMap["path"] = s.Path
 	s.fieldMap["hidden"] = s.Hidden

@@ -1,6 +1,9 @@
 package models
 
-import "github.com/example/aichat/backend/tools"
+import (
+	"github.com/example/aichat/backend/tools"
+	"gorm.io/plugin/soft_delete"
+)
 
 /* *
  * @Author: chengjiang
@@ -9,16 +12,16 @@ import "github.com/example/aichat/backend/tools"
 **/
 
 type Model struct {
-	ID        int64 `gorm:"column:id;type:bigint(20)" json:"id"`
-	CreatedAt Time  `gorm:"column:created_at;type:time;autoUpdateTime" json:"created_at"`
-	CreatedBy int64 `gorm:"column:creator" json:"created_by"` // 创建人
-	UpdatedAt Time  `gorm:"column:updated_at;type:time;autoUpdateTime" json:"updated_at"`
-	UpdatedBy int64 `gorm:"column:updater" json:"updated_by"`        // 更新人
-	IsDeleted bool  `gorm:"column:is_soft_delete" json:"is_deleted"` // 是否删除0否1是
+	ID        int64                 `gorm:"column:id;type:bigint;primaryKey" json:"id"`
+	CreatedAt Time                  `gorm:"column:created_at;type:time;autoCreateTime" json:"created_at"`
+	CreatedBy int64                 `gorm:"column:created_by;type:bigint" json:"created_by"` // 创建人
+	UpdatedAt Time                  `gorm:"column:updated_at;type:time;autoUpdateTime" json:"updated_at"`
+	UpdatedBy int64                 `gorm:"column:updated_by;type:bigint" json:"updated_by"`  // 更新人
+	IsDeleted soft_delete.DeletedAt `gorm:"column:is_deleted;type:smallint;default:0;softDelete:flag" json:"is_deleted"` // 是否删除0否1是
 }
 
 func (m *Model) New() {
-	m.ID = tools.GetSnowID()
+	m.ID = tools.GetSFID()
 }
 
 type Status uint8

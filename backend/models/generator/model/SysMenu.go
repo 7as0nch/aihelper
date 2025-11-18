@@ -64,7 +64,7 @@ type SysMenu struct {
 	Name       string        `json:"name" db:"name"`
 	Path       string        `json:"path" db:"path"`
 	Hidden     bool          `json:"hidden" db:"hidden"`
-	Redirect   string        `json:"redirect" db:"redirect"`
+	Redirect   string        `json:"redirect" db:"redirect"` // 是否重定向
 	Component  string        `json:"component" db:"component"`
 	AlwaysShow bool          `json:"alwaysShow" db:"always_show"`
 	Meta       *Meta         `json:"meta" gorm:"meta;type:jsonb" db:"meta"`

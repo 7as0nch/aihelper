@@ -30,10 +30,10 @@ func newSysUser(db *gorm.DB, opts ...gen.DOOption) sysUser {
 	_sysUser.ALL = field.NewAsterisk(tableName)
 	_sysUser.ID = field.NewInt64(tableName, "id")
 	_sysUser.CreatedAt = field.NewField(tableName, "created_at")
-	_sysUser.CreatedBy = field.NewInt64(tableName, "creator")
+	_sysUser.CreatedBy = field.NewInt64(tableName, "created_by")
 	_sysUser.UpdatedAt = field.NewField(tableName, "updated_at")
-	_sysUser.UpdatedBy = field.NewInt64(tableName, "updater")
-	_sysUser.IsDeleted = field.NewBool(tableName, "is_soft_delete")
+	_sysUser.UpdatedBy = field.NewInt64(tableName, "updated_by")
+	_sysUser.IsDeleted = field.NewUint(tableName, "is_deleted")
 	_sysUser.Type = field.NewString(tableName, "type")
 	_sysUser.Name = field.NewString(tableName, "name")
 	_sysUser.Account = field.NewString(tableName, "account")
@@ -59,7 +59,7 @@ type sysUser struct {
 	CreatedBy   field.Int64
 	UpdatedAt   field.Field
 	UpdatedBy   field.Int64
-	IsDeleted   field.Bool
+	IsDeleted   field.Uint
 	Type        field.String
 	Name        field.String
 	Account     field.String
@@ -88,10 +88,10 @@ func (s *sysUser) updateTableName(table string) *sysUser {
 	s.ALL = field.NewAsterisk(table)
 	s.ID = field.NewInt64(table, "id")
 	s.CreatedAt = field.NewField(table, "created_at")
-	s.CreatedBy = field.NewInt64(table, "creator")
+	s.CreatedBy = field.NewInt64(table, "created_by")
 	s.UpdatedAt = field.NewField(table, "updated_at")
-	s.UpdatedBy = field.NewInt64(table, "updater")
-	s.IsDeleted = field.NewBool(table, "is_soft_delete")
+	s.UpdatedBy = field.NewInt64(table, "updated_by")
+	s.IsDeleted = field.NewUint(table, "is_deleted")
 	s.Type = field.NewString(table, "type")
 	s.Name = field.NewString(table, "name")
 	s.Account = field.NewString(table, "account")
@@ -121,10 +121,10 @@ func (s *sysUser) fillFieldMap() {
 	s.fieldMap = make(map[string]field.Expr, 16)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["created_at"] = s.CreatedAt
-	s.fieldMap["creator"] = s.CreatedBy
+	s.fieldMap["created_by"] = s.CreatedBy
 	s.fieldMap["updated_at"] = s.UpdatedAt
-	s.fieldMap["updater"] = s.UpdatedBy
-	s.fieldMap["is_soft_delete"] = s.IsDeleted
+	s.fieldMap["updated_by"] = s.UpdatedBy
+	s.fieldMap["is_deleted"] = s.IsDeleted
 	s.fieldMap["type"] = s.Type
 	s.fieldMap["name"] = s.Name
 	s.fieldMap["account"] = s.Account

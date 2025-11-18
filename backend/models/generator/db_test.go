@@ -65,7 +65,7 @@ func TestMigrate(t *testing.T) {
 	// gormdb.Migrator().AutoMigrate(&model.SysMenu{})
 	// var modelInterface ModelInterface = &model.SysMenu{}
     
-	err := gormdb.Migrator().AutoMigrate(&model.SysMenu{})
+	err := gormdb.Migrator().AutoMigrate(&model.SysDict{})
 	if err != nil {
 		t.Logf("迁移失败: %v", err)
 		return

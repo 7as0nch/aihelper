@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/example/aichat/backend/internal/conf"
+	"github.com/example/aichat/backend/models"
+	"github.com/example/aichat/backend/pkg/auth"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -56,6 +58,14 @@ func NewPostgresDB(conf *conf.Bootstrap, log *zap.Logger) (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 	}
+	// before create 钩子，自动设置 created_at created_by 字段
+	db.Callback().Create().Before("gorm:create").Register("before_create", beforeCreate)
+
+	// before update 钩子，自动设置 updated_at updated_by 字段
+	db.Callback().Update().Before("gorm:update").Register("before_update", beforeUpdate)
+
+	// 禁用软删除钩子，使用标准GORM软删除
+	db.Callback().Delete().Before("gorm:delete").Register("before_delete", beforeDelete)
 
 	// 配置连接池参数
 	sqlDB, err := db.DB()
@@ -86,4 +96,76 @@ func MustNewPostgresDB(conf *conf.Bootstrap, log *zap.Logger) *gorm.DB {
 		panic(fmt.Sprintf("Failed to connect to PostgreSQL: %v", err))
 	}
 	return db
+}
+
+func beforeCreate(db *gorm.DB) {
+	// 从context中获取当前用户ID
+	ctx := db.Statement.Context
+	var userID int64 = 0 // 默认系统操作
+
+	// 检查是否有可用的用户ID（从认证middleware或业务逻辑中获取）
+	if ctx != nil {
+		if authUserID := ctx.Value(auth.UserId); authUserID != nil {
+			if uid, ok := authUserID.(int64); ok {
+				userID = uid
+			} else if uid, ok := authUserID.(int); ok {
+				userID = int64(uid)
+			}
+		}
+	}
+
+	// 设置创建时间和操作用户ID
+	now := models.Now()
+
+	// 直接设置字段，让GORM自动处理字段覆盖问题
+	db.Statement.SetColumn("created_at", now)
+	db.Statement.SetColumn("created_by", userID)
+}
+
+func beforeUpdate(db *gorm.DB) {
+	// 从context中获取当前用户ID
+	ctx := db.Statement.Context
+	var userID int64 = 0 // 默认系统操作
+
+	// 检查是否有可用的用户ID（从认证middleware或业务逻辑中获取）
+	if ctx != nil {
+		if authUserID := ctx.Value(auth.UserId); authUserID != nil {
+			if uid, ok := authUserID.(int64); ok {
+				userID = uid
+			} else if uid, ok := authUserID.(int); ok {
+				userID = int64(uid)
+			}
+		}
+	}
+
+	// 设置更新时间和操作用户ID
+	now := models.Now()
+
+	// 直接设置字段，让GORM自动处理字段覆盖问题
+	db.Statement.SetColumn("updated_at", now)
+	db.Statement.SetColumn("updated_by", userID)
+}
+
+func beforeDelete(db *gorm.DB) {
+	// 从context中获取当前用户ID
+	ctx := db.Statement.Context
+	var userID int64 = 0 // 默认系统操作
+
+	// 检查是否有可用的用户ID（从认证middleware或业务逻辑中获取）
+	if ctx != nil {
+		if authUserID := ctx.Value(auth.UserId); authUserID != nil {
+			if uid, ok := authUserID.(int64); ok {
+				userID = uid
+			} else if uid, ok := authUserID.(int); ok {
+				userID = int64(uid)
+			}
+		}
+	}
+
+	// 设置更新时间和操作用户ID
+	now := models.Now()
+
+	// 直接设置字段，让GORM自动处理字段覆盖问题
+	db.Statement.SetColumn("updated_at", now)
+	db.Statement.SetColumn("updated_by", userID)
 }

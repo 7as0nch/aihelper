@@ -3,6 +3,7 @@ module github.com/example/aichat/backend
 go 1.24.6
 
 require (
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/cloudwego/eino v0.5.4
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.22
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250929071429-e7650d831a09
@@ -27,6 +28,7 @@ require (
 	gorm.io/gen v0.3.27
 	gorm.io/gorm v1.31.0
 	gorm.io/plugin/dbresolver v1.6.2
+	gorm.io/plugin/soft_delete v1.2.1
 )
 
 require (

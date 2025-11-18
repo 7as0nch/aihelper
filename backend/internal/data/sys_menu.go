@@ -11,16 +11,18 @@ import (
 	"github.com/example/aichat/backend/internal/biz/base"
 	"github.com/example/aichat/backend/models/generator/model"
 	"github.com/example/aichat/backend/models/generator/query"
+	"go.uber.org/zap"
 )
 
 type sysMenuRepo struct {
 	db DataRepo
+	log *zap.Logger
 }
 
 
 
-func NewSysMenuRepo(db DataRepo) base.SysMenuRepo {
-	return &sysMenuRepo{db: db}
+func NewSysMenuRepo(db DataRepo, log *zap.Logger) base.SysMenuRepo {
+	return &sysMenuRepo{db: db, log: log}
 }
 
 // GetAll implements base.SysMenuRepo.
@@ -47,7 +49,12 @@ func (s *sysMenuRepo) GetRouter(ctx context.Context) ([]*model.SysMenu, error) {
 // Add implements base.SysMenuRepo.
 func (s *sysMenuRepo) Add(ctx context.Context, menu *model.SysMenu) error {
 	u := query.Use(s.db.GetDB()).SysMenu
-	return u.WithContext(ctx).Create(menu)
+	err := u.WithContext(ctx).Create(menu)
+	if err != nil {
+		s.log.Error("Add sys menu failed", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 // Update implements base.SysMenuRepo.
@@ -55,6 +62,7 @@ func (s *sysMenuRepo) Update(ctx context.Context, menu *model.SysMenu) error {
 	u := query.Use(s.db.GetDB()).SysMenu
 	rowsAffected, err := u.WithContext(ctx).Where(u.ID.Eq(menu.ID)).Updates(menu)
 	if err != nil {
+		s.log.Error("Update sys menu failed", zap.Error(err))
 		return err
 	}
 	if rowsAffected.RowsAffected == 0 {

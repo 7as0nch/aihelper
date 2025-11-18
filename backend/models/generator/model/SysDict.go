@@ -21,14 +21,18 @@ import "github.com/example/aichat/backend/models"
 //	"createTime": 1684048781000
 type SysDict struct {
 	models.Model
-	DictCode  string        `json:"dictCode" gorm:"dict_code" db:"dict_code"`
-	DictSort  int           `json:"dictSort" gorm:"dict_sort" db:"dict_sort"`
-	DictLabel string        `json:"dictLabel" gorm:"dict_label" db:"dict_label"`
-	DictValue string        `json:"dictValue" gorm:"dict_value" db:"dict_value"`
-	DictType  string        `json:"dictType" gorm:"dict_type" db:"dict_type"`
-	CssClass  string        `json:"cssClass" gorm:"css_class" db:"css_class"`
-	ListClass string        `json:"listClass" gorm:"list_class" db:"list_class"`
-	IsDefault bool          `json:"isDefault" gorm:"is_default;type:bool;default:false" db:"is_default"`
-	Status    models.Status `json:"status" gorm:"status;type:tinyint(1);default:2" db:"status"`
-	Remark    string        `json:"remark" gorm:"remark;type:varchar(255)" db:"remark"`
+	DictCode  string        `json:"dictCode" gorm:"column:dict_code;type:varchar(64)" db:"dict_code"`
+	DictSort  int           `json:"dictSort" gorm:"column:dict_sort;type:int" db:"dict_sort"`
+	DictLabel string        `json:"dictLabel" gorm:"column:dict_label;type:varchar(64)" db:"dict_label"`
+	DictValue string        `json:"dictValue" gorm:"column:dict_value;type:varchar(64)" db:"dict_value"`
+	DictType  string        `json:"dictType" gorm:"column:dict_type;type:varchar(64)" db:"dict_type"`
+	CssClass  string        `json:"cssClass" gorm:"column:css_class;type:varchar(64)" db:"css_class"`
+	ListClass string        `json:"listClass" gorm:"column:list_class;type:varchar(64)" db:"list_class"`
+	IsDefault bool          `json:"isDefault" gorm:"column:is_default;type:bool;default:false" db:"is_default"`
+	Status    models.Status `json:"status" gorm:"column:status;type:smallint;default:2" db:"status"`
+	Remark    string        `json:"remark" gorm:"column:remark;type:varchar(255)" db:"remark"`
+}
+
+func (*SysDict) TableName() string {
+	return "sys_dict"
 }
