@@ -77,11 +77,16 @@ func (s *SystemService) AllMenu(ctx context.Context, req *emptypb.Empty) (*pb.Al
 			Component:  m.Component,
 			Query:      "",
 			IsFrame:    "1",
-			IsCache:    "1",
+			IsCache:    func() string {
+				if m.Meta.NoCache {
+					return "2"
+				}
+				return "1"
+			}(),
 			MenuType:   m.Type.String(),
 			Visible:    "1",
-			Status:     "1",
-			Perms:      "",
+			Status:     m.Status.String(),
+			Perms:      m.PermsCode,
 			Icon:       m.Meta.Icon,
 		})
 	}
@@ -195,7 +200,7 @@ func (s *SystemService) GetSysMenu(ctx context.Context, req *pb.GetSysMenuReques
 			MenuType:   m.Type.String(),
 			Visible:    "1",
 			Status:     "1",
-			Perms:      "",
+			Perms:      m.PermsCode,
 			Icon:       m.Meta.Icon,
 		}, nil
 }

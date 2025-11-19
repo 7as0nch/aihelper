@@ -14,7 +14,7 @@ func TestUUID(t *testing.T) {
 	fmt.Println(uuid.NewV1())
 	fmt.Println(strings.ReplaceAll(uuid.Must(uuid.NewV4()).String(), "-", ""))
 
-	fmt.Println(GetSnowID())
+	fmt.Println(GetSnowID(), GetSFID())
 }
 
 func TestPwd(t *testing.T) {

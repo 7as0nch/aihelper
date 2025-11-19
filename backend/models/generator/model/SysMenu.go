@@ -72,7 +72,7 @@ type SysMenu struct {
 	Sort       int           `json:"sort" db:"sort"`
 	Type       MenuType      `json:"type" gorm:"type:smallint" db:"type"`
 	Remark     string        `json:"remark" gorm:"remark" db:"remark"`
-	PermsCode  string        `json:"permsCode" gorm:"perms_code;type:varchar(10)" db:"perms_code"`
+	PermsCode  string        `json:"permsCode" gorm:"perms_code;type:varchar(20)" db:"perms_code"`
 	Status     models.Status `json:"status" gorm:"status;type:smallint;default:1" db:"status"`
 	Children   []*SysMenu    `json:"children" gorm:"-" db:"-"`
 }

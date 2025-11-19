@@ -31,7 +31,7 @@ func NewSysMenuRepo(db DataRepo, log *zap.Logger) base.SysMenuRepo {
 
 // GetAll implements base.SysMenuRepo
 func (r *sysMenuRepo) GetAll(ctx context.Context) ([]*model.SysMenu, error) {
-	menus, err := r.query.SysMenu.WithContext(ctx).Find()
+	menus, err := r.query.SysMenu.WithContext(ctx).Order(r.query.SysMenu.Sort.Asc()).Find()
 	if err != nil {
 		return nil, err
 	}
