@@ -2,9 +2,9 @@ package base
 
 import (
 	"context"
-	kerrors "github.com/go-kratos/kratos/v2/errors"
 	pb "github.com/example/aichat/backend/api/base"
 	"github.com/example/aichat/backend/internal/biz/base"
+	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -43,8 +43,10 @@ func (s *AuthService) GetInfo(ctx context.Context, _ *emptypb.Empty) (*pb.GetInf
 	log.Infof("获取用户信息 %#v", user)
 	return &pb.GetInfoReply{
 		User: &pb.User{
-			UserName: user.Name,
+			UserId:   user.ID,
 			NickName: user.Account,
+			UserName: user.Name,
+			Avatar:   user.Avatar,
 		},
 		Roles: []string{
 			"superadmin",
@@ -57,4 +59,41 @@ func (s *AuthService) GetInfo(ctx context.Context, _ *emptypb.Empty) (*pb.GetInf
 // NOTE: 这里笔记备注：虽然请求参数为空，但仍然需要定义一个空的请求类型，以符合 gRPC 的方法签名要求。前端调用时，传递一个空的请求对象即可。
 func (s *AuthService) Logout(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, s.user.Logout(ctx)
+}
+
+// Register
+func (s *AuthService) Register(ctx context.Context, req *pb.RegisterRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// UpdateProfile
+func (s *AuthService) UpdateProfile(ctx context.Context, req *pb.User) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// GetProfile
+func (s *AuthService) GetProfile(ctx context.Context, req *emptypb.Empty) (*pb.GetInfoReply, error) {
+	user, err := s.user.GetInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil || user.ID == 0 {
+		return nil, kerrors.New(401, "用户不存在", "用户不存在")
+	}
+	log.Infof("获取用户信息 %#v", user)
+	return &pb.GetInfoReply{
+		User: &pb.User{
+			UserId:      user.ID,
+			NickName:    user.Account,
+			UserName:    user.Name,
+			Avatar:      user.Avatar,
+			Email:       user.Email,
+			Phonenumber: user.Phonenumber,
+		},
+	}, nil
+}
+
+// UpdatePwd
+func (s *AuthService) UpdatePwd(ctx context.Context, req *pb.UpdatePwdRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
