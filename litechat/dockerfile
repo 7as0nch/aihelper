@@ -1,0 +1,39 @@
+FROM node:23.11 as build-stage
+
+RUN mkdir -p /home/inoutweb/
+
+COPY package.json /home/inoutweb/
+COPY .npmrc /home/inoutweb/
+COPY pnpm-lock.yaml /home/inoutweb/
+
+WORKDIR /home/inoutweb
+
+
+RUN npm install -g pnpm
+
+RUN pnpm install
+COPY . /home/inoutweb
+
+
+RUN pnpm run build
+
+FROM nginx:1.27.4 as production-stage
+
+COPY  --from=build-stage /home/inoutweb/apps/web-antd/dist /home/inoutweb
+
+COPY ./nginx/conf/* /etc/nginx/
+
+WORKDIR /
+
+
+ENV TZ=Asia/Shanghai
+
+RUN  mkdir -p /home/file \
+    && mkdir -p /home/logs/ \
+    && ls -a /usr/local/bin/ \
+    && echo 'Asia/Shanghai' >/etc/timezone
+
+
+EXPOSE 5666
+
+CMD ["nginx","-c","/etc/nginx/nginx.conf","-g","daemon off;"]

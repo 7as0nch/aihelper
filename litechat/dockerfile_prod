@@ -1,0 +1,22 @@
+FROM nginx:1.27.4
+
+RUN ls
+# 注释
+ADD  ./dist /home/litechat
+
+ADD ./nginx/prod_conf/* /etc/nginx/
+
+WORKDIR /
+
+ENV TZ=Asia/Shanghai
+
+
+RUN  mkdir -p /home/file \
+    && mkdir -p /home/logs/ \
+    && ls -a /usr/local/bin/ \
+    && echo 'Asia/Shanghai' >/etc/timezone
+
+
+EXPOSE 80
+
+CMD ["nginx","-c","/etc/nginx/nginx.conf","-g","daemon off;"]

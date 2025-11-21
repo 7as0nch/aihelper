@@ -1,0 +1,11 @@
+version: '3.3'
+# name: 'inoutweb'
+services:
+  litechat_web_prod:
+    restart: always
+    network_mode: "host"
+    container_name: litechat_web_prod
+    image: litechat_web_prod
+    ports:
+      - '80:80'
+      # - '8081:8081'
