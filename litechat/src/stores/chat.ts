@@ -170,7 +170,10 @@ export const useChatStore = defineStore('chat', () => {
     const isThinking = ref(false);
     const thinkingMode = ref<'smart' | 'deep' | 'quick'>('smart');
 
-    const historyItems = ref([
+    const historyItems = ref<{ id: string; title: string }[]>([]);
+
+    // Mock history data
+    const mockHistoryItems = [
         { id: '1', title: '如何使用 Vue3 Composition API' },
         { id: '2', title: 'TailwindCSS 最佳实践' },
         { id: '3', title: '2025年 AI 发展趋势报告' },
@@ -179,7 +182,18 @@ export const useChatStore = defineStore('chat', () => {
         { id: '6', title: 'Pinia 状态管理最佳实践' },
         { id: '7', title: 'Vue Router 路由守卫详解' },
         { id: '8', title: '前端工程化落地实践' },
-    ]);
+    ];
+
+    const fetchHistoryList = async () => {
+        // In a real app, we would check auth here or rely on API to return 401
+        // But since we are mocking, we'll just simulate a fetch
+        await new Promise(resolve => setTimeout(resolve, 500));
+        historyItems.value = mockHistoryItems;
+    };
+
+    const clearHistoryList = () => {
+        historyItems.value = [];
+    };
 
     const addMessage = (message: Message) => {
         messages.value.push(message);
@@ -281,5 +295,7 @@ export const useChatStore = defineStore('chat', () => {
         clearMessages,
         deleteChat,
         renameChat,
+        fetchHistoryList,
+        clearHistoryList,
     };
 });

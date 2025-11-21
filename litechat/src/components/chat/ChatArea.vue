@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import MessageList from './MessageList.vue';
 import InputArea from './InputArea.vue';
-import { Menu, X } from 'lucide-vue-next';
+import { Menu, X, BookOpen, HelpCircle } from 'lucide-vue-next';
 import { useChatStore } from '../../stores/chat';
-
 import { useAuthStore } from '../../stores/auth';
+import { useRecommendationStore } from '../../stores/recommendation';
 
 const store = useChatStore();
 const authStore = useAuthStore();
+const recommendationStore = useRecommendationStore();
 const quotedContent = ref<{id: string, content: string} | null>(null);
 
-defineEmits<{
-  (e: 'toggleSidebar'): void
-}>();
+// ... (keep existing emits and handlers)
 
 const handleQuote = (messageId: string, content: string) => {
   quotedContent.value = {
@@ -49,6 +48,26 @@ const previewImageUrl = ref<string | null>(null);
 const handlePreviewImage = (url: string) => {
   previewImageUrl.value = url;
 };
+
+// Recommendations
+onMounted(() => {
+  recommendationStore.fetchRecommendations();
+});
+
+const randomQuestion = computed(() => {
+  const items = recommendationStore.getRandomItems(recommendationStore.questionList, 1);
+  return items.length > 0 ? items[0] : null;
+});
+
+const randomKnowledgeBase = computed(() => {
+  const items = recommendationStore.getRandomItems(recommendationStore.knowledgeBaseList, 1);
+  return items.length > 0 ? items[0] : null;
+});
+
+const handleQuestionClick = (content: string) => {
+    if (!authStore.checkAuth()) return;
+    store.sendMessage(content);
+};
 </script>
 
 <template>
@@ -71,13 +90,29 @@ const handlePreviewImage = (url: string) => {
         <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-          <div class="p-4 bg-white dark:bg-[#2a2a2a] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer text-left group">
-            <h3 class="font-medium text-gray-900 dark:text-gray-100 mb-1 group-hover:text-primary transition-colors">想了解点什么？</h3>
-            <p class="text-sm text-gray-500">房价下跌对普通人意味着什么？</p>
+          <!-- Random Question -->
+          <div 
+            v-if="recommendationStore.showQuestions && randomQuestion"
+            @click="handleQuestionClick(randomQuestion.content)"
+            class="p-4 bg-white dark:bg-[#2a2a2a] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer text-left group"
+          >
+            <div class="flex items-center gap-2 mb-2">
+                <HelpCircle class="w-4 h-4 text-primary" />
+                <h3 class="font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">想了解点什么？</h3>
+            </div>
+            <p class="text-sm text-gray-500 line-clamp-2">{{ randomQuestion.content }}</p>
           </div>
-          <div class="p-4 bg-white dark:bg-[#2a2a2a] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer text-left group">
-            <h3 class="font-medium text-gray-900 dark:text-gray-100 mb-1 group-hover:text-primary transition-colors">推荐知识库</h3>
-            <p class="text-sm text-gray-500">正经的大学生活与不正经的PC</p>
+
+          <!-- Random Knowledge Base -->
+          <div 
+            v-if="recommendationStore.showKnowledgeBase && randomKnowledgeBase"
+            class="p-4 bg-white dark:bg-[#2a2a2a] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer text-left group"
+          >
+             <div class="flex items-center gap-2 mb-2">
+                <BookOpen class="w-4 h-4 text-primary" />
+                <h3 class="font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">推荐知识库</h3>
+            </div>
+            <p class="text-sm text-gray-500 line-clamp-2">{{ randomKnowledgeBase.title }}</p>
           </div>
         </div>
       </div>

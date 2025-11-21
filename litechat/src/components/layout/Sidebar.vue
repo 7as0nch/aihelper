@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
@@ -37,8 +37,24 @@ const store = useChatStore();
 const authStore = useAuthStore();
 const isHistoryOpen = ref(true);
 
+// Watch auth state to fetch/clear history
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (isAuthenticated) {
+    store.fetchHistoryList();
+  } else {
+    store.clearHistoryList();
+  }
+});
+
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    store.fetchHistoryList();
+  }
+});
+
 const handleLogout = () => {
   authStore.logout();
+  router.push('/');
 };
 
 const navItems = [
