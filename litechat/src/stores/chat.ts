@@ -301,10 +301,26 @@ export const useChatStore = defineStore('chat', () => {
         isLoading.value = false;
     };
 
+    const favorites = ref<string[]>([]);
+
+    const toggleFavorite = (chatId: string) => {
+        const index = favorites.value.indexOf(chatId);
+        if (index === -1) {
+            favorites.value.push(chatId);
+        } else {
+            favorites.value.splice(index, 1);
+        }
+    };
+
+    const isFavorite = (chatId: string) => {
+        return favorites.value.includes(chatId);
+    };
+
     return {
         messages,
         currentChatId,
         historyItems,
+        favorites,
         isLoading,
         isThinking,
         thinkingMode,
@@ -315,5 +331,7 @@ export const useChatStore = defineStore('chat', () => {
         renameChat,
         fetchHistoryList,
         clearHistoryList,
+        toggleFavorite,
+        isFavorite,
     };
 });

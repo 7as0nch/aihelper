@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import ChatView from '@/views/ChatView.vue';
 import KnowledgeBaseView from '@/views/KnowledgeBaseView.vue';
-import CollectionsView from '@/views/CollectionsView.vue';
 import HistoryView from '@/views/HistoryView.vue';
 
 const routes = [
@@ -23,7 +22,7 @@ const routes = [
     {
         path: '/collections',
         name: 'Collections',
-        component: CollectionsView,
+        component: () => import('@/views/FavoritesView.vue'),
     },
     {
         path: '/history',

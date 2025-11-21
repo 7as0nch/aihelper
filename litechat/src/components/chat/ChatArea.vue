@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import MessageList from './MessageList.vue';
 import InputArea from './InputArea.vue';
-import { Menu, X, BookOpen } from 'lucide-vue-next';
+import { Menu, X, BookOpen, MessageCircle, Star, Share2, Plus, ChevronLeft } from 'lucide-vue-next';
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
 import { useRecommendationStore } from '../../stores/recommendation';
@@ -72,11 +72,37 @@ const handleQuestionClick = (content: string) => {
 <template>
   <div class="flex-1 min-w-0 flex flex-col h-full relative bg-white/70 dark:bg-[#242424]/70 backdrop-blur-md transition-colors">
     <!-- Mobile Header -->
-    <div class="md:hidden h-14 flex items-center px-4 border-b border-gray-100 dark:border-gray-800">
-      <button @click="$emit('toggleSidebar')" class="p-2 -ml-2 text-gray-600 dark:text-gray-300">
-        <Menu class="w-6 h-6" />
-      </button>
-      <span class="ml-2 font-medium">新对话</span>
+    <div class="md:hidden h-14 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-800">
+      <div class="flex items-center gap-2">
+        <button @click="$emit('toggleSidebar')" class="p-2 -ml-2 text-gray-600 dark:text-gray-300">
+          <Menu class="w-6 h-6" />
+        </button>
+        <span class="font-medium text-gray-900 dark:text-white">{{ store.historyItems.find(h => h.id === store.currentChatId)?.title || '新对话' }}</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <button 
+          @click="$router.push('/')"
+          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
+          title="新对话"
+        >
+          <Plus class="w-5 h-5" />
+        </button>
+        <button 
+          v-if="store.currentChatId"
+          @click="store.toggleFavorite(store.currentChatId)"
+          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          :class="store.isFavorite(store.currentChatId) ? 'text-yellow-500' : 'text-gray-400'"
+          title="收藏"
+        >
+          <Star class="w-5 h-5" :fill="store.isFavorite(store.currentChatId) ? 'currentColor' : 'none'" />
+        </button>
+        <button 
+          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
+          title="分享"
+        >
+          <Share2 class="w-5 h-5" />
+        </button>
+      </div>
     </div>
 
     <!-- Welcome State (Centered) -->
@@ -127,6 +153,57 @@ const handleQuestionClick = (content: string) => {
 
     <!-- Standard Chat Layout -->
     <template v-else>
+      <!-- Desktop Header -->
+      <div class="hidden md:flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex items-center gap-3">
+          <button 
+            @click="$router.push('/')"
+            class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            title="返回"
+          >
+            <ChevronLeft class="w-5 h-5" />
+          </button>
+          <div>
+            <h2 class="text-base font-medium text-gray-900 dark:text-white">
+              {{ store.historyItems.find(h => h.id === store.currentChatId)?.title || '新对话' }}
+            </h2>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              {{ store.messages.length }} 条对话
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <button 
+            @click="$router.push('/')"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
+            title="新对话"
+          >
+            <Plus class="w-5 h-5" />
+          </button>
+          <button 
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
+            title="评论"
+          >
+            <MessageCircle class="w-5 h-5" />
+          </button>
+          <button 
+            v-if="store.currentChatId"
+            @click="store.toggleFavorite(store.currentChatId)"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            :class="store.isFavorite(store.currentChatId) ? 'text-yellow-500' : 'text-gray-400'"
+            title="收藏"
+          >
+            <Star class="w-5 h-5" :fill="store.isFavorite(store.currentChatId) ? 'currentColor' : 'none'" />
+          </button>
+          <button 
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
+            title="分享"
+          >
+            <Share2 class="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
       <MessageList 
         @quote="handleQuote" 
         @regenerate="handleRegenerate"

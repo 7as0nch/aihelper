@@ -18,13 +18,16 @@ import {
   MoreHorizontal,
   Edit2,
   Trash2,
-  User
+  User,
+  Settings
 } from 'lucide-vue-next';
 
 defineProps<{
   isOpen: boolean;
   isCollapsed: boolean;
 }>();
+
+import SettingsModal from '../settings/SettingsModal.vue';
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -36,6 +39,7 @@ const router = useRouter();
 const store = useChatStore();
 const authStore = useAuthStore();
 const isHistoryOpen = ref(true);
+const isSettingsOpen = ref(false);
 
 const appTitle = import.meta.env.VITE_APP_TITLE || 'AI Chat';
 const appLogo = import.meta.env.VITE_APP_LOGO || '/logo.png';
@@ -366,6 +370,13 @@ const vClickOutside = {
             <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ authStore.user?.username }}</div>
           </div>
           <button 
+            @click="isSettingsOpen = true"
+            class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            title="设置"
+          >
+            <Settings class="w-4 h-4" />
+          </button>
+          <button 
             @click="handleLogout"
             class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             title="退出登录"
@@ -392,13 +403,22 @@ const vClickOutside = {
             class="w-8 h-8 rounded-full bg-gray-100 cursor-pointer"
           />
           <div class="absolute left-full bottom-0 ml-2 mb-[-4px] hidden group-hover:block z-50">
-            <button 
-              @click="handleLogout"
-              class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg text-sm text-red-500 hover:bg-gray-50 dark:hover:bg-gray-800 whitespace-nowrap"
-            >
-              <LogOut class="w-4 h-4" />
-              退出
-            </button>
+            <div class="flex flex-col bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+              <button 
+                @click="isSettingsOpen = true"
+                class="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 whitespace-nowrap"
+              >
+                <Settings class="w-4 h-4" />
+                设置
+              </button>
+              <button 
+                @click="handleLogout"
+                class="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-gray-50 dark:hover:bg-gray-800 whitespace-nowrap"
+              >
+                <LogOut class="w-4 h-4" />
+                退出
+              </button>
+            </div>
           </div>
         </div>
 
@@ -413,4 +433,6 @@ const vClickOutside = {
       </div>
     </div>
   </aside>
+
+  <SettingsModal :is-open="isSettingsOpen" @close="isSettingsOpen = false" />
 </template>
