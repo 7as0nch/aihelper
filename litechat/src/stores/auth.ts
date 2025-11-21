@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { authApi, type AuthConfig } from '../api/auth';
 
 export interface User {
     id: string;
@@ -10,15 +11,21 @@ export interface User {
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<User | null>(null);
     const isAuthenticated = ref(false);
-
     const showAuthModal = ref(false);
+    const config = ref<AuthConfig>({ enableQrLogin: true });
 
-    // Initialize from localStorage
-    const init = () => {
+    // Initialize from localStorage and load config
+    const init = async () => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             user.value = JSON.parse(storedUser);
             isAuthenticated.value = true;
+        }
+
+        try {
+            config.value = await authApi.getAuthConfig();
+        } catch (e) {
+            console.error('Failed to load auth config', e);
         }
     };
 
@@ -38,42 +45,52 @@ export const useAuthStore = defineStore('auth', () => {
         return false;
     };
 
-    const login = async (username: string, password: string): Promise<boolean> => {
-        // Mock API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    const handleLoginSuccess = (userData: User, token: string) => {
+        user.value = userData;
+        isAuthenticated.value = true;
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        closeModal();
+    };
 
-        if (username && password) {
-            const mockUser: User = {
-                id: '1',
-                username: username,
-                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`
-            };
-
-            user.value = mockUser;
-            isAuthenticated.value = true;
-            localStorage.setItem('user', JSON.stringify(mockUser));
-            closeModal();
+    const loginWithPhone = async (phone: string, code: string): Promise<boolean> => {
+        try {
+            const response = await authApi.loginWithPhone(phone, code);
+            handleLoginSuccess(response.user, response.token);
             return true;
+        } catch (e) {
+            console.error('Login failed', e);
+            return false;
         }
-        return false;
+    };
+
+    const loginWithPassword = async (username: string, password: string): Promise<boolean> => {
+        try {
+            const response = await authApi.loginWithPassword(username, password);
+            handleLoginSuccess(response.user, response.token);
+            return true;
+        } catch (e) {
+            console.error('Login failed', e);
+            return false;
+        }
     };
 
     const register = async (username: string, password: string): Promise<boolean> => {
-        // Mock API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        if (username && password) {
-            // Auto login after register
-            return await login(username, password);
+        try {
+            const response = await authApi.register(username, password);
+            handleLoginSuccess(response.user, response.token);
+            return true;
+        } catch (e) {
+            console.error('Registration failed', e);
+            return false;
         }
-        return false;
     };
 
     const logout = () => {
         user.value = null;
         isAuthenticated.value = false;
         localStorage.removeItem('user');
-        // We don't redirect here, let the component handle it or use a global guard
+        localStorage.removeItem('token');
     };
 
     init();
@@ -82,10 +99,12 @@ export const useAuthStore = defineStore('auth', () => {
         user,
         isAuthenticated,
         showAuthModal,
+        config,
         openModal,
         closeModal,
         checkAuth,
-        login,
+        loginWithPhone,
+        loginWithPassword,
         register,
         logout
     };

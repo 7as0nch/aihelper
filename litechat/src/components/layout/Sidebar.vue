@@ -392,4 +392,3 @@ const vClickOutside = {
     </div>
   </aside>
 </template>
-```
