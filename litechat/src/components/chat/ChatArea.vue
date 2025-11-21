@@ -67,6 +67,34 @@ const handleQuestionClick = (content: string) => {
     if (!authStore.checkAuth()) return;
     store.sendMessage(content);
 };
+
+// Announcement Logic
+import Announcement from './Announcement.vue';
+import { fetchAnnouncement, type Announcement as AnnouncementType } from '../../api/announcement';
+import { useStorage } from '@vueuse/core';
+
+const announcement = ref<AnnouncementType | null>(null);
+const dismissedAnnouncements = useStorage<string[]>('dismissed-announcements', []);
+
+const isAnnouncementDismissed = computed(() => {
+  return announcement.value ? dismissedAnnouncements.value.includes(announcement.value.id) : true;
+});
+
+const dismissAnnouncement = () => {
+  if (announcement.value) {
+    dismissedAnnouncements.value.push(announcement.value.id);
+  }
+};
+
+onMounted(async () => {
+  recommendationStore.fetchRecommendations();
+  
+  // Fetch announcement
+  const data = await fetchAnnouncement();
+  if (data && !dismissedAnnouncements.value.includes(data.id)) {
+    announcement.value = data;
+  }
+});
 </script>
 
 <template>
@@ -109,7 +137,7 @@ const handleQuestionClick = (content: string) => {
     <div v-if="store.messages.length === 0" class="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-3xl space-y-12 -mt-20">
         <h1 class="text-4xl font-bold text-center text-gray-800 dark:text-gray-100 tracking-wide">
-          用 <span class="text-primary">提问</span> 发现世界
+        你的智慧 <span class="text-primary">智慧</span> 帮手
         </h1>
         
         <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
@@ -209,27 +237,42 @@ const handleQuestionClick = (content: string) => {
         @regenerate="handleRegenerate"
         @preview-image="handlePreviewImage"
       />
-      <div class="pb-6">
+      <div class="relative z-20">
         <!-- Persistent Suggestions -->
-        <div v-if="recommendationStore.showQuestions" class="px-4 mb-2 overflow-x-auto no-scrollbar relative z-10">
-          <div class="flex gap-2 w-max">
-            <button
-              v-for="question in recommendationStore.questionList"
-              :key="question.id"
-              @click="handleQuestionClick(question.content)"
-              class="px-4 py-2 bg-white/50 dark:bg-[#2a2a2a]/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a] hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all whitespace-nowrap shadow-sm"
-            >
-              {{ question.content }}
-            </button>
+        <div 
+          v-if="recommendationStore.showQuestions" 
+          class="absolute bottom-full left-0 right-0 pb-2 px-4 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-[#242424]/90 dark:via-[#242424]/50 pt-12 pointer-events-none"
+        >
+          <div class="overflow-x-auto no-scrollbar pointer-events-auto">
+            <div class="flex gap-2 w-max px-1">
+              <button
+                v-for="question in recommendationStore.questionList"
+                :key="question.id"
+                @click="handleQuestionClick(question.content)"
+                class="px-4 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a] hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all whitespace-nowrap shadow-sm"
+              >
+                {{ question.content }}
+              </button>
+            </div>
           </div>
         </div>
 
-        <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
-        <div class="text-center mt-2 text-xs text-gray-400">
-          AI 生成的内容可能不准确，请谨慎参考
+        <div class="bg-white/70 dark:bg-[#242424]/70 backdrop-blur-md pb-6 pt-2">
+          <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
+          <div class="text-center mt-2 text-xs text-gray-400">
+            AI 生成的内容可能不准确，请谨慎参考
+          </div>
         </div>
       </div>
     </template>
+
+    <!-- Announcement Modal -->
+    <Announcement 
+      v-if="announcement && !isAnnouncementDismissed"
+      :content="announcement.content"
+      :type="announcement.type"
+      @dismiss="dismissAnnouncement"
+    />
 
     <!-- Image Preview Overlay -->
     <div 

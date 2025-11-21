@@ -115,18 +115,18 @@ const updateProfile = () => {
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="emit('close')"></div>
     
     <!-- Modal -->
-    <div class="relative w-full max-w-2xl bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="relative w-full max-w-2xl bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[90vh] md:h-auto md:max-h-[90vh]">
       <!-- Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">设置</h2>
         <button @click="emit('close')" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
           <X class="w-6 h-6 text-gray-500" />
         </button>
       </div>
       
-      <div class="flex flex-1 min-h-0">
+      <div class="flex flex-col md:flex-row flex-1 min-h-0">
         <!-- Sidebar -->
-        <div class="w-48 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#242424] p-2 space-y-1">
+        <div class="w-full md:w-48 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#242424] p-2 flex md:flex-col gap-1 overflow-x-auto md:overflow-visible shrink-0">
           <button 
             @click="activeTab = 'profile'"
             class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"

@@ -337,9 +337,23 @@ const handleFileClick = (file: Attachment) => {
   border: 1px solid #e5e7eb;
   border-radius: 0.375rem;
   cursor: pointer;
-  opacity: 0;
+  opacity: 0; /* Hidden by default on desktop */
   transition: opacity 0.2s, background-color 0.2s;
   color: #6b7280;
+  z-index: 10;
+}
+
+/* Always show copy button on mobile/touch devices */
+@media (hover: none) {
+  .copy-code-button {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark .copy-code-button {
+    background-color: rgba(31, 41, 55, 0.95);
+  }
 }
 
 .dark .copy-code-button {

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { sendMessageStream } from '../api/chat';
 
 export interface Attachment {
     id: string;
@@ -81,7 +82,14 @@ def hello_world():
 ## 列表示例
 1. 第一项
 2. 第二项
-3. 第三项`,
+3. 第三项
+
+## 表格示例
+| 功能 | 状态 | 说明 |
+| :--- | :---: | ---: |
+| Markdown | ✅ | 支持标准语法 |
+| 代码高亮 | ✅ | 支持多种语言 |
+| 移动端适配 | ✅ | 响应式设计 |`,
             timestamp: Date.now() - 95000,
             attachments: [
                 {
@@ -237,6 +245,24 @@ export const useChatStore = defineStore('chat', () => {
         }
     };
 
+    const abortController = ref<AbortController | null>(null);
+
+    const stopGeneration = () => {
+        if (abortController.value) {
+            abortController.value.abort();
+            abortController.value = null;
+            isLoading.value = false;
+            isThinking.value = false;
+
+            // Update last message status
+            const lastMsg = messages.value[messages.value.length - 1];
+            if (lastMsg && lastMsg.role === 'assistant') {
+                lastMsg.isStreaming = false;
+                lastMsg.content += ' [已停止生成]';
+            }
+        }
+    };
+
     const sendMessage = async (content: string, attachments: Attachment[] = [], quote?: { quoteId: string; quoteContent: string }) => {
         // Auto-create session if not exists
         if (!currentChatId.value) {
@@ -267,38 +293,51 @@ export const useChatStore = defineStore('chat', () => {
         isLoading.value = true;
         isThinking.value = true;
 
-        // Simulate Thinking delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Create new AbortController
+        abortController.value = new AbortController();
+        const signal = abortController.value.signal;
 
-        isThinking.value = false;
+        try {
+            isThinking.value = false;
 
-        // Simulate AI response
-        const responseId = (Date.now() + 1).toString();
-        addMessage({
-            id: responseId,
-            role: 'assistant',
-            content: '',
-            timestamp: Date.now(),
-            isStreaming: true,
-        });
+            // Simulate AI response
+            const responseId = (Date.now() + 1).toString();
+            addMessage({
+                id: responseId,
+                role: 'assistant',
+                content: '',
+                timestamp: Date.now(),
+                isStreaming: true,
+            });
 
-        // Mock streaming
-        const mockResponse = `Here is a markdown response for: "${content}"\n\n## Features\n- **Markdown** support\n- *Streaming* output\n- Code blocks:\n\`\`\`typescript\nconst x = 1;\n\`\`\``;
+            await sendMessageStream(
+                content,
+                (text) => {
+                    updateLastMessage(text);
+                },
+                signal
+            );
 
-        let currentText = '';
-        const chars = mockResponse.split('');
-
-        for (const char of chars) {
-            await new Promise(resolve => setTimeout(resolve, 30));
-            currentText += char;
-            updateLastMessage(currentText);
+            const lastMsg = messages.value[messages.value.length - 1];
+            if (lastMsg) {
+                lastMsg.isStreaming = false;
+            }
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                console.log('Generation stopped by user');
+            } else {
+                console.error('Generation error:', error);
+                const lastMsg = messages.value[messages.value.length - 1];
+                if (lastMsg && lastMsg.role === 'assistant') {
+                    lastMsg.isStreaming = false;
+                    lastMsg.content += '\n[生成出错]';
+                }
+            }
+        } finally {
+            isLoading.value = false;
+            isThinking.value = false;
+            abortController.value = null;
         }
-
-        const lastMsg = messages.value[messages.value.length - 1];
-        if (lastMsg) {
-            lastMsg.isStreaming = false;
-        }
-        isLoading.value = false;
     };
 
     const favorites = ref<string[]>([]);
@@ -333,5 +372,6 @@ export const useChatStore = defineStore('chat', () => {
         clearHistoryList,
         toggleFavorite,
         isFavorite,
+        stopGeneration,
     };
 });

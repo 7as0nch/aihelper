@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue';
 import { useChatStore, type Attachment } from '../../stores/chat';
 import { 
   Paperclip, 
-
   Mic, 
-  ArrowUp,
-  X,
-  ChevronDown,
-  Zap,
-  Brain,
+  X, 
+  Globe, 
+  ChevronDown, 
+  Square,
   Sparkles,
+  Brain,
+  Zap,
   Check,
-  Globe
+  ArrowUp
 } from 'lucide-vue-next';
 
 import { useAuthStore } from '../../stores/auth';
@@ -403,7 +403,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         v-model="input"
         rows="1"
         class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none resize-none py-4 pl-4 pr-12 max-h-48 text-gray-900 dark:text-gray-100 placeholder-gray-400 overflow-y-hidden"
-        placeholder="输入你的问题，或使用「@快捷引用」对知乎答主、知识库进行提问"
+        placeholder="输入你的问题，或使用「@快捷引用」对快速选择时间等制定内容"
         @input="autoResize"
         @keydown="handleKeydown"
         @paste="handlePaste"
@@ -451,7 +451,8 @@ const handleKeydown = (e: KeyboardEvent) => {
 
           <button class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm">
             <Globe class="w-4 h-4" />
-            <span>知 乎</span>
+            <!-- 是否启用联网搜索的MCP Tool -->
+            <span>联网搜索</span>
           </button>
         </div>
 
@@ -486,14 +487,17 @@ const handleKeydown = (e: KeyboardEvent) => {
           <button 
             class="p-2 rounded-full transition-all duration-200 ease-in-out ml-1"
             :class="[
-              (input.trim() || pendingAttachments.length > 0) && !store.isLoading
+              (input.trim() || pendingAttachments.length > 0) || store.isLoading
                 ? 'bg-primary text-white hover:bg-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5' 
-                : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed'
+                : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed',
+              store.isLoading ? 'bg-red-500 hover:bg-red-600' : ''
             ]"
-            :disabled="(!input.trim() && pendingAttachments.length === 0) || store.isLoading"
-            @click="handleSend"
+            :disabled="(!input.trim() && pendingAttachments.length === 0) && !store.isLoading"
+            @click="store.isLoading ? store.stopGeneration() : handleSend()"
           >
-            <div v-if="store.isLoading" class="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+            <div v-if="store.isLoading" class="flex items-center justify-center w-5 h-5">
+              <Square class="w-3 h-3 fill-current" />
+            </div>
             <ArrowUp v-else class="w-5 h-5" />
           </button>
         </div>

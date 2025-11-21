@@ -3,7 +3,14 @@ import ChatView from '@/views/ChatView.vue';
 import KnowledgeBaseView from '@/views/KnowledgeBaseView.vue';
 import HistoryView from '@/views/HistoryView.vue';
 
-const routes = [
+interface Route {
+    path: string;
+    name: string;
+    hidden?: boolean;
+    component: any;
+}
+
+const routes: Route[] = [
     {
         path: '/',
         name: 'Chat',
@@ -17,7 +24,14 @@ const routes = [
     {
         path: '/knowledge',
         name: 'KnowledgeBase',
+        hidden: false,
         component: KnowledgeBaseView,
+    },
+    {
+        path: '/meeting_summary', // 开会总结
+        name: 'MeetingSummary',
+        hidden: false,
+        component: () => import('@/views/MeetingSummaryView.vue'),
     },
     {
         path: '/collections',
@@ -29,16 +43,11 @@ const routes = [
         name: 'History',
         component: HistoryView,
     },
-    {
-        path: '/history',
-        name: 'History',
-        component: HistoryView,
-    },
 ];
 
 const router = createRouter({
     history: createWebHistory(),
-    routes,
+    routes: routes.filter((route: Route) => !route.hidden),
 });
 
 router.beforeEach((to, _from, next) => {

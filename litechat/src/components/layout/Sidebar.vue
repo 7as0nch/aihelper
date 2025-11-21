@@ -67,6 +67,7 @@ const handleLogout = () => {
 const navItems = [
   { icon: Search, label: '搜索', active: false, path: '/' },
   { icon: BookOpen, label: '知识库', active: false, path: '/knowledge' },
+  { icon: BookOpen, label: '会议总结', active: false, path: '/meeting_summary' },
   { icon: Bookmark, label: '收藏', active: false, path: '/collections' },
 ];
 
