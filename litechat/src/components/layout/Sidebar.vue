@@ -37,6 +37,9 @@ const store = useChatStore();
 const authStore = useAuthStore();
 const isHistoryOpen = ref(true);
 
+const appTitle = import.meta.env.VITE_APP_TITLE || 'AI Chat';
+const appLogo = import.meta.env.VITE_APP_LOGO || '/logo.png';
+
 // Watch auth state to fetch/clear history
 watch(() => authStore.isAuthenticated, (isAuthenticated) => {
   if (isAuthenticated) {
@@ -169,31 +172,34 @@ const vClickOutside = {
   >
     <!-- Header -->
     <div 
-      class="flex items-center transition-all duration-300"
+      class="flex flex-col transition-all duration-300"
       :class="[
         isCollapsed 
-          ? 'flex-col justify-center py-4 gap-4 h-auto' 
-          : 'h-16 justify-between px-4 border-b border-transparent'
+          ? 'py-4 gap-4 items-center' 
+          : 'py-4 px-4 gap-4'
       ]"
     >
       <!-- Desktop Collapse Button -->
-      <button 
-        class="hidden md:flex text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 p-1 rounded-lg transition-colors shrink-0"
-        @click="emit('toggleCollapse')"
-        :title="isCollapsed ? '展开侧边栏' : '收起侧边栏'"
-      >
-        <PanelLeftOpen v-if="isCollapsed" class="w-5 h-5" />
-        <PanelLeftClose v-else class="w-5 h-5" />
-      </button>
+      <div :class="[isCollapsed ? 'w-full flex justify-center' : 'w-full flex justify-start']">
+        <button 
+          class="hidden md:flex text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 p-1 rounded-lg transition-colors shrink-0"
+          @click="emit('toggleCollapse')"
+          :title="isCollapsed ? '展开侧边栏' : '收起侧边栏'"
+        >
+          <PanelLeftOpen v-if="isCollapsed" class="w-5 h-5" />
+          <PanelLeftClose v-else class="w-5 h-5" />
+        </button>
+      </div>
 
-      <div class="flex items-center gap-2 text-primary font-bold text-xl overflow-hidden whitespace-nowrap">
-        <span class="bg-primary text-white p-1 rounded shrink-0">知</span>
-        <span v-show="!isCollapsed">知乎直答</span>
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-2 overflow-hidden whitespace-nowrap" :class="{ 'justify-center': isCollapsed }">
+        <img :src="appLogo" class="w-8 h-8 rounded shrink-0" alt="Logo" />
+        <span v-show="!isCollapsed" class="font-bold text-xl text-gray-900 dark:text-white truncate">{{ appTitle }}</span>
       </div>
 
       <!-- Mobile Close Button -->
       <button 
-        class="md:hidden text-gray-500"
+        class="md:hidden absolute top-4 right-4 text-gray-500"
         @click="emit('close')"
       >
         <X class="w-6 h-6" />

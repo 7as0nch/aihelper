@@ -189,7 +189,7 @@ const handleFileClick = (file: Attachment) => {
         <div 
           v-else 
           v-html="renderedContent"
-          class="markdown-body max-w-full overflow-x-hidden break-words"
+          class="markdown-body max-w-full overflow-x-auto break-words"
         ></div>
 
         <!-- Quote Display (for user messages with quotes) -->
@@ -206,16 +206,16 @@ const handleFileClick = (file: Attachment) => {
         </div>
 
         <!-- Image Attachments -->
-        <div v-if="message.attachments?.some(a => a.type === 'image')" class="flex flex-wrap gap-2 mb-2">
+        <div v-if="message.attachments?.some(a => a.type === 'image')" class="flex gap-2 mb-2 overflow-x-auto pb-2 no-scrollbar">
           <div 
             v-for="img in message.attachments.filter(a => a.type === 'image')" 
             :key="img.id"
-            class="relative group cursor-zoom-in"
+            class="relative group cursor-zoom-in shrink-0"
             @click="handleImageClick(img.url!)"
           >
             <img 
               :src="img.url" 
-              class="max-w-xs max-h-64 rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity"
+              class="h-48 w-auto rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity object-cover"
               :alt="img.name"
             />
           </div>

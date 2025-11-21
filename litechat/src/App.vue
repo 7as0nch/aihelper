@@ -8,7 +8,7 @@ const isSidebarCollapsed = ref(false);
 </script>
 
 <template>
-  <div class="flex h-screen w-full overflow-hidden bg-white dark:bg-[#242424]">
+  <div class="flex h-screen w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
     <Sidebar 
       :is-open="isSidebarOpen" 
       :is-collapsed="isSidebarCollapsed"

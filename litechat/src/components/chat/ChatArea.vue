@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import MessageList from './MessageList.vue';
 import InputArea from './InputArea.vue';
-import { Menu, X, BookOpen, HelpCircle } from 'lucide-vue-next';
+import { Menu, X, BookOpen } from 'lucide-vue-next';
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
 import { useRecommendationStore } from '../../stores/recommendation';
@@ -54,9 +54,8 @@ onMounted(() => {
   recommendationStore.fetchRecommendations();
 });
 
-const randomQuestion = computed(() => {
-  const items = recommendationStore.getRandomItems(recommendationStore.questionList, 1);
-  return items.length > 0 ? items[0] : null;
+const randomQuestions = computed(() => {
+  return recommendationStore.getRandomItems(recommendationStore.questionList, 3);
 });
 
 const randomKnowledgeBase = computed(() => {
@@ -71,7 +70,7 @@ const handleQuestionClick = (content: string) => {
 </script>
 
 <template>
-  <div class="flex-1 min-w-0 flex flex-col h-full relative bg-white dark:bg-[#242424]">
+  <div class="flex-1 min-w-0 flex flex-col h-full relative bg-white/70 dark:bg-[#242424]/70 backdrop-blur-md transition-colors">
     <!-- Mobile Header -->
     <div class="md:hidden h-14 flex items-center px-4 border-b border-gray-100 dark:border-gray-800">
       <button @click="$emit('toggleSidebar')" class="p-2 -ml-2 text-gray-600 dark:text-gray-300">
@@ -91,16 +90,20 @@ const handleQuestionClick = (content: string) => {
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           <!-- Random Question -->
-          <div 
-            v-if="recommendationStore.showQuestions && randomQuestion"
-            @click="handleQuestionClick(randomQuestion.content)"
-            class="p-4 bg-white dark:bg-[#2a2a2a] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer text-left group"
-          >
-            <div class="flex items-center gap-2 mb-2">
-                <HelpCircle class="w-4 h-4 text-primary" />
-                <h3 class="font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">想了解点什么？</h3>
+          <!-- Random Questions -->
+          <div v-if="recommendationStore.showQuestions && randomQuestions.length > 0" class="flex flex-col gap-4">
+            <h3 class="font-medium text-lg text-gray-900 dark:text-gray-100 mb-2">想了解点什么？</h3>
+            <div class="flex flex-col gap-3 items-start">
+              <button
+                v-for="(question, index) in randomQuestions"
+                :key="question.id"
+                @click="handleQuestionClick(question.content)"
+                class="px-5 py-3 bg-white dark:bg-[#2a2a2a] rounded-full border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all shadow-sm hover:shadow-md text-left text-sm text-gray-600 dark:text-gray-300 animate-float"
+                :style="{ animationDelay: `${index * 0.1}s` }"
+              >
+                {{ question.content }}
+              </button>
             </div>
-            <p class="text-sm text-gray-500 line-clamp-2">{{ randomQuestion.content }}</p>
           </div>
 
           <!-- Random Knowledge Base -->
@@ -130,6 +133,20 @@ const handleQuestionClick = (content: string) => {
         @preview-image="handlePreviewImage"
       />
       <div class="pb-6">
+        <!-- Persistent Suggestions -->
+        <div v-if="recommendationStore.showQuestions" class="px-4 mb-2 overflow-x-auto no-scrollbar relative z-10">
+          <div class="flex gap-2 w-max">
+            <button
+              v-for="question in recommendationStore.questionList"
+              :key="question.id"
+              @click="handleQuestionClick(question.content)"
+              class="px-4 py-2 bg-white/50 dark:bg-[#2a2a2a]/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a] hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all whitespace-nowrap shadow-sm"
+            >
+              {{ question.content }}
+            </button>
+          </div>
+        </div>
+
         <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
         <div class="text-center mt-2 text-xs text-gray-400">
           AI 生成的内容可能不准确，请谨慎参考
@@ -157,3 +174,24 @@ const handleQuestionClick = (content: string) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useChatStore, type Attachment } from '../../stores/chat';
 import { 
   Paperclip, 
@@ -16,6 +16,7 @@ import {
 } from 'lucide-vue-next';
 
 import { useAuthStore } from '../../stores/auth';
+import { mentionTypes, type MentionType, type MentionOption } from '../../config/mentions';
 
 const props = defineProps<{
   quotedContent?: {id: string, content: string} | null;
@@ -34,6 +35,15 @@ const pendingAttachments = ref<Attachment[]>([]);
 const isRecording = ref(false);
 const isDropdownOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
+
+// Mention state
+const showMentionMenu = ref(false);
+const mentionMenuPosition = ref({ top: 0, left: 0 });
+const mentionQuery = ref('');
+const activeMentionType = ref<MentionType | null>(null);
+const mentionOptions = ref<MentionOption[]>([]);
+const mentionCursorIndex = ref(0);
+const selectedMentionIndex = ref(0);
 
 const modes = [
   { value: 'smart', label: '智能思考', desc: '智能决策动态搜索', icon: Sparkles, color: 'text-purple-500' },
@@ -58,6 +68,11 @@ const selectMode = (mode: 'smart' | 'deep' | 'quick') => {
 const handleClickOutside = (event: MouseEvent) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
     isDropdownOpen.value = false;
+  }
+  // Close mention menu if clicking outside
+  if (showMentionMenu.value && !(event.target as HTMLElement).closest('.mention-menu')) {
+    showMentionMenu.value = false;
+    activeMentionType.value = null;
   }
 };
 
@@ -102,6 +117,81 @@ const autoResize = (e: Event) => {
   } else {
     target.style.overflowY = 'hidden';
   }
+  
+  checkMentionTrigger(target);
+};
+
+const checkMentionTrigger = (textarea: HTMLTextAreaElement) => {
+  const cursorPosition = textarea.selectionStart;
+  const textBeforeCursor = textarea.value.substring(0, cursorPosition);
+  const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
+  
+  if (lastAtSymbol !== -1) {
+    const textAfterAt = textBeforeCursor.substring(lastAtSymbol + 1);
+    // Check if there are spaces, which might indicate we are past the mention
+    if (!textAfterAt.includes(' ')) {
+      mentionCursorIndex.value = lastAtSymbol;
+      mentionQuery.value = textAfterAt;
+      showMentionMenu.value = true;
+      
+      // Calculate position for menu
+      // This is a simplified calculation. For a real textarea, you might need a library like get-caret-coordinates
+      // For now, we'll position it relative to the textarea bottom-left + some offset based on text length
+      // A better approach would be to use a hidden div to mirror text and get coordinates
+      mentionMenuPosition.value = {
+        top: -10, // Will be adjusted by CSS to be above
+        left: 10
+      };
+      
+      // If we are already in a type, filter options
+      if (activeMentionType.value && activeMentionType.value.fetchOptions) {
+         activeMentionType.value.fetchOptions(mentionQuery.value).then(options => {
+           mentionOptions.value = options;
+           selectedMentionIndex.value = 0;
+         });
+      }
+      return;
+    }
+  }
+  
+  showMentionMenu.value = false;
+  activeMentionType.value = null;
+};
+
+const handleMentionSelect = async (type: MentionType) => {
+  if (type.hasSubMenu && type.fetchOptions) {
+    activeMentionType.value = type;
+    mentionOptions.value = await type.fetchOptions();
+    selectedMentionIndex.value = 0;
+    // Clear query so we can type to filter
+    // Actually, we might want to keep the trigger text? 
+    // For now, let's just show options
+  } else {
+    insertMention(type.label + ' ');
+  }
+};
+
+const handleOptionSelect = (option: MentionOption) => {
+  insertMention(option.label + ' ');
+};
+
+const insertMention = (text: string) => {
+  const beforeAt = input.value.substring(0, mentionCursorIndex.value);
+  const afterCursor = input.value.substring(mentionCursorIndex.value + mentionQuery.value.length + 1);
+  
+  input.value = beforeAt + text + afterCursor;
+  showMentionMenu.value = false;
+  activeMentionType.value = null;
+  
+  // Reset cursor position and focus
+  nextTick(() => {
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.focus();
+      const newCursorPos = beforeAt.length + text.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }
+  });
 };
 
 const handleSend = async () => {
@@ -189,6 +279,29 @@ const handleFocus = (e: FocusEvent) => {
 };
 
 const handleKeydown = (e: KeyboardEvent) => {
+  if (showMentionMenu.value) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const max = activeMentionType.value ? mentionOptions.value.length : mentionTypes.length;
+      selectedMentionIndex.value = (selectedMentionIndex.value + 1) % max;
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const max = activeMentionType.value ? mentionOptions.value.length : mentionTypes.length;
+      selectedMentionIndex.value = (selectedMentionIndex.value - 1 + max) % max;
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeMentionType.value) {
+        handleOptionSelect(mentionOptions.value[selectedMentionIndex.value]);
+      } else {
+        handleMentionSelect(mentionTypes[selectedMentionIndex.value]);
+      }
+    } else if (e.key === 'Escape') {
+      showMentionMenu.value = false;
+      activeMentionType.value = null;
+    }
+    return;
+  }
+
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     handleSend();
@@ -198,7 +311,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 
 <template>
   <div class="max-w-3xl mx-auto w-full p-4">
-    <div class="relative bg-white dark:bg-[#2a2a2a] rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out hover:shadow-lg focus-within:shadow-lg">
+    <div class="relative bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out hover:shadow-lg focus-within:shadow-lg">
       
       <!-- Pending Attachments -->
       <div v-if="pendingAttachments.length > 0" class="px-4 pt-4 flex gap-2 flex-wrap">
@@ -236,6 +349,53 @@ const handleKeydown = (e: KeyboardEvent) => {
           >
             <X class="w-4 h-4 text-gray-400" />
           </button>
+        </div>
+      </div>
+
+      <!-- Mention Menu -->
+      <div 
+        v-if="showMentionMenu"
+        class="absolute bottom-full left-4 mb-2 w-64 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-20 mention-menu"
+      >
+        <div class="p-1">
+          <template v-if="!activeMentionType">
+            <div class="px-2 py-1 text-xs text-gray-400 font-medium">选择类型</div>
+            <button 
+              v-for="(type, index) in mentionTypes" 
+              :key="type.key"
+              @click="handleMentionSelect(type)"
+              class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+              :class="{ 'bg-blue-50 dark:bg-blue-900/20': index === selectedMentionIndex }"
+            >
+              <div class="w-6 h-6 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
+                <component :is="type.icon" class="w-3 h-3 text-gray-600 dark:text-gray-300" />
+              </div>
+              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ type.label }}</span>
+            </button>
+          </template>
+          
+          <template v-else>
+             <div class="px-2 py-1 text-xs text-gray-400 font-medium flex items-center gap-1">
+               <button @click="activeMentionType = null" class="hover:text-primary">返回</button>
+               <span>/</span>
+               <span>{{ activeMentionType.label }}</span>
+             </div>
+             <button 
+              v-for="(option, index) in mentionOptions" 
+              :key="option.id"
+              @click="handleOptionSelect(option)"
+              class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+              :class="{ 'bg-blue-50 dark:bg-blue-900/20': index === selectedMentionIndex }"
+            >
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ option.label }}</span>
+                <span v-if="option.description" class="text-xs text-gray-500">{{ option.description }}</span>
+              </div>
+            </button>
+            <div v-if="mentionOptions.length === 0" class="px-3 py-4 text-center text-gray-500 text-sm">
+              无匹配结果
+            </div>
+          </template>
         </div>
       </div>
 

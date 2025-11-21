@@ -170,6 +170,8 @@ export const useChatStore = defineStore('chat', () => {
     const isThinking = ref(false);
     const thinkingMode = ref<'smart' | 'deep' | 'quick'>('smart');
 
+    const currentChatId = ref<string | null>(null);
+
     const historyItems = ref<{ id: string; title: string }[]>([]);
 
     // Mock history data
@@ -207,6 +209,7 @@ export const useChatStore = defineStore('chat', () => {
     };
 
     const loadChatHistory = (chatId: string) => {
+        currentChatId.value = chatId;
         const history = fakeChats[chatId];
         if (history) {
             messages.value = JSON.parse(JSON.stringify(history)); // Deep clone
@@ -217,14 +220,13 @@ export const useChatStore = defineStore('chat', () => {
 
     const clearMessages = () => {
         messages.value = [];
+        currentChatId.value = null;
     };
 
     const deleteChat = (id: string) => {
         historyItems.value = historyItems.value.filter(item => item.id !== id);
-        if (messages.value.length > 0) {
-            // Ideally we should check if the current chat is the one being deleted
-            // For now, we just clear messages if we are "in" a chat context that gets deleted
-            // But since we don't track currentChatId in store yet, we'll leave this simple
+        if (currentChatId.value === id) {
+            clearMessages();
         }
     };
 
@@ -236,6 +238,21 @@ export const useChatStore = defineStore('chat', () => {
     };
 
     const sendMessage = async (content: string, attachments: Attachment[] = [], quote?: { quoteId: string; quoteContent: string }) => {
+        // Auto-create session if not exists
+        if (!currentChatId.value) {
+            const newId = Date.now().toString();
+            currentChatId.value = newId;
+
+            // Generate title from first 20 chars of content
+            const title = content.slice(0, 20) + (content.length > 20 ? '...' : '');
+
+            // Add to history
+            historyItems.value.unshift({
+                id: newId,
+                title: title
+            });
+        }
+
         // User message
         addMessage({
             id: Date.now().toString(),
@@ -286,6 +303,7 @@ export const useChatStore = defineStore('chat', () => {
 
     return {
         messages,
+        currentChatId,
         historyItems,
         isLoading,
         isThinking,
