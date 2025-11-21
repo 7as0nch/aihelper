@@ -134,15 +134,13 @@ onMounted(async () => {
     </div>
 
     <!-- Welcome State (Centered) -->
-    <div v-if="store.messages.length === 0" class="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
-      <div class="w-full max-w-3xl space-y-12 -mt-20">
-        <h1 class="text-4xl font-bold text-center text-gray-800 dark:text-gray-100 tracking-wide">
+    <div v-if="store.messages.length === 0" class="flex-1 flex flex-col items-center justify-end md:justify-center p-4 overflow-y-auto pb-10 md:pb-4">
+      <div class="w-full max-w-3xl flex flex-col space-y-6 md:space-y-10 md:-mt-20">
+        <h1 class="order-1 text-3xl md:text-4xl font-bold text-center text-gray-800 dark:text-gray-100 tracking-wide mb-4 md:mb-0">
         你的 <span class="text-primary">智慧</span> 帮手
         </h1>
         
-        <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        <div class="order-2 md:order-3 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           <!-- Random Question -->
           <!-- Random Questions -->
           <div v-if="recommendationStore.showQuestions && randomQuestions.length > 0" class="flex flex-col gap-4">
@@ -171,6 +169,10 @@ onMounted(async () => {
             </div>
             <p class="text-sm text-gray-500 line-clamp-2">{{ randomKnowledgeBase.title }}</p>
           </div>
+        </div>
+
+        <div class="order-3 md:order-2 w-full">
+          <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
         </div>
       </div>
       
@@ -243,7 +245,7 @@ onMounted(async () => {
           v-if="recommendationStore.showQuestions" 
           class="absolute bottom-full left-0 right-0 pb-2 px-4 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-[#242424]/90 dark:via-[#242424]/50 pt-12 pointer-events-none"
         >
-          <div class="overflow-x-auto no-scrollbar pointer-events-auto">
+          <div class="overflow-x-auto no-scrollbar pointer-events-auto touch-pan-x" style="-webkit-overflow-scrolling: touch;">
             <div class="flex gap-2 w-max px-1">
               <button
                 v-for="question in recommendationStore.questionList"
