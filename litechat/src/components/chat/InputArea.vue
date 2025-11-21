@@ -12,7 +12,8 @@ import {
   Brain,
   Zap,
   Check,
-  ArrowUp
+  ArrowUp,
+  Camera
 } from 'lucide-vue-next';
 
 import { useAuthStore } from '../../stores/auth';
@@ -341,6 +342,32 @@ const handleKeydown = (e: KeyboardEvent) => {
     handleSend();
   }
 };
+
+const handleScreenshot = async () => {
+  const messageList = document.querySelector('.message-list-container');
+  if (!messageList) {
+    alert('无法找到会话内容');
+    return;
+  }
+
+  try {
+    const html2canvasModule = await import('html2canvas');
+    const html2canvas = html2canvasModule.default || html2canvasModule;
+    const canvas = await html2canvas(messageList as HTMLElement, {
+      useCORS: true,
+      backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+      scale: 2 // Higher quality
+    });
+    
+    const link = document.createElement('a');
+    link.download = `chat-screenshot-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    console.error('Screenshot failed:', err);
+    alert('截屏失败，请重试');
+  }
+};
 </script>
 
 <template>
@@ -536,6 +563,15 @@ const handleKeydown = (e: KeyboardEvent) => {
             <Globe class="w-4 h-4" />
             <!-- 是否启用联网搜索的MCP Tool -->
             <span>联网搜索</span>
+          </button>
+
+          <button 
+            @click="handleScreenshot"
+            class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
+            title="截屏当前会话"
+          >
+            <Camera class="w-4 h-4" />
+            <span>截屏</span>
           </button>
         </div>
 

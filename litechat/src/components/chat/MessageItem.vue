@@ -68,9 +68,17 @@ md.renderer.rules.fence = (tokens: any[], idx: number, options: any, _env: any, 
   `;
 };
 
-// Custom table rules for horizontal scrolling
-md.renderer.rules.table_open = () => '<div class="table-wrapper overflow-x-auto my-4 w-full border border-gray-200 dark:border-gray-700 rounded-lg"><table class="w-full text-left text-sm">';
-md.renderer.rules.table_close = () => '</table></div>';
+// Custom table rules for horizontal scrolling and export button
+md.renderer.rules.table_open = () => '<div class="table-wrapper overflow-x-auto my-4 w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"><table class="w-full text-left text-sm">';
+md.renderer.rules.table_close = () => `
+  </table>
+  <div class="flex justify-end p-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+    <button class="export-table-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+      Export to Sheets
+    </button>
+  </div>
+</div>`;
 
 const renderedContent = computed(() => {
   return md.render(props.message.content);
@@ -95,40 +103,58 @@ const renderMermaid = async () => {
   });
 };
 
-// Handle copy button clicks via delegation
+// Handle click delegation
 const handleMessageClick = async (event: MouseEvent) => {
-  const target = (event.target as HTMLElement).closest('.copy-btn');
-  if (!target) return;
+  const target = event.target as HTMLElement;
   
-  const btn = target as HTMLElement;
-  const code = decodeURIComponent(btn.getAttribute('data-code') || '');
-  
-  if (code) {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(code);
-      } else {
-        // Fallback for older browsers or non-secure contexts (often needed on Android WebViews)
-        const textArea = document.createElement('textarea');
-        textArea.value = code;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-9999px';
-        textArea.style.top = '0';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+  // Handle Copy Code
+  const copyBtn = target.closest('.copy-btn');
+  if (copyBtn) {
+    const btn = copyBtn as HTMLElement;
+    const code = decodeURIComponent(btn.getAttribute('data-code') || '');
+    if (code) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+        } else {
+          const textArea = document.createElement('textarea');
+          textArea.value = code;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-9999px';
+          textArea.style.top = '0';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
+        
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="text-green-500">✓</span><span class="text-green-500">已复制</span>';
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
       }
-      
-      const originalHtml = btn.innerHTML;
-      btn.innerHTML = '<span class="text-green-500">✓</span><span class="text-green-500">已复制</span>';
-      setTimeout(() => {
-        btn.innerHTML = originalHtml;
-      }, 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-      // Optional: Show a toast or alert if copy fails
+    }
+    return;
+  }
+
+  // Handle Table Export
+  const exportBtn = target.closest('.export-table-btn');
+  if (exportBtn) {
+    const wrapper = exportBtn.closest('.table-wrapper');
+    const table = wrapper?.querySelector('table');
+    if (table) {
+      try {
+        const XLSX = await import('xlsx');
+        const wb = XLSX.utils.table_to_book(table);
+        XLSX.writeFile(wb, `table-export-${Date.now()}.xlsx`);
+      } catch (err) {
+        console.error('Failed to export table:', err);
+        alert('导出表格失败');
+      }
     }
   }
 };
