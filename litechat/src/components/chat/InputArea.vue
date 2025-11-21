@@ -17,6 +17,10 @@ import {
 
 import { useAuthStore } from '../../stores/auth';
 import { mentionTypes, type MentionType, type MentionOption } from '../../config/mentions';
+import { DatePicker } from 'ant-design-vue';
+import type { Dayjs } from 'dayjs';
+
+const ARangePicker = DatePicker.RangePicker;
 
 const props = defineProps<{
   quotedContent?: {id: string, content: string} | null;
@@ -45,6 +49,29 @@ const mentionOptions = ref<MentionOption[]>([]);
 const mentionCursorIndex = ref(0);
 const selectedMentionIndex = ref(0);
 
+// Date Range Picker State
+const showDatePicker = ref(false);
+const pickerMode = ref<'date' | 'time' | 'datetime'>('date');
+const dateRangeValue = ref<[Dayjs, Dayjs] | undefined>(undefined);
+
+const getDateFormat = computed(() => {
+  if (pickerMode.value === 'time') return 'HH:mm:ss';
+  if (pickerMode.value === 'datetime') return 'YYYY-MM-DD HH:mm:ss';
+  return 'YYYY-MM-DD';
+});
+
+const confirmDateRange = () => {
+  if (dateRangeValue.value) {
+    const start = dateRangeValue.value[0].format(getDateFormat.value);
+    const end = dateRangeValue.value[1].format(getDateFormat.value);
+    insertMention(` [ ${start} 至 ${end} ] `);
+    showDatePicker.value = false;
+    dateRangeValue.value = undefined;
+  }
+};
+
+
+
 const modes = [
   { value: 'smart', label: '智能思考', desc: '智能决策动态搜索', icon: Sparkles, color: 'text-purple-500' },
   { value: 'deep', label: '深度思考', desc: '深入推理给出答案', icon: Brain, color: 'text-blue-500' },
@@ -70,7 +97,10 @@ const handleClickOutside = (event: MouseEvent) => {
     isDropdownOpen.value = false;
   }
   // Close mention menu if clicking outside
-  if (showMentionMenu.value && !(event.target as HTMLElement).closest('.mention-menu')) {
+  if (showMentionMenu.value && 
+      !(event.target as HTMLElement).closest('.mention-menu') && 
+      !(event.target as HTMLElement).closest('.ant-picker-dropdown')
+  ) {
     showMentionMenu.value = false;
     activeMentionType.value = null;
   }
@@ -172,6 +202,10 @@ const handleMentionSelect = async (type: MentionType) => {
 };
 
 const handleOptionSelect = (option: MentionOption) => {
+  if (option.id === 'custom_range') {
+    showDatePicker.value = true;
+    return;
+  }
   insertMention(option.label + ' ');
 };
 
@@ -355,15 +389,62 @@ const handleKeydown = (e: KeyboardEvent) => {
       <!-- Mention Menu -->
       <div 
         v-if="showMentionMenu"
-        class="absolute bottom-full left-4 mb-2 w-64 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-20 mention-menu"
+        class="absolute bottom-full left-4 mb-2 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-20 mention-menu"
+        :class="showDatePicker ? 'w-96' : 'w-64'"
       >
         <div class="p-1">
-          <template v-if="!activeMentionType">
+          <!-- Date Range Picker State -->
+          <template v-if="showDatePicker">
+             <div class="px-2 py-1 text-xs text-gray-400 font-medium flex items-center gap-1 mb-2">
+               <button @mousedown.prevent="showDatePicker = false" class="hover:text-primary">返回</button>
+               <span>/</span>
+               <span>自定义范围</span>
+             </div>
+             
+             <div class="p-2 space-y-3" @mousedown.stop>
+               <!-- Mode Selection -->
+               <div class="flex items-center gap-2 mb-2">
+                 <label class="text-xs text-gray-500">模式:</label>
+                 <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+                   <button 
+                     v-for="mode in (['date', 'time', 'datetime'] as const)" 
+                     :key="mode"
+                     @mousedown.prevent="pickerMode = mode"
+                     class="px-2 py-1 text-xs rounded-md transition-colors capitalize"
+                     :class="pickerMode === mode ? 'bg-white dark:bg-gray-700 shadow-sm text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+                   >
+                     {{ mode === 'datetime' ? 'Date+Time' : mode }}
+                   </button>
+                 </div>
+               </div>
+
+               <!-- Ant Design Vue Range Picker -->
+               <div class="w-full">
+                 <ARangePicker 
+                   v-model:value="dateRangeValue" 
+                   :show-time="pickerMode === 'datetime' || pickerMode === 'time'"
+                   :picker="pickerMode === 'time' ? 'time' : 'date'"
+                   :format="getDateFormat"
+                   class="w-full"
+                 />
+               </div>
+               
+               <button 
+                 @mousedown.prevent="confirmDateRange"
+                 class="w-full mt-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                 :disabled="!dateRangeValue"
+               >
+                 确认引用
+               </button>
+             </div>
+          </template>
+
+          <template v-else-if="!activeMentionType">
             <div class="px-2 py-1 text-xs text-gray-400 font-medium">选择类型</div>
             <button 
               v-for="(type, index) in mentionTypes" 
               :key="type.key"
-              @click="handleMentionSelect(type)"
+              @mousedown.prevent="handleMentionSelect(type)"
               class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
               :class="{ 'bg-blue-50 dark:bg-blue-900/20': index === selectedMentionIndex }"
             >
@@ -376,14 +457,14 @@ const handleKeydown = (e: KeyboardEvent) => {
           
           <template v-else>
              <div class="px-2 py-1 text-xs text-gray-400 font-medium flex items-center gap-1">
-               <button @click="activeMentionType = null" class="hover:text-primary">返回</button>
+               <button @mousedown.prevent="activeMentionType = null" class="hover:text-primary">返回</button>
                <span>/</span>
                <span>{{ activeMentionType.label }}</span>
              </div>
              <button 
               v-for="(option, index) in mentionOptions" 
               :key="option.id"
-              @click="handleOptionSelect(option)"
+              @mousedown.prevent="handleOptionSelect(option)"
               class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
               :class="{ 'bg-blue-50 dark:bg-blue-900/20': index === selectedMentionIndex }"
             >

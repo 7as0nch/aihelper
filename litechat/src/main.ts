@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import './style.css'
+import 'ant-design-vue/dist/reset.css';
 import App from './App.vue'
 import router from './router'
 import { useThemeStore } from './stores/theme'

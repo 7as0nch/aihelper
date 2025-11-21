@@ -47,6 +47,7 @@ export const mentionTypes: MentionType[] = [
             { id: 'last_7_days', label: '过去7天', value: 'range:last_7_days' },
             { id: 'last_30_days', label: '过去30天', value: 'range:last_30_days' },
             { id: 'this_month', label: '本月', value: 'range:this_month' },
+            { id: 'custom_range', label: '自定义范围', value: 'range:custom', description: '选择具体日期' },
         ]
     },
     {
