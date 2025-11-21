@@ -389,8 +389,8 @@ const handleKeydown = (e: KeyboardEvent) => {
       <!-- Mention Menu -->
       <div 
         v-if="showMentionMenu"
-        class="absolute bottom-full left-4 mb-2 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-20 mention-menu"
-        :class="showDatePicker ? 'w-96' : 'w-64'"
+        class="absolute bottom-full left-0 sm:left-4 mb-2 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-20 mention-menu"
+        :class="showDatePicker ? 'w-full sm:w-96' : 'w-64'"
       >
         <div class="p-1">
           <!-- Date Range Picker State -->
@@ -419,15 +419,17 @@ const handleKeydown = (e: KeyboardEvent) => {
                </div>
 
                <!-- Ant Design Vue Range Picker -->
-               <div class="w-full">
-                 <ARangePicker 
-                   v-model:value="dateRangeValue" 
-                   :show-time="pickerMode === 'datetime' || pickerMode === 'time'"
-                   :picker="pickerMode === 'time' ? 'time' : 'date'"
-                   :format="getDateFormat"
-                   class="w-full"
-                 />
-               </div>
+                 <div class="w-full">
+                   <ARangePicker 
+                     v-model:value="dateRangeValue" 
+                     :show-time="pickerMode === 'datetime' || pickerMode === 'time'"
+                     :picker="pickerMode === 'time' ? 'time' : 'date'"
+                     :format="getDateFormat"
+                     class="w-full"
+                     placement="topLeft"
+                     dropdown-class-name="chat-date-picker-dropdown"
+                   />
+                 </div>
                
                <button 
                  @mousedown.prevent="confirmDateRange"

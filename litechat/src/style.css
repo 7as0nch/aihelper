@@ -167,3 +167,23 @@ body {
 .hljs-link {
   text-decoration: underline;
 }
+
+/* DatePicker Mobile Optimization */
+.chat-date-picker-dropdown .ant-picker-panel-container {
+  max-width: 100vw !important;
+  overflow-x: auto !important;
+}
+
+@media (max-width: 640px) {
+  .chat-date-picker-dropdown {
+    left: 0 !important;
+    right: 0 !important;
+    display: flex;
+    justify-content: center;
+  }
+
+  .chat-date-picker-dropdown .ant-picker-panel-container {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+    border-radius: 0.75rem !important;
+  }
+}
