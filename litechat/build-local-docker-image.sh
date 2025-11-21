@@ -20,7 +20,7 @@ ENV=$1
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 LOG_FILE=${SCRIPT_DIR}/build-local-docker-image.log
 ERROR=""
-IMAGE_NAME="litechat_${ENV}"
+IMAGE_NAME="litechat_web_${ENV}"
 
 function stop_and_remove_container() {
     # judge if the container is running
