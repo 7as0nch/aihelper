@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../../stores/auth';
+import { useThemeStore } from '../../stores/theme';
 import { X, User, Moon, Sun, Monitor, MessageSquare, Upload, Trash2 } from 'lucide-vue-next';
-import { useDark } from '@vueuse/core';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -16,30 +16,8 @@ const emit = defineEmits<{
 }>();
 
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 const activeTab = ref<'profile' | 'theme' | 'feedback'>('profile');
-
-// Theme Logic
-const isDark = useDark({
-  selector: 'html',
-  attribute: 'class',
-  valueDark: 'dark',
-  valueLight: 'light',
-});
-// const toggleDark = useToggle(isDark); // Unused
-
-// const currentTheme = computed(() => { // Unused
-//   if (isDark.value) return 'dark';
-//   return 'light';
-// });
-
-const setTheme = (theme: 'light' | 'dark' | 'system') => {
-  // Simple toggle for now, system support would require more logic
-  if (theme === 'dark') {
-    isDark.value = true;
-  } else if (theme === 'light') {
-    isDark.value = false;
-  }
-};
 
 // Feedback Logic
 const feedbackTitle = ref('');
@@ -196,24 +174,25 @@ const updateProfile = () => {
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">外观设置</h3>
             <div class="grid grid-cols-3 gap-4">
               <button 
-                @click="setTheme('light')"
+                @click="themeStore.setMode('light')"
                 class="flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all"
-                :class="!isDark ? 'border-primary bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                :class="themeStore.mode === 'light' ? 'border-primary bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
               >
                 <Sun class="w-8 h-8 text-orange-500" />
                 <span class="text-sm font-medium">浅色模式</span>
               </button>
               <button 
-                @click="setTheme('dark')"
+                @click="themeStore.setMode('dark')"
                 class="flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all"
-                :class="isDark ? 'border-primary bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                :class="themeStore.mode === 'dark' ? 'border-primary bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
               >
                 <Moon class="w-8 h-8 text-blue-500" />
                 <span class="text-sm font-medium">深色模式</span>
               </button>
               <button 
-                class="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed"
-                title="暂未支持"
+                @click="themeStore.setMode('system')"
+                class="flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all"
+                :class="themeStore.mode === 'system' ? 'border-primary bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
               >
                 <Monitor class="w-8 h-8 text-gray-500" />
                 <span class="text-sm font-medium">跟随系统</span>

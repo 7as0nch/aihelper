@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, watch, onMounted } from 'vue';
+import { ref, nextTick, watch, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
@@ -19,7 +19,8 @@ import {
   Edit2,
   Trash2,
   User,
-  Settings
+  Settings,
+  FileText
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -64,12 +65,25 @@ const handleLogout = () => {
   router.push('/');
 };
 
-const navItems = [
-  { icon: Search, label: '搜索', active: false, path: '/' },
-  { icon: BookOpen, label: '知识库', active: false, path: '/knowledge' },
-  { icon: BookOpen, label: '会议总结', active: false, path: '/meeting_summary' },
-  { icon: Bookmark, label: '收藏', active: false, path: '/collections' },
-];
+// Icon mapping
+const iconMap: Record<string, any> = {
+  Search,
+  BookOpen,
+  Bookmark,
+  FileText
+};
+
+// Dynamic nav items from router
+const navItems = computed(() => {
+  return router.options.routes
+    .filter((r: any) => !r.hidden && r.meta?.title)
+    .map((r: any) => ({
+      label: r.meta.title,
+      path: r.path,
+      icon: iconMap[r.meta.icon] || Search,
+      active: false
+    }));
+});
 
 // History Management
 const activeDropdownId = ref<string | null>(null);

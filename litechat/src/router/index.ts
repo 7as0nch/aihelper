@@ -8,46 +8,70 @@ interface Route {
     name: string;
     hidden?: boolean;
     component: any;
+    meta?: {
+        title?: string;
+        icon?: string;
+    };
 }
 
 const routes: Route[] = [
     {
         path: '/',
         name: 'Chat',
+        hidden: false,
         component: ChatView,
+        meta: {
+            title: '搜索',
+            icon: 'Search'
+        }
     },
     {
         path: '/chat/:id',
         name: 'ChatHistory',
+        hidden: true,
         component: ChatView,
     },
     {
         path: '/knowledge',
         name: 'KnowledgeBase',
-        hidden: false,
+        hidden: true,
         component: KnowledgeBaseView,
+        meta: {
+            title: '知识库',
+            icon: 'BookOpen'
+        }
     },
     {
         path: '/meeting_summary', // 开会总结
         name: 'MeetingSummary',
         hidden: false,
         component: () => import('@/views/MeetingSummaryView.vue'),
+        meta: {
+            title: '会议总结',
+            icon: 'FileText'
+        }
     },
     {
         path: '/collections',
         name: 'Collections',
+        hidden: false,
         component: () => import('@/views/FavoritesView.vue'),
+        meta: {
+            title: '收藏',
+            icon: 'Bookmark'
+        }
     },
     {
         path: '/history',
         name: 'History',
+        hidden: true,
         component: HistoryView,
     },
 ];
 
 const router = createRouter({
     history: createWebHistory(),
-    routes: routes.filter((route: Route) => !route.hidden),
+    routes: routes,
 });
 
 router.beforeEach((to, _from, next) => {

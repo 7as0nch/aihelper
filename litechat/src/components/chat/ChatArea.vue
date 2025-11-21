@@ -137,7 +137,7 @@ onMounted(async () => {
     <div v-if="store.messages.length === 0" class="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
       <div class="w-full max-w-3xl space-y-12 -mt-20">
         <h1 class="text-4xl font-bold text-center text-gray-800 dark:text-gray-100 tracking-wide">
-        你的智慧 <span class="text-primary">智慧</span> 帮手
+        你的 <span class="text-primary">智慧</span> 帮手
         </h1>
         
         <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />

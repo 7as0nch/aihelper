@@ -6,7 +6,6 @@ import mermaid from 'mermaid';
 import type { Message, Attachment } from '../../stores/chat';
 import { User, Bot, Quote, FileText } from 'lucide-vue-next';
 import MessageActions from './MessageActions.vue';
-import 'highlight.js/styles/github-dark.css'; // Import highlight.js style
 
 const props = defineProps<{
   message: Message
@@ -32,22 +31,15 @@ const md: MarkdownIt = new MarkdownIt({
   highlight: function (str, lang): string {
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return '<pre class="hljs"><code>' +
-               hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
-               '</code></pre>';
+        return hljs.highlight(str, { language: lang, ignoreIllegals: true }).value;
       } catch (__) {}
     }
-
-    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+    return md.utils.escapeHtml(str);
   }
 });
 
-// Custom fence rule for mermaid
-const defaultFence = md.renderer.rules.fence || function(tokens: any[], idx: number, options: any, _env: any, self: any) {
-  return self.renderToken(tokens, idx, options);
-};
-
-md.renderer.rules.fence = (tokens: any[], idx: number, options: any, env: any, self: any) => {
+// Custom fence rule for mermaid and code blocks
+md.renderer.rules.fence = (tokens: any[], idx: number, options: any, _env: any, _self: any) => {
   const token = tokens[idx];
   const info = token.info.trim();
   
@@ -56,8 +48,29 @@ md.renderer.rules.fence = (tokens: any[], idx: number, options: any, env: any, s
     return `<div class="mermaid" id="${id}">${token.content}</div>`;
   }
   
-  return defaultFence(tokens, idx, options, env, self);
+  const lang = info ? info.split(/\s+/)[0] : '';
+  const languageLabel = lang ? lang.toUpperCase() : 'TEXT';
+  const code = options.highlight ? options.highlight(token.content, lang) : md.utils.escapeHtml(token.content);
+  
+  return `
+    <div class="code-block-wrapper my-4 rounded-lg overflow-hidden bg-[#f3f4f6] dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700">
+      <div class="code-block-header flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+        <span class="text-xs font-mono font-medium text-gray-500 dark:text-gray-400">${languageLabel}</span>
+        <button class="copy-btn flex items-center gap-1 text-xs text-gray-500 hover:text-primary transition-colors" data-code="${encodeURIComponent(token.content)}">
+          <span class="copy-icon">📋</span>
+          <span class="copy-text">复制</span>
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <pre class="!m-0 !p-4 !bg-transparent !border-0"><code class="hljs language-${lang}">${code}</code></pre>
+      </div>
+    </div>
+  `;
 };
+
+// Custom table rules for horizontal scrolling
+md.renderer.rules.table_open = () => '<div class="table-wrapper overflow-x-auto my-4 w-full border border-gray-200 dark:border-gray-700 rounded-lg"><table class="w-full text-left text-sm">';
+md.renderer.rules.table_close = () => '</table></div>';
 
 const renderedContent = computed(() => {
   return md.render(props.message.content);
@@ -82,52 +95,36 @@ const renderMermaid = async () => {
   });
 };
 
+// Handle copy button clicks via delegation
+const handleMessageClick = async (event: MouseEvent) => {
+  const target = (event.target as HTMLElement).closest('.copy-btn');
+  if (!target) return;
+  
+  const btn = target as HTMLElement;
+  const code = decodeURIComponent(btn.getAttribute('data-code') || '');
+  
+  if (code) {
+    try {
+      await navigator.clipboard.writeText(code);
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<span class="text-green-500">✓</span><span class="text-green-500">已复制</span>';
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  }
+};
+
 // Watch for content changes to re-render mermaid
 watch(() => props.message.content, () => {
   renderMermaid();
-  addCopyButtonsToCodeBlocks();
 });
 
-// Add copy buttons to code blocks
 onMounted(() => {
   renderMermaid();
-  nextTick(() => {
-    addCopyButtonsToCodeBlocks();
-  });
 });
-
-const addCopyButtonsToCodeBlocks = () => {
-  // Wait for DOM update
-  setTimeout(() => {
-    const codeBlocks = document.querySelectorAll('.markdown-body pre');
-    codeBlocks.forEach((block) => {
-      if (block.querySelector('.copy-code-button')) return; // Already added
-      
-      const button = document.createElement('button');
-      button.className = 'copy-code-button';
-      button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
-      button.title = '复制代码';
-      
-      button.addEventListener('click', async () => {
-        const code = block.querySelector('code')?.textContent || '';
-        try {
-          await navigator.clipboard.writeText(code);
-          button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-          button.classList.add('copied');
-          setTimeout(() => {
-            button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
-            button.classList.remove('copied');
-          }, 2000);
-        } catch (err) {
-          console.error('Failed to copy code:', err);
-        }
-      });
-      
-      (block as HTMLElement).style.position = 'relative';
-      block.appendChild(button);
-    });
-  }, 100);
-};
 
 const handleQuote = (messageId: string, content: string) => {
   emit('quote', messageId, content);
@@ -190,6 +187,7 @@ const handleFileClick = (file: Attachment) => {
           v-else 
           v-html="renderedContent"
           class="markdown-body max-w-full overflow-x-auto break-words"
+          @click="handleMessageClick"
         ></div>
 
         <!-- Quote Display (for user messages with quotes) -->
@@ -272,44 +270,40 @@ const handleFileClick = (file: Attachment) => {
   white-space: pre-wrap;
 }
 
-.markdown-body pre {
-  background-color: #f3f4f6;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  overflow-x: auto;
-  position: relative;
-  max-width: 100%;
+.markdown-body ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
   margin-bottom: 1em;
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
-.markdown-body code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.875em;
-  word-break: break-word;
+.markdown-body ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin-bottom: 1em;
 }
 
+.markdown-body li {
+  margin-bottom: 0.25em;
+}
+
+/* Code block styles are now handled by utility classes in the render function */
+/* But we keep some resets */
 .markdown-body pre code {
   word-break: normal;
   white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875em;
 }
 
-.dark .markdown-body pre {
-  background-color: #1f2937;
-}
-
+/* Table styles */
 .markdown-body table {
-  display: block;
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   border-collapse: collapse;
-  margin-bottom: 1em;
 }
 
 .markdown-body th,
 .markdown-body td {
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #e5e7eb;
 }
 
@@ -325,60 +319,6 @@ const handleFileClick = (file: Attachment) => {
 
 .dark .markdown-body th {
   background-color: #1f2937;
-}
-
-/* Code copy button */
-.copy-code-button {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.375rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e5e7eb;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  opacity: 0; /* Hidden by default on desktop */
-  transition: opacity 0.2s, background-color 0.2s;
-  color: #6b7280;
-  z-index: 10;
-}
-
-/* Always show copy button on mobile/touch devices */
-@media (hover: none) {
-  .copy-code-button {
-    opacity: 1;
-    background-color: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  }
-  
-  .dark .copy-code-button {
-    background-color: rgba(31, 41, 55, 0.95);
-  }
-}
-
-.dark .copy-code-button {
-  background-color: rgba(31, 41, 55, 0.9);
-  border-color: #374151;
-  color: #9ca3af;
-}
-
-.markdown-body pre:hover .copy-code-button {
-  opacity: 1;
-}
-
-.copy-code-button:hover {
-  background-color: #f9fafb;
-  color: #374151;
-}
-
-.dark .copy-code-button:hover {
-  background-color: #374151;
-  color: #d1d5db;
-}
-
-.copy-code-button.copied {
-  color: #10b981;
-  opacity: 1;
 }
 
 /* Mermaid styles */
