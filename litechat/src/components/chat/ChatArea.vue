@@ -257,7 +257,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="bg-white/70 dark:bg-[#242424]/70 backdrop-blur-md pb-6 pt-2">
+        <div class="bg-white/70 dark:bg-[#242424]/70 backdrop-blur-md pb-4">
           <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
           <div class="text-center mt-2 text-xs text-gray-400">
             AI 生成的内容可能不准确，请谨慎参考

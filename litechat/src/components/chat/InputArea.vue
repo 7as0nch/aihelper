@@ -310,7 +310,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto w-full p-4">
+  <div class="max-w-3xl mx-auto w-full p-2">
     <div class="relative bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out hover:shadow-lg focus-within:shadow-lg">
       
       <!-- Pending Attachments -->
