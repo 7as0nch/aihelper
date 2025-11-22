@@ -12,7 +12,7 @@ const emit = defineEmits<{
   (e: 'toggleSelect', id: string): void;
 }>();
 
-const props = defineProps<{
+defineProps<{
   isScreenshotMode?: boolean;
   selectedIds?: Set<string>;
 }>();
