@@ -529,7 +529,7 @@ const handleScreenshot = async () => {
               class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <component :is="currentModeIcon" class="w-4 h-4 text-primary" />
-              <span>{{ currentModeLabel }}</span>
+              <span class="hidden md:inline">{{ currentModeLabel }}</span>
               <ChevronDown class="w-3 h-3 text-gray-500" />
             </button>
 
@@ -562,7 +562,7 @@ const handleScreenshot = async () => {
           <button class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm">
             <Globe class="w-4 h-4" />
             <!-- 是否启用联网搜索的MCP Tool -->
-            <span>联网搜索</span>
+            <span class="hidden md:inline">联网搜索</span>
           </button>
 
           <button 
@@ -571,7 +571,7 @@ const handleScreenshot = async () => {
             title="截屏当前会话"
           >
             <Camera class="w-4 h-4" />
-            <span>截屏</span>
+            <span class="hidden md:inline">截屏</span>
           </button>
         </div>
 

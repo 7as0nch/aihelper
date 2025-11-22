@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useChatStore } from '../stores/chat';
-import { Search, Star, MessageSquare, Calendar } from 'lucide-vue-next';
+import { Search, Star, MessageSquare, Calendar, Menu } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 const store = useChatStore();
 const router = useRouter();
 const searchQuery = ref('');
+
+defineEmits<{
+  (e: 'toggleSidebar'): void;
+}>();
 
 const favoriteChats = computed(() => {
   return store.historyItems.filter(item => store.isFavorite(item.id));
@@ -33,8 +37,13 @@ const unstar = (e: Event, id: string) => {
 <template>
   <div class="flex-1 flex flex-col h-full bg-gray-50 dark:bg-[#1a1a1a] overflow-hidden">
     <!-- Header -->
-    <div class="px-8 py-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">收藏列表</h1>
+    <div class="px-4 md:px-8 py-6">
+      <div class="flex items-center gap-3 mb-6">
+        <button @click="$emit('toggleSidebar')" class="md:hidden p-2 -ml-2 mb text-gray-600 dark:text-gray-300">
+          <Menu class="w-6 h-6" />
+        </button>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-none">收藏列表</h1>
+      </div>
       
       <!-- Search -->
       <div class="relative max-w-xl">
@@ -49,7 +58,7 @@ const unstar = (e: Event, id: string) => {
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-y-auto px-8 pb-8">
+    <div class="flex-1 overflow-y-auto px-4 md:px-8 pb-8">
       <div v-if="filteredFavorites.length > 0" class="grid gap-4">
         <div 
           v-for="item in filteredFavorites" 

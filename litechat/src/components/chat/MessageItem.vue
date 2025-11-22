@@ -53,16 +53,16 @@ md.renderer.rules.fence = (tokens: any[], idx: number, options: any, _env: any, 
   const code = options.highlight ? options.highlight(token.content, lang) : md.utils.escapeHtml(token.content);
   
   return `
-    <div class="code-block-wrapper my-4 rounded-lg overflow-hidden bg-[#f3f4f6] dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700">
-      <div class="code-block-header flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <span class="text-xs font-mono font-medium text-gray-500 dark:text-gray-400">${languageLabel}</span>
-        <button class="copy-btn flex items-center gap-1 text-xs text-gray-500 hover:text-primary transition-colors" data-code="${encodeURIComponent(token.content)}">
+    <div class="chat-code-block">
+      <div class="chat-code-header">
+        <span class="chat-code-lang">${languageLabel}</span>
+        <button class="copy-btn" data-code="${encodeURIComponent(token.content)}">
           <span class="copy-icon">📋</span>
           <span class="copy-text">复制</span>
         </button>
       </div>
-      <div class="overflow-x-auto">
-        <pre class="!m-0 !p-4 !bg-transparent !border-0"><code class="hljs language-${lang}">${code}</code></pre>
+      <div class="chat-code-content">
+        <pre><code class="hljs language-${lang}">${code}</code></pre>
       </div>
     </div>
   `;
@@ -215,11 +215,11 @@ const handleFileClick = (file: Attachment) => {
       :class="[message.role === 'user' ? 'text-right' : 'text-left']"
     >
       <div 
-        class="inline-block text-left max-w-full"
+        class="text-left max-w-full"
         :class="[
           message.role === 'user' 
-            ? 'bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2' 
-            : 'prose dark:prose-invert max-w-none'
+            ? 'inline-block bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2' 
+            : 'block w-full prose dark:prose-invert max-w-none'
         ]"
       >
         <div v-if="message.role === 'user'">
@@ -228,7 +228,7 @@ const handleFileClick = (file: Attachment) => {
         <div 
           v-else 
           v-html="renderedContent"
-          class="markdown-body max-w-full overflow-x-auto break-words"
+          class="markdown-body max-w-full break-words"
           @click="handleMessageClick"
         ></div>
 
@@ -376,5 +376,79 @@ const handleFileClick = (file: Attachment) => {
 
 .dark .mermaid {
   background: #1f2937;
+}
+
+/* Custom Code Block Styles */
+.chat-code-block {
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  max-width: 100%;
+}
+
+.dark .chat-code-block {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.chat-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background-color: #f3f4f6; /* Match block bg for seamless look or slightly darker */
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.dark .chat-code-header {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.chat-code-lang {
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.dark .chat-code-lang {
+  color: #9ca3af;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  transition: color 0.2s;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.dark .copy-btn {
+  color: #9ca3af;
+}
+
+.copy-btn:hover {
+  color: #3b82f6; /* Primary color */
+}
+
+.chat-code-content {
+  overflow-x: auto;
+}
+
+.chat-code-content pre {
+  margin: 0 !important;
+  padding: 1rem !important;
+  background-color: transparent !important;
+  border: 0 !important;
 }
 </style>
