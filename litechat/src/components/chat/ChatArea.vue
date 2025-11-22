@@ -276,7 +276,7 @@ onMounted(async () => {
         <!-- Persistent Suggestions -->
         <div 
           v-if="recommendationStore.showQuestions" 
-          class="absolute bottom-full left-0 right-0 pb-2 px-4 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-[#242424]/90 dark:via-[#242424]/50 pt-12 pointer-events-none"
+          class="absolute bottom-full left-0 right-0 pb-2 px-4 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-[#242424]/90 dark:via-[#242424]/50 pt-12 pointer-events-none hidden md:block"
         >
           <div class="overflow-x-auto no-scrollbar pointer-events-auto touch-pan-x" style="-webkit-overflow-scrolling: touch;">
             <div class="flex gap-2 w-max px-1">

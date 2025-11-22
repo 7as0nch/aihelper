@@ -1,24 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { sendMessageStream } from '../api/chat';
+import { sendMessageStream, type Attachment, type Message } from '../api/chat';
+export type { Attachment, Message };
 
-export interface Attachment {
-    id: string;
-    type: 'image' | 'file';
-    name: string;
-    url?: string;
-}
-
-export interface Message {
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: number;
-    isStreaming?: boolean;
-    quoteId?: string;
-    quoteContent?: string;
-    attachments?: Attachment[];
-}
 
 // Fake chat history data
 const fakeChats: Record<string, Message[]> = {
@@ -110,6 +94,15 @@ def hello_world():
             role: 'user',
             content: '展示一些复杂的代码块',
             timestamp: Date.now() - 60000,
+            aiModel: {
+                id: 'gpt-4',
+                modelName: 'GPT-4',
+                thinkingMode: 'smart',
+            },
+            tokenUsage: {
+                currentTokens: 15,
+                totalTokens: 150,
+            },
         },
         {
             id: '1-6',
@@ -168,6 +161,30 @@ async function fetchData(url) {
 }
 \`\`\``,
             timestamp: Date.now() - 55000,
+            aiModel: {
+                id: 'gpt-4',
+                modelName: 'GPT-4',
+                thinkingMode: 'smart',
+            },
+            tokenUsage: {
+                currentTokens: 500,
+                totalTokens: 650,
+            },
+            callingTools: [
+                {
+                    name: 'Code Search',
+                    description: 'Searching for code examples',
+                    functionName: 'search_code',
+                }
+            ],
+            quoteSearchLinks: [
+                {
+                    url: 'https://vuejs.org/guide/introduction.html',
+                    title: 'Vue.js Documentation',
+                    content: 'Vue.js is a progressive framework for building user interfaces.',
+                    highlight: ['Vue.js', 'progressive framework'],
+                }
+            ]
         },
     ],
 };
@@ -209,10 +226,15 @@ export const useChatStore = defineStore('chat', () => {
         messages.value.push(message);
     };
 
-    const updateLastMessage = (content: string) => {
+    const updateLastMessage = (data: { content?: string; reasoning_content?: string }) => {
         const lastMsg = messages.value[messages.value.length - 1];
         if (lastMsg && lastMsg.role === 'assistant') {
-            lastMsg.content = content;
+            if (data.content) {
+                lastMsg.content += data.content;
+            }
+            if (data.reasoning_content) {
+                lastMsg.reasoning_content = (lastMsg.reasoning_content || '') + data.reasoning_content;
+            }
         }
     };
 
@@ -280,7 +302,7 @@ export const useChatStore = defineStore('chat', () => {
         }
 
         // User message
-        addMessage({
+        const userMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
             content,
@@ -288,7 +310,15 @@ export const useChatStore = defineStore('chat', () => {
             attachments,
             quoteId: quote?.quoteId,
             quoteContent: quote?.quoteContent,
-        });
+            aiModel: {
+                id: 'gpt-4', // Default mock model
+                modelName: 'GPT-4',
+                thinkingMode: thinkingMode.value,
+            }
+        };
+
+        // User message
+        addMessage(userMessage);
 
         isLoading.value = true;
         isThinking.value = true;
@@ -308,12 +338,20 @@ export const useChatStore = defineStore('chat', () => {
                 content: '',
                 timestamp: Date.now(),
                 isStreaming: true,
+                aiModel: {
+                    id: 'gpt-4',
+                    modelName: 'GPT-4',
+                    thinkingMode: thinkingMode.value,
+                }
             });
 
             await sendMessageStream(
-                content,
-                (text) => {
-                    updateLastMessage(text);
+                {
+                    history: messages.value.slice(0, -2), // Exclude current user msg and pending assistant msg
+                    curMessage: userMessage,
+                },
+                (data) => {
+                    updateLastMessage(data);
                 },
                 signal
             );

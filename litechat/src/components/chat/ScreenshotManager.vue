@@ -42,7 +42,7 @@ const generateScreenshot = async () => {
     const container = document.createElement('div');
     container.style.position = 'absolute';
     container.style.left = '-9999px';
-    container.style.top = '0';
+    container.style.top = '0'; // Reset to 0 to ensure full capture
     container.style.width = '1000px'; // Increased width for better layout
     container.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff';
     container.style.padding = '2rem';
@@ -74,6 +74,7 @@ const generateScreenshot = async () => {
       if (clone.classList.contains('flex-row-reverse')) {
         clone.style.display = 'flex';
         clone.style.flexDirection = 'row-reverse';
+        clone.style.justifyContent = 'flex-start'; // Changed from flex-end to flex-start because of row-reverse
       }
       
       // Force text wrapping and visibility on all children
@@ -83,18 +84,26 @@ const generateScreenshot = async () => {
         el.style.height = 'auto';
         el.style.overflow = 'visible';
         
-        // Fix User Message Bubble
+    // Fix User Message Bubble
         if (el.classList.contains('user-message-bubble')) {
              el.style.whiteSpace = 'pre-wrap';
-             el.style.color = 'white';
+             el.style.color = '#ffffff'; // Force white color
              el.style.backgroundColor = '#3b82f6'; // Primary blue
-             el.style.display = 'block';
-             el.style.width = 'fit-content';
+             el.style.display = 'inline-block';
+             el.style.width = 'auto';
              el.style.maxWidth = '100%';
+             el.style.borderRadius = '1rem';
+             el.style.borderTopRightRadius = '0.125rem';
+             el.style.padding = '0.5rem 1rem';
+             
+             // Ensure children also have white color
+             const children = el.querySelectorAll('*');
+             children.forEach(child => {
+               (child as HTMLElement).style.color = '#ffffff';
+             });
         }
         
         // Fix Avatar Stretching
-        // We look for the avatar container which usually has w-8 h-8 classes
         if (el.classList.contains('w-8') && el.classList.contains('h-8')) {
             el.style.width = '32px';
             el.style.height = '32px';
@@ -108,10 +117,11 @@ const generateScreenshot = async () => {
              }
         }
         
-        // Fix Image max width
+        // Fix Image max width and remove overflow: visible for images
         if (el.tagName === 'IMG') {
             el.style.maxWidth = '100%';
             el.style.height = 'auto';
+            el.style.overflow = 'hidden'; // Fix warning
         }
       });
 
@@ -130,13 +140,20 @@ const generateScreenshot = async () => {
     const html2canvasModule = await import('html2canvas');
     const html2canvas = html2canvasModule.default || html2canvasModule;
     
+    // Use a slight delay to ensure rendering is complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     const canvas = await html2canvas(container, {
       useCORS: true,
-      backgroundColor: null, // Use container background
+      backgroundColor: null,
       scale: 2,
       logging: false,
-      windowHeight: container.scrollHeight,
-      height: container.scrollHeight
+      windowHeight: container.scrollHeight + 100, // Add some buffer
+      height: container.scrollHeight + 50,
+      x: 0,
+      y: 0, // Capture from top of container
+      scrollX: 0,
+      scrollY: 0
     });
     
     screenshotPreviewUrl.value = canvas.toDataURL('image/png');

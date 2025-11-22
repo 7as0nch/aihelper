@@ -1,15 +1,24 @@
 <script setup lang="ts">
-import { computed, onMounted, nextTick, watch } from 'vue';
+import { computed, onMounted, nextTick, watch, ref } from 'vue';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import mermaid from 'mermaid';
 import type { Message, Attachment } from '../../stores/chat';
-import { User, Bot, Quote, FileText } from 'lucide-vue-next';
+import { User, Bot, Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight } from 'lucide-vue-next';
 import MessageActions from './MessageActions.vue';
 
 const props = defineProps<{
   message: Message
 }>();
+
+const isReasoningCollapsed = ref(false);
+
+// Auto-collapse reasoning when content starts generating
+watch(() => props.message.content, (newContent, oldContent) => {
+  if (newContent && !oldContent && props.message.reasoning_content) {
+    isReasoningCollapsed.value = true;
+  }
+});
 
 const emit = defineEmits<{
   (e: 'quote', messageId: string, content: string): void;
@@ -223,6 +232,32 @@ const handleFileClick = (file: Attachment) => {
         ]"
         :style="message.role === 'user' ? { backgroundColor: '#3b82f6', color: '#ffffff' } : {}"
       >
+        <!-- Reasoning Content -->
+        <div v-if="message.reasoning_content" class="mb-4">
+          <div 
+            class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+          >
+            <button 
+              @click="isReasoningCollapsed = !isReasoningCollapsed"
+              class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center">
+                  <span class="text-[10px]">R</span>
+                </div>
+                <span>深度思考过程</span>
+              </div>
+              <component :is="isReasoningCollapsed ? ChevronRight : ChevronDown" class="w-4 h-4" />
+            </button>
+            
+            <div v-show="!isReasoningCollapsed" class="px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
+              <div class="prose dark:prose-invert max-w-none text-xs text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap font-mono">
+                {{ message.reasoning_content }}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div v-if="message.role === 'user'">
           {{ message.content }}
         </div>
@@ -280,6 +315,53 @@ const handleFileClick = (file: Attachment) => {
           </div>
         </div>
         
+        <!-- Calling Tools -->
+        <div v-if="message.callingTools && message.callingTools.length > 0" class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/50">
+          <div class="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+            <Wrench class="w-3.5 h-3.5" />
+            <span>使用的工具</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <div 
+              v-for="(tool, index) in message.callingTools" 
+              :key="index"
+              class="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md text-xs text-gray-600 dark:text-gray-300"
+            >
+              <span class="font-medium">{{ tool.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quote Search Links -->
+        <div v-if="message.quoteSearchLinks && message.quoteSearchLinks.length > 0" class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/50">
+          <div class="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+            <LinkIcon class="w-3.5 h-3.5" />
+            <span>引用来源</span>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <a 
+              v-for="(link, index) in message.quoteSearchLinks" 
+              :key="index"
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-start gap-2 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
+            >
+              <div class="shrink-0 mt-0.5 text-gray-400 group-hover:text-primary transition-colors">
+                <span class="text-[10px] font-mono border border-current rounded px-1 flex items-center justify-center min-w-[18px] h-[18px]">{{ index + 1 }}</span>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-medium text-gray-700 dark:text-gray-200 group-hover:text-primary truncate transition-colors">
+                  {{ link.title }}
+                </div>
+                <div class="text-[10px] text-gray-400 truncate mt-0.5">
+                  {{ link.content }}
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+
         <!-- Streaming Cursor -->
         <span 
           v-if="message.isStreaming" 

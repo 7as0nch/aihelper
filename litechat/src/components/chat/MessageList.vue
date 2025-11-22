@@ -2,7 +2,7 @@
 import { useChatStore } from '../../stores/chat';
 import MessageItem from './MessageItem.vue';
 import { storeToRefs } from 'pinia';
-import { onUpdated, ref, onMounted, onUnmounted } from 'vue';
+import { onUpdated, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { Bot, ArrowDown, Check } from 'lucide-vue-next';
 
 const emit = defineEmits<{
@@ -46,6 +46,31 @@ const handleScroll = () => {
 onMounted(() => {
   scrollToBottom(false);
   containerRef.value?.addEventListener('scroll', handleScroll);
+});
+
+// Watch for messages change to auto-scroll
+watch(() => store.messages, async () => {
+  await nextTick();
+  if (!showScrollButton.value) {
+    scrollToBottom(true);
+  }
+}, { deep: true });
+
+// Watch for specific message content updates (streaming)
+watch(() => store.messages[store.messages.length - 1]?.content, async () => {
+  if (!showScrollButton.value) {
+     // Use 'auto' behavior for streaming updates to avoid jitter, or 'smooth' if preferred
+     // But 'smooth' might lag behind fast streaming. 'auto' is better for keeping up.
+     // However, scrollToBottom uses smooth by default. Let's override.
+     bottomRef.value?.scrollIntoView({ behavior: 'auto' });
+  }
+});
+
+// Also watch reasoning content
+watch(() => store.messages[store.messages.length - 1]?.reasoning_content, async () => {
+  if (!showScrollButton.value) {
+     bottomRef.value?.scrollIntoView({ behavior: 'auto' });
+  }
 });
 
 onUnmounted(() => {

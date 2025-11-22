@@ -2,100 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Scrollbar for Dark Mode */
-.dark ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: #1a1a1a;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #4a4a4a;
-  border-radius: 4px;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #5a5a5a;
-}
-
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Light mode defaults */
-:root {
-  color: #213547;
-  background-color: #ffffff;
-}
-
-/* Dark mode */
-:root.dark {
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-}
-
-body {
+html, body, #app {
+  height: 100%;
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Markdown Styles */
+.markdown-body {
+  background-color: transparent !important;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
+.markdown-body p {
+  margin-bottom: 1em;
 }
 
-/* Dynamic Highlight.js Theme */
+.markdown-body pre {
+  margin: 1em 0;
+  padding: 0 !important;
+  background-color: transparent !important;
+  border-radius: 0.5rem;
+}
+
+.markdown-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Highlight.js Theme Variables */
 :root {
-  --hljs-bg: #f6f8fa;
+  --hljs-bg: #ffffff;
   --hljs-color: #24292e;
   --hljs-keyword: #d73a49;
   --hljs-string: #032f62;
   --hljs-title: #6f42c1;
   --hljs-attr: #005cc5;
-  --hljs-comment: #6a737d;
-  --hljs-number: #005cc5;
-  --hljs-symbol: #e36209;
-  --hljs-section: #005cc5;
-  --hljs-literal: #005cc5;
 }
 
-:root.dark {
-  --hljs-bg: #1f2937;
+.dark {
+  --hljs-bg: #1a1a1a; /* Darker background for code blocks in dark mode */
   --hljs-color: #c9d1d9;
   --hljs-keyword: #ff7b72;
   --hljs-string: #a5d6ff;
   --hljs-title: #d2a8ff;
   --hljs-attr: #79c0ff;
-  --hljs-comment: #8b949e;
-  --hljs-number: #79c0ff;
-  --hljs-symbol: #ffa657;
-  --hljs-section: #79c0ff;
-  --hljs-literal: #79c0ff;
 }
 
+/* Apply variables to highlight.js classes */
 .hljs {
   display: block;
   overflow-x: auto;
@@ -104,33 +58,22 @@ body {
   color: var(--hljs-color);
 }
 
-.hljs-comment,
-.hljs-quote {
-  color: var(--hljs-comment);
-  font-style: italic;
-}
-
-.hljs-doctag,
 .hljs-keyword,
-.hljs-formula {
-  color: var(--hljs-keyword);
-}
-
-.hljs-section,
-.hljs-name,
 .hljs-selector-tag,
-.hljs-deletion,
-.hljs-subst {
+.hljs-literal,
+.hljs-section,
+.hljs-link {
   color: var(--hljs-keyword);
 }
 
-.hljs-literal {
-  color: var(--hljs-literal);
+.hljs-function .hljs-keyword {
+  color: var(--hljs-keyword);
 }
 
 .hljs-string,
-.hljs-regexp,
-.hljs-addition,
+.hljs-title,
+.hljs-name,
+.hljs-type,
 .hljs-attribute,
 .hljs-meta .hljs-string {
   color: var(--hljs-string);
@@ -186,4 +129,30 @@ body {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
     border-radius: 0.75rem !important;
   }
+}
+
+/* InputArea Animations */
+@keyframes jump {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-jump {
+  animation: jump 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.2s ease-out forwards;
 }
