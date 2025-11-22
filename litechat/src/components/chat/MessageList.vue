@@ -3,12 +3,18 @@ import { useChatStore } from '../../stores/chat';
 import MessageItem from './MessageItem.vue';
 import { storeToRefs } from 'pinia';
 import { onUpdated, ref, onMounted, onUnmounted } from 'vue';
-import { Bot, ArrowDown } from 'lucide-vue-next';
+import { Bot, ArrowDown, Check } from 'lucide-vue-next';
 
 const emit = defineEmits<{
   (e: 'quote', messageId: string, content: string): void;
   (e: 'regenerate', id: string): void;
   (e: 'previewImage', url: string): void;
+  (e: 'toggleSelect', id: string): void;
+}>();
+
+const props = defineProps<{
+  isScreenshotMode?: boolean;
+  selectedIds?: Set<string>;
 }>();
 
 const store = useChatStore();
@@ -73,7 +79,26 @@ const handlePreviewImage = (url: string) => {
         @quote="handleQuote"
         @regenerate="handleRegenerate"
         @preview-image="handlePreviewImage"
-      />
+        :class="{ 
+          'opacity-50': isScreenshotMode && selectedIds && !selectedIds.has(msg.id), 
+          'cursor-pointer': isScreenshotMode,
+          'ring-2 ring-primary ring-offset-2 ring-offset-white dark:ring-offset-[#1a1a1a] rounded-lg': isScreenshotMode && selectedIds?.has(msg.id)
+        }"
+        @click="isScreenshotMode && $emit('toggleSelect', msg.id)"
+        :data-message-id="msg.id"
+        class="message-item relative transition-all duration-200"
+      >
+        <template #prefix v-if="isScreenshotMode">
+           <div class="absolute left-0 top-1/2 -translate-y-1/2 -ml-8 selection-checkbox">
+             <div 
+               class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+               :class="selectedIds?.has(msg.id) ? 'bg-primary border-primary' : 'border-gray-300 dark:border-gray-600'"
+             >
+               <Check v-if="selectedIds?.has(msg.id)" class="w-3 h-3 text-white" />
+             </div>
+           </div>
+        </template>
+      </MessageItem>
       
       <!-- Thinking Indicator -->
       <div v-if="store.isThinking" class="flex gap-4 max-w-3xl mx-auto w-full p-4 animate-fade-in">

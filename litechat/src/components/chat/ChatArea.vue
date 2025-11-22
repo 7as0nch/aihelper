@@ -1,3 +1,4 @@
+```vue
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import MessageList from './MessageList.vue';
@@ -11,6 +12,19 @@ const store = useChatStore();
 const authStore = useAuthStore();
 const recommendationStore = useRecommendationStore();
 const quotedContent = ref<{id: string, content: string} | null>(null);
+
+const props = defineProps<{
+  isScreenshotMode: boolean;
+  selectedMessageIds: Set<string>;
+}>();
+
+const emit = defineEmits<{
+  (e: 'toggleSidebar'): void;
+  (e: 'update:isScreenshotMode', value: boolean): void;
+  (e: 'toggleSelect', id: string): void;
+}>();
+
+const messageListRef = ref<InstanceType<typeof MessageList> | null>(null);
 
 // ... (keep existing emits and handlers)
 
@@ -48,6 +62,13 @@ const previewImageUrl = ref<string | null>(null);
 const handlePreviewImage = (url: string) => {
   previewImageUrl.value = url;
 };
+
+const toggleScreenshotMode = () => {
+  emit('update:isScreenshotMode', !props.isScreenshotMode);
+  // Clearing selection is handled by the parent or ScreenshotManager when mode changes
+};
+
+
 
 // Recommendations
 onMounted(() => {
@@ -102,7 +123,7 @@ onMounted(async () => {
     <!-- Mobile Header -->
     <div class="md:hidden h-14 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-800">
       <div class="flex items-center gap-2">
-        <button @click="$emit('toggleSidebar')" class="p-2 -ml-2 text-gray-600 dark:text-gray-300">
+        <button @click="emit('toggleSidebar')" class="p-2 -ml-2 text-gray-600 dark:text-gray-300">
           <Menu class="w-6 h-6" />
         </button>
         <span class="font-medium text-gray-900 dark:text-white">{{ store.historyItems.find(h => h.id === store.currentChatId)?.title || '新对话' }}</span>
@@ -172,7 +193,12 @@ onMounted(async () => {
         </div>
 
         <div class="order-3 md:order-2 w-full">
-          <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
+          <InputArea 
+            ref="inputAreaRef" 
+            :quoted-content="quotedContent" 
+            @clear-quote="quotedContent = null" 
+            @toggle-screenshot="toggleScreenshotMode"
+          />
         </div>
       </div>
       
@@ -235,9 +261,16 @@ onMounted(async () => {
       </div>
 
       <MessageList 
+        ref="messageListRef"
+        :messages="store.messages" 
+        :is-thinking="store.isThinking"
+        :is-screenshot-mode="props.isScreenshotMode"
+        :selected-ids="props.selectedMessageIds"
         @quote="handleQuote" 
         @regenerate="handleRegenerate"
         @preview-image="handlePreviewImage"
+        @toggle-select="emit('toggleSelect', $event)"
+        class="flex-1 overflow-y-auto"
       />
       <div class="relative z-20">
         <!-- Persistent Suggestions -->
@@ -260,7 +293,12 @@ onMounted(async () => {
         </div>
 
         <div class="bg-white/70 dark:bg-[#242424]/70 backdrop-blur-md pb-4">
-          <InputArea ref="inputAreaRef" :quoted-content="quotedContent" @clear-quote="quotedContent = null" />
+          <InputArea 
+            ref="inputAreaRef" 
+            :quoted-content="quotedContent" 
+            @clear-quote="quotedContent = null" 
+            @toggle-screenshot="toggleScreenshotMode"
+          />
           <div class="text-center mt-2 text-xs text-gray-400">
             AI 生成的内容可能不准确，请谨慎参考
           </div>

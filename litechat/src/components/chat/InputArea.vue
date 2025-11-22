@@ -29,6 +29,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'clearQuote'): void;
+  (e: 'toggleScreenshot'): void;
 }>();
 
 const store = useChatStore();
@@ -343,30 +344,8 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 };
 
-const handleScreenshot = async () => {
-  const messageList = document.querySelector('.message-list-container');
-  if (!messageList) {
-    alert('无法找到会话内容');
-    return;
-  }
-
-  try {
-    const html2canvasModule = await import('html2canvas');
-    const html2canvas = html2canvasModule.default || html2canvasModule;
-    const canvas = await html2canvas(messageList as HTMLElement, {
-      useCORS: true,
-      backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-      scale: 2 // Higher quality
-    });
-    
-    const link = document.createElement('a');
-    link.download = `chat-screenshot-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  } catch (err) {
-    console.error('Screenshot failed:', err);
-    alert('截屏失败，请重试');
-  }
+const handleScreenshot = () => {
+  emit('toggleScreenshot');
 };
 </script>
 

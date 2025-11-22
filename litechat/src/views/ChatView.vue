@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { onMounted, watch, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useChatStore } from '@/stores/chat';
 import ChatArea from '@/components/chat/ChatArea.vue';
+import ScreenshotManager from '@/components/chat/ScreenshotManager.vue';
 
 const route = useRoute();
 const chatStore = useChatStore();
+
+const isScreenshotMode = ref(false);
+const selectedMessageIds = ref<Set<string>>(new Set());
 
 defineEmits<{
   (e: 'toggleSidebar'): void;
@@ -21,6 +25,14 @@ const loadChat = () => {
   }
 };
 
+const handleToggleSelect = (id: string) => {
+  if (selectedMessageIds.value.has(id)) {
+    selectedMessageIds.value.delete(id);
+  } else {
+    selectedMessageIds.value.add(id);
+  }
+};
+
 onMounted(() => {
   loadChat();
 });
@@ -32,6 +44,16 @@ watch(() => route.params.id, () => {
 
 <template>
   <ChatArea 
+    :is-screenshot-mode="isScreenshotMode"
+    :selected-message-ids="selectedMessageIds"
+    @update:is-screenshot-mode="isScreenshotMode = $event"
+    @toggle-select="handleToggleSelect"
     @toggle-sidebar="$emit('toggleSidebar')"
+  />
+  
+  <ScreenshotManager 
+    v-model:is-screenshot-mode="isScreenshotMode"
+    :selected-ids="selectedMessageIds"
+    @clear-selection="selectedMessageIds.clear()"
   />
 </template>

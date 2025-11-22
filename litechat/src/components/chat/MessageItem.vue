@@ -218,9 +218,10 @@ const handleFileClick = (file: Attachment) => {
         class="text-left max-w-full"
         :class="[
           message.role === 'user' 
-            ? 'inline-block bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2' 
+            ? 'inline-block bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2 user-message-bubble' 
             : 'block w-full prose dark:prose-invert max-w-none'
         ]"
+        :style="message.role === 'user' ? { backgroundColor: '#3b82f6', color: '#ffffff' } : {}"
       >
         <div v-if="message.role === 'user'">
           {{ message.content }}
