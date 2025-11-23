@@ -347,13 +347,13 @@ const initParticles = () => {
 
   const particles: Particle[] = [];
   const particleCount = 50; // Number of particles
-  const particleColor = isDark.value ? '255, 255, 255' : '0, 0, 0';
+  const particleColor = '34, 197, 94'; // Green-500
 
   for (let i = 0; i < particleCount; i++) {
     particles.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 2 + 0.5,
+      size: Math.random() * 4 + 2, // Slightly larger squares
       speedX: (Math.random() - 0.5) * 0.5,
       speedY: (Math.random() - 0.5) * 0.5,
       opacity: Math.random() * 0.5 + 0.1
@@ -373,10 +373,8 @@ const initParticles = () => {
       if (p.y < 0) p.y = canvas.height;
       if (p.y > canvas.height) p.y = 0;
 
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(${particleColor}, ${p.opacity})`;
-      ctx.fill();
+      ctx.fillRect(p.x, p.y, p.size, p.size);
     });
 
     animationId = requestAnimationFrame(animate);
