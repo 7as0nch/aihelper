@@ -208,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useIntersectionObserver } from '@vueuse/core';
 
 const lang = ref<'en' | 'zh'>('zh');
