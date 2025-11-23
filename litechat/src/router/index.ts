@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import ChatView from '@/views/ChatView.vue';
 import KnowledgeBaseView from '@/views/KnowledgeBaseView.vue';
 import HistoryView from '@/views/HistoryView.vue';
+import LandingView from '@/views/LandingView.vue';
 
 interface Route {
     path: string;
@@ -17,6 +18,15 @@ interface Route {
 const routes: Route[] = [
     {
         path: '/',
+        name: 'Landing',
+        hidden: true,
+        component: LandingView,
+        meta: {
+            title: '首页',
+        }
+    },
+    {
+        path: '/chat',
         name: 'Chat',
         hidden: false,
         component: ChatView,
@@ -88,7 +98,7 @@ router.beforeEach((to, _from, next) => {
 
     // Check if route requires auth
     // The user requirement: "Except the first one (Home), others need validation"
-    const publicRoutes = ['Chat'];
+    const publicRoutes = ['Landing', 'Chat'];
 
     // If it's not a public route
     if (!publicRoutes.includes(to.name as string)) {
