@@ -27,11 +27,16 @@ const emit = defineEmits<{
 }>();
 
 // Initialize mermaid
+// Initialize mermaid
 mermaid.initialize({
   startOnLoad: false,
   theme: 'default',
   securityLevel: 'loose',
+  suppressErrorRendering: true, // Suppress default error rendering
 });
+
+// Override parseError to prevent console spam
+mermaid.parseError = () => {};
 
 const md: MarkdownIt = new MarkdownIt({
   html: false,
@@ -54,7 +59,18 @@ md.renderer.rules.fence = (tokens: any[], idx: number, options: any, _env: any, 
   
   if (info === 'mermaid') {
     const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    return `<div class="mermaid" id="${id}">${token.content}</div>`;
+    const encodedCode = encodeURIComponent(token.content);
+    return `
+      <div class="mermaid-view my-4" id="${id}" data-code="${encodedCode}">
+        <div class="flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-gray-500 text-sm animate-pulse border border-gray-100 dark:border-gray-700">
+           <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+           </svg>
+           流程图生成中...
+        </div>
+      </div>
+    `;
   }
   
   const lang = info ? info.split(/\s+/)[0] : '';
@@ -90,24 +106,63 @@ md.renderer.rules.table_close = () => `
 </div>`;
 
 const renderedContent = computed(() => {
-  return md.render(props.message.content);
+  try {
+    return md.render(props.message.content);
+  } catch (e) {
+    console.error('Markdown render error:', e);
+    return '<div class="text-gray-500 italic p-2">当前内容暂不支持渲染</div>';
+  }
 });
 
 const renderMermaid = async () => {
   await nextTick();
-  const mermaidDivs = document.querySelectorAll('.mermaid');
+  const mermaidDivs = document.querySelectorAll('.mermaid-view');
   mermaidDivs.forEach(async (div) => {
     const id = div.id;
-    const content = div.textContent || '';
+    const content = decodeURIComponent(div.getAttribute('data-code') || '');
     if (div.getAttribute('data-processed')) return;
     
+    const sanitizeMermaid = (code: string) => {
+      let sanitized = code;
+      
+      // Fix unquoted brackets in node labels: id[label with [brackets]]
+      // Exclude shapes starting with [[ or [{
+      sanitized = sanitized.replace(/([A-Za-z0-9_]+)\s*\[(?!\[|\{)(.*?)\]/g, (match, id, content) => {
+        if (content.includes('[') && !content.startsWith('"')) {
+          return `${id}["${content}"]`;
+        }
+        return match;
+      });
+      
+      // Fix unquoted parentheses in node labels: id(label with (parens))
+      // Exclude shapes starting with ((
+      sanitized = sanitized.replace(/([A-Za-z0-9_]+)\s*\((?!\()(.*?)\)/g, (match, id, content) => {
+        if (content.includes('(') && !content.startsWith('"')) {
+          return `${id}("${content}")`;
+        }
+        return match;
+      });
+    
+      return sanitized;
+    };
+
     try {
-      const { svg } = await mermaid.render(id + '-svg', content);
-      div.innerHTML = svg;
-      div.setAttribute('data-processed', 'true');
+      const sanitizedContent = sanitizeMermaid(content);
+      
+      // Validate content before rendering
+      if (await mermaid.parse(sanitizedContent)) {
+        const { svg } = await mermaid.render(id + '-svg', sanitizedContent);
+        div.innerHTML = svg;
+        div.setAttribute('data-processed', 'true');
+      }
     } catch (error) {
+      // If streaming, suppress error as it might be incomplete code
+      if (props.message.isStreaming) {
+        // Keep the loading state
+        return;
+      }
       console.error('Mermaid render error:', error);
-      div.innerHTML = `<div class="text-red-500 bg-red-50 p-2 rounded">Diagram render error</div>`;
+      div.innerHTML = `<div class="text-red-500 bg-red-50 p-2 rounded text-sm">流程图生成失败</div>`;
     }
   });
 };
