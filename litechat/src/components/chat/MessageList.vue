@@ -103,9 +103,10 @@ defineExpose({
     <!-- Message List -->
     <div class="space-y-6 pb-4 pt-4">
       <MessageItem 
-        v-for="msg in messages" 
+        v-for="(msg, index) in messages" 
         :key="msg.id" 
         :message="msg"
+        :is-last-message="index === messages.length - 1"
         @quote="handleQuote"
         @regenerate="handleRegenerate"
         @preview-image="handlePreviewImage"

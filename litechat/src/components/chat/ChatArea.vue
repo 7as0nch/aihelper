@@ -267,6 +267,7 @@ onMounted(async () => {
         :is-thinking="store.isThinking"
         :is-screenshot-mode="props.isScreenshotMode"
         :selected-ids="props.selectedMessageIds"
+
         @quote="handleQuote" 
         @regenerate="handleRegenerate"
         @preview-image="handlePreviewImage"

@@ -4,13 +4,16 @@ import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import mermaid from 'mermaid';
 import type { Message, Attachment } from '../../stores/chat';
+import { useChatStore } from '../../stores/chat';
 import { User, Bot, Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight } from 'lucide-vue-next';
 import MessageActions from './MessageActions.vue';
 
 const props = defineProps<{
-  message: Message
+  message: Message;
+  isLastMessage?: boolean;
 }>();
 
+const chatStore = useChatStore();
 const isReasoningCollapsed = ref(false);
 
 // Auto-collapse reasoning when content starts generating
@@ -157,7 +160,7 @@ const renderMermaid = async () => {
       }
     } catch (error) {
       // If streaming, suppress error as it might be incomplete code
-      if (props.message.isStreaming) {
+      if (props.isLastMessage && chatStore.isLoading) {
         // Keep the loading state
         return;
       }
@@ -442,14 +445,14 @@ const handleFileClick = (file: Attachment) => {
 
         <!-- Streaming Cursor -->
         <span 
-          v-if="message.isStreaming" 
+          v-if="isLastMessage && chatStore.isLoading" 
           class="inline-block w-2 h-4 ml-1 bg-primary align-middle animate-pulse"
         ></span>
       </div>
       
       <!-- Message Actions (for assistant messages only) -->
       <MessageActions 
-        v-if="message.role === 'assistant' && !message.isStreaming"
+        v-if="message.role === 'assistant' && !(isLastMessage && chatStore.isLoading)"
         :message-content="message.content"
         :message-id="message.id"
         @quote="handleQuote"

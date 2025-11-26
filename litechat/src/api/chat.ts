@@ -33,7 +33,7 @@ export interface Message {
     content: string;
     reasoning_content?: string; // 深度思考内容。
     timestamp: number;
-    isStreaming?: boolean;
+
     quoteId?: string;
     quoteContent?: string;
     quoteSearchLinks?: QuoteSearchLink[]; // 联网搜索引用文章链接和内容。
@@ -306,25 +306,6 @@ async function fetchData(url) {
         }
         // Backend mode: Call API
         return request({ url: `/chat/history/${id}/rename`, method: 'post', data: { title } });
-    },
-
-    async sendMessage(messages: Message[], onProgress?: (content: string) => void): Promise<string> {
-        // This method is mainly used for non-streaming or initial setup if needed.
-        // For streaming, sendMessageStream is used.
-        // However, we might need to save the initial user message here if not handled in store.
-        // But the store handles saving messages to its state.
-        // Persistence to LocalStorage should ideally happen in the store or here.
-        // Since the store calls sendMessageStream directly for streaming, 
-        // we should add a helper to save messages to LS in frontend mode.
-
-        // Actually, the store manages the message list. 
-        // We need a way to persist the updated message list to LS.
-        // Let's expose a save helper or handle it in the store.
-        // But to keep store clean, maybe we can't fully avoid store logic.
-        // Let's stick to the plan: API handles persistence "logic", but store calls it?
-        // Or better: Store calls a "saveChat" API method.
-
-        return "Message sent";
     },
 
     // Helper to save chat history and messages in frontend mode

@@ -102,7 +102,6 @@ export const useChatStore = defineStore('chat', () => {
             // Update last message status
             const lastMsg = messages.value[messages.value.length - 1];
             if (lastMsg && lastMsg.role === 'assistant') {
-                lastMsg.isStreaming = false;
                 lastMsg.content += ' [已停止生成]';
             }
         }
@@ -168,7 +167,6 @@ export const useChatStore = defineStore('chat', () => {
                 role: 'assistant',
                 content: '',
                 timestamp: Date.now(),
-                isStreaming: true,
                 aiModel: {
                     id: 'gpt-4',
                     modelName: 'GPT-4',
@@ -187,10 +185,7 @@ export const useChatStore = defineStore('chat', () => {
                 signal
             );
 
-            const lastMsg = messages.value[messages.value.length - 1];
-            if (lastMsg) {
-                lastMsg.isStreaming = false;
-            }
+
         } catch (error) {
             if (error instanceof DOMException && error.name === 'AbortError') {
                 console.log('Generation stopped by user');
@@ -198,7 +193,6 @@ export const useChatStore = defineStore('chat', () => {
                 console.error('Generation error:', error);
                 const lastMsg = messages.value[messages.value.length - 1];
                 if (lastMsg && lastMsg.role === 'assistant') {
-                    lastMsg.isStreaming = false;
                     lastMsg.content += '\n[生成出错]';
                 }
             }
@@ -206,6 +200,8 @@ export const useChatStore = defineStore('chat', () => {
             isLoading.value = false;
             isThinking.value = false;
             abortController.value = null;
+
+
         }
     };
 
