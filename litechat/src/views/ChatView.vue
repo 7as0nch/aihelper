@@ -3,7 +3,6 @@ import { onMounted, watch, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useChatStore } from '@/stores/chat';
 import ChatArea from '@/components/chat/ChatArea.vue';
-import ScreenshotManager from '@/components/chat/ScreenshotManager.vue';
 
 const route = useRoute();
 const chatStore = useChatStore();
@@ -49,11 +48,5 @@ watch(() => route.params.id, () => {
     @update:is-screenshot-mode="isScreenshotMode = $event"
     @toggle-select="handleToggleSelect"
     @toggle-sidebar="$emit('toggleSidebar')"
-  />
-  
-  <ScreenshotManager 
-    v-model:is-screenshot-mode="isScreenshotMode"
-    :selected-ids="selectedMessageIds"
-    @clear-selection="selectedMessageIds.clear()"
   />
 </template>

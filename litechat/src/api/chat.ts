@@ -58,94 +58,98 @@ export function sendMessage(data: SendMessageParams) {
     });
 }
 
-async function streamOpenAI(
-    data: SendMessageParams,
-    onChunk: (data: { content?: string; reasoning_content?: string }) => void,
-    signal?: AbortSignal
-) {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    const baseURL = import.meta.env.VITE_OPENAI_BASE_URL;
-    const model = import.meta.env.VITE_OPENAI_MODEL || 'gpt-3.5-turbo';
+import { getConfig } from '@/config';
 
-    if (!apiKey) {
-        throw new Error('OpenAI API Key is missing');
-    }
-
-    // Convert messages to OpenAI format
-    const messages = [
-        ...data.history.map(m => ({
-            role: m.role,
-            content: m.content
-        })),
-        {
-            role: data.curMessage.role,
-            content: data.curMessage.content
+export const chatApi = {
+    async getHistoryList(): Promise<any[]> {
+        const aiType = getConfig('VITE_AI_TYPE');
+        if (aiType === 'demo') {
+            return [
+                { id: '1', title: 'Demo Chat 1', updateTime: Date.now() },
+                { id: '2', title: 'Demo Chat 2', updateTime: Date.now() - 86400000 }
+            ];
         }
-    ];
+        if (aiType === 'backend') {
+            // Pure frontend mode might store in local storage
+            const saved = localStorage.getItem('litechat_history');
+            return saved ? JSON.parse(saved) : [];
+        }
+        return request({ url: '/chat/history', method: 'get' });
+    },
 
-    const response = await fetch(`${baseURL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-            model,
-            messages,
-            stream: true
-        }),
-        signal
-    });
+    async getHistoryMsg(id: string): Promise<Message[]> {
+        const aiType = getConfig('VITE_AI_TYPE');
+        if (aiType === 'demo') {
+            return [
+                { id: 'msg1', role: 'user', content: 'Hello', timestamp: Date.now() - 10000 },
+                { id: 'msg2', role: 'assistant', content: 'Hi! This is a demo.', timestamp: Date.now() }
+            ];
+        }
+        if (aiType === 'backend') {
+            // Pure frontend mode might store in local storage
+            const saved = localStorage.getItem(`litechat_msg_${id}`);
+            return saved ? JSON.parse(saved) : [];
+        }
+        return request({ url: `/chat/history/${id}`, method: 'get' });
+    },
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error?.message || 'OpenAI API request failed');
-    }
-
-    if (!response.body) {
-        throw new Error('Response body is empty');
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-            if (line.trim() === '') continue;
-            if (line.trim() === 'data: [DONE]') return;
-
-            if (line.startsWith('data: ')) {
-                try {
-                    const json = JSON.parse(line.slice(6));
-                    const delta = json.choices[0]?.delta;
-                    if (delta) {
-                        onChunk({
-                            content: delta.content || undefined,
-                            reasoning_content: delta.reasoning_content || undefined
-                        });
-                    }
-                } catch (e) {
-                    console.warn('Failed to parse SSE message:', line);
-                }
+    async deleteChat(id: string): Promise<void> {
+        const aiType = getConfig('VITE_AI_TYPE');
+        if (aiType === 'demo') return;
+        if (aiType === 'backend') {
+            const saved = localStorage.getItem('litechat_history');
+            if (saved) {
+                const list = JSON.parse(saved).filter((item: any) => item.id !== id);
+                localStorage.setItem('litechat_history', JSON.stringify(list));
             }
+            localStorage.removeItem(`litechat_msg_${id}`);
+            return;
         }
+        return request({ url: `/chat/history/${id}`, method: 'delete' });
+    },
+
+    async renameChat(id: string, title: string): Promise<void> {
+        const aiType = getConfig('VITE_AI_TYPE');
+        if (aiType === 'demo') return;
+        if (aiType === 'backend') {
+            const saved = localStorage.getItem('litechat_history');
+            if (saved) {
+                const list = JSON.parse(saved).map((item: any) => item.id === id ? { ...item, title } : item);
+                localStorage.setItem('litechat_history', JSON.stringify(list));
+            }
+            return;
+        }
+        return request({ url: `/chat/history/${id}/rename`, method: 'post', data: { title } });
+    },
+
+    async sendMessage(messages: Message[], onProgress?: (content: string) => void): Promise<string> {
+        const apiKey = getConfig('VITE_OPENAI_API_KEY');
+        const baseURL = getConfig('VITE_OPENAI_BASE_URL');
+        const model = getConfig('VITE_OPENAI_MODEL', 'gpt-3.5-turbo');
+
+        if (!apiKey) {
+            throw new Error('OpenAI API Key is missing');
+        }
+
+        // Silence unused variable warnings for now
+        void messages;
+        void onProgress;
+        void baseURL;
+        void model;
+
+        // Placeholder
+        return "Message sent";
     }
-}
+};
+
+
 
 async function streamBackend(
     data: SendMessageParams,
     onChunk: (data: { content?: string; reasoning_content?: string }) => void,
     signal?: AbortSignal
 ) {
-    const baseURL = import.meta.env.VITE_BASE_URL || '/';
+    const baseURL = getConfig('VITE_BASE_URL', '/');
     // Remove trailing slash if present to avoid double slashes
     const cleanBaseURL = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
 
@@ -217,16 +221,50 @@ async function streamBackend(
     }
 }
 
+async function streamDemo(
+    onChunk: (data: { content?: string; reasoning_content?: string }) => void,
+    signal?: AbortSignal
+) {
+    const mockResponse = "This is a mock response from Demo Mode. I am simulating a streaming response.";
+    const mockReasoning = "I am thinking about how to simulate this response...";
+
+    // Simulate reasoning first
+    onChunk({ reasoning_content: "" });
+    const reasoningChars = mockReasoning.split('');
+    for (const char of reasoningChars) {
+        if (signal?.aborted) return;
+        await new Promise(resolve => setTimeout(resolve, 50));
+        onChunk({ reasoning_content: char });
+    }
+    onChunk({ reasoning_content: "\n" }); // End reasoning
+
+    // Simulate content
+    const chars = mockResponse.split('');
+    for (const char of chars) {
+        if (signal?.aborted) return;
+        await new Promise(resolve => setTimeout(resolve, 30));
+        onChunk({ content: char });
+    }
+}
+
+import { createChatProvider } from './providers/factory';
+
 export async function sendMessageStream(
     data: SendMessageParams,
     onChunk: (data: { content?: string; reasoning_content?: string }) => void,
     signal?: AbortSignal
 ): Promise<void> {
-    const aiType = import.meta.env.VITE_AI_TYPE;
+    const aiType = getConfig('VITE_AI_TYPE');
 
-    if (aiType === 'frontend') {
-        await streamOpenAI(data, onChunk, signal);
+    if (aiType === 'demo') {
+        await streamDemo(onChunk, signal);
+    } else if (aiType === 'frontend') {
+        // Pure Frontend Mode (Direct OpenAI)
+        // Use the Provider Factory to select the correct provider based on model
+        const provider = createChatProvider();
+        await provider.streamChat(data, onChunk, signal);
     } else {
+        // Frontend Mode (Backend API) - Default
         await streamBackend(data, onChunk, signal);
     }
 }

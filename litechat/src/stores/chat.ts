@@ -202,13 +202,6 @@ export const useChatStore = defineStore('chat', () => {
     // Mock history data
     const mockHistoryItems = [
         { id: '1', title: '如何使用 Vue3 Composition API' },
-        { id: '2', title: 'TailwindCSS 最佳实践' },
-        { id: '3', title: '2025年 AI 发展趋势报告' },
-        { id: '4', title: 'TypeScript 高级类型解析' },
-        { id: '5', title: 'Vite 构建性能优化指南' },
-        { id: '6', title: 'Pinia 状态管理最佳实践' },
-        { id: '7', title: 'Vue Router 路由守卫详解' },
-        { id: '8', title: '前端工程化落地实践' },
     ];
 
     const fetchHistoryList = async () => {

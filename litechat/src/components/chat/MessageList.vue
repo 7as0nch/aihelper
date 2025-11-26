@@ -88,11 +88,16 @@ const handleRegenerate = (messageId: string) => {
 const handlePreviewImage = (url: string) => {
   emit('previewImage', url);
 };
+
+defineExpose({
+  containerRef
+});
 </script>
 
 <template>
   <div 
     ref="containerRef"
+    id="message-list-container"
     class="flex-1 min-w-0 overflow-y-auto space-y-6 relative scroll-smooth message-list-container"
   >
     <!-- Message List -->

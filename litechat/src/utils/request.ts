@@ -1,11 +1,12 @@
 import axios from 'axios';
+import { getConfig } from '@/config';
 
-const service = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-    timeout: 10000,
+const request = axios.create({
+    baseURL: getConfig('VITE_API_BASE_URL', '/api'),
+    timeout: 60000,
 });
 
-service.interceptors.request.use(
+request.interceptors.request.use(
     (config) => {
         // Add auth token here if needed
         return config;
@@ -15,7 +16,7 @@ service.interceptors.request.use(
     }
 );
 
-service.interceptors.response.use(
+request.interceptors.response.use(
     (response) => {
         return response.data;
     },
@@ -24,4 +25,4 @@ service.interceptors.response.use(
     }
 );
 
-export default service;
+export default request;

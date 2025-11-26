@@ -59,7 +59,7 @@ defineExpose({
         <!-- Dropdown Menu -->
         <div 
           v-if="isDropdownOpen"
-          class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-10 p-1"
+          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
         >
           <button 
             v-for="mode in modes" 

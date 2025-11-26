@@ -248,7 +248,30 @@ const handleFileClick = (file: Attachment) => {
   // Create a temporary anchor element to trigger download
   const a = document.createElement('a');
   a.href = file.url || '#';
-  a.download = file.name;
+  console.log(file, a);
+  // Ensure filename has extension and timestamp
+  let filename = file.name;
+  const timestamp = new Date().getTime();
+  
+  if (file.type && !filename.includes('.')) {
+    const ext = file.type.split('/')[1];
+    if (ext) {
+      filename = `${filename}-${timestamp}.${ext}`;
+    } else {
+      filename = `${filename}-${timestamp}`;
+    }
+  } else {
+    // Insert timestamp before extension
+    const parts = filename.split('.');
+    if (parts.length > 1) {
+      const ext = parts.pop();
+      filename = `${parts.join('.')}-${timestamp}.${ext}`;
+    } else {
+      filename = `${filename}-${timestamp}`;
+    }
+  }
+  
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

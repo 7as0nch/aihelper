@@ -1,11 +1,38 @@
 {
-  "name": "litechat",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@7as0nch/litechat",
+  "private": false,
+  "version": "0.1.2",
   "type": "module",
+  "main": "./dist-widget/litechat-widget.es.js",
+  "module": "./dist-widget/litechat-widget.es.js",
+  "types": "./dist-widget/index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/7as0nch/litechat.git",
+    "directory": "packages/litechat"
+  },
+  "author": {
+    "name": "JasonChen",
+    "email": "7as0nch@gmail.com",
+    "url": "https://github.com/7as0nch"
+  },
+  "files": [
+    "dist-widget",
+    "images",
+    "!*.env"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist-widget/litechat-widget.es.js",
+      "require": "./dist-widget/litechat-widget.es.js"
+    },
+    "./style.css": "./dist-widget/litechat.css"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "build:widget": "vue-tsc -b && vite build --config vite.widget.config.ts",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -14,6 +41,7 @@
     "ant-design-vue": "^4.2.6",
     "axios": "^1.13.2",
     "dayjs": "^1.11.19",
+    "github-markdown-css": "^5.8.1",
     "highlight.js": "^11.11.1",
     "html2canvas": "^1.4.1",
     "lucide-vue-next": "^0.554.0",

@@ -3,6 +3,7 @@
 import { ref, onMounted, computed } from 'vue';
 import MessageList from './MessageList.vue';
 import InputArea from './InputArea.vue';
+import ScreenshotManager from './ScreenshotManager.vue';
 import { Menu, X, BookOpen, MessageCircle, Star, Share2, Plus, ChevronLeft } from 'lucide-vue-next';
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
@@ -130,7 +131,7 @@ onMounted(async () => {
       </div>
       <div class="flex items-center gap-1">
         <button 
-          @click="$router.push('/')"
+          @click="$router.push('/chat')"
           class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
           title="新对话"
         >
@@ -213,7 +214,7 @@ onMounted(async () => {
       <div class="hidden md:flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-gray-800">
         <div class="flex items-center gap-3">
           <button 
-            @click="$router.push('/')"
+            @click="$router.push('/chat')"
             class="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             title="返回"
           >
@@ -230,7 +231,7 @@ onMounted(async () => {
         </div>
         <div class="flex items-center gap-1">
           <button 
-            @click="$router.push('/')"
+            @click="$router.push('/chat')"
             class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
             title="新对话"
           >
@@ -271,6 +272,13 @@ onMounted(async () => {
         @preview-image="handlePreviewImage"
         @toggle-select="emit('toggleSelect', $event)"
         class="flex-1 overflow-y-auto"
+      />
+      <ScreenshotManager 
+        :is-screenshot-mode="isScreenshotMode"
+        @update:is-screenshot-mode="$emit('update:isScreenshotMode', $event)"
+        :selected-ids="selectedMessageIds"
+        :target-element="messageListRef?.containerRef || null"
+        @clear-selection="selectedMessageIds.clear()"
       />
       <div class="relative z-20">
         <!-- Persistent Suggestions -->

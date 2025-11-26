@@ -3,6 +3,15 @@ import { unmountGlobalLoading } from '@vben/utils';
 
 import { overridesPreferences } from './preferences';
 
+import { initAiChat } from '@7as0nch/litechat';
+
+initAiChat({
+  config: {
+    VITE_APP_TITLE: '我的 AI 助手',
+    VITE_API_BASE_URL: 'https://api.example.com',
+  },
+  defaultOpen: false,
+});
 /**
  * 应用初始化完成之后再进行页面加载渲染
  */

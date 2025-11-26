@@ -1,22 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { DatePicker } from 'ant-design-vue';
 import type { Dayjs } from 'dayjs';
 import type { MentionType, MentionOption } from '../../../config/mentions';
 
 const ARangePicker = DatePicker.RangePicker;
-
-defineProps<{
-  show: boolean;
-  position: { top: number; left: number };
-  options: MentionOption[];
-  mentionTypes: MentionType[];
-  activeIndex: number;
-  activeType: MentionType | null;
-  showDatePicker: boolean;
-  dateRangeValue: [Dayjs, Dayjs] | undefined;
-  pickerMode: 'date' | 'time' | 'datetime';
-  getDateFormat: string;
-}>();
 
 const emit = defineEmits<{
   (e: 'select-type', type: MentionType): void;
@@ -29,15 +17,32 @@ const emit = defineEmits<{
   (e: 'update:showDatePicker', show: boolean): void;
 }>();
 
-const handleDateRangeChange = (val: any) => {
-  emit('update:dateRangeValue', val as [Dayjs, Dayjs] | undefined);
-};
+const props = defineProps<{
+  show: boolean;
+  position: { top: number; left: number };
+  options: MentionOption[];
+  mentionTypes: MentionType[];
+  activeIndex: number;
+  activeType: MentionType | null;
+  showDatePicker: boolean;
+  dateRangeValue: [Dayjs, Dayjs] | undefined;
+  pickerMode: 'date' | 'time' | 'datetime';
+  getDateFormat: string;
+}>();
+
+const localDateRangeValue = computed({
+  get: () => props.dateRangeValue,
+  set: (val: [Dayjs, Dayjs] | undefined) => {
+    emit('update:dateRangeValue', val);
+  }
+});
+
 </script>
 
 <template>
   <div 
     v-if="show"
-    class="absolute bottom-full left-0 sm:left-4 mb-2 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-20 mention-menu"
+    class="absolute bottom-full left-0 sm:left-4 mb-2 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-20 mention-menu"
     :class="showDatePicker ? 'w-full sm:w-96' : 'w-64'"
     @mousedown.stop
   >
@@ -70,14 +75,16 @@ const handleDateRangeChange = (val: any) => {
            <!-- Ant Design Vue Range Picker -->
              <div class="w-full">
                <ARangePicker 
-                 :value="dateRangeValue"
-                 @update:value="handleDateRangeChange"
-                 :show-time="pickerMode === 'datetime' || pickerMode === 'time'"
+                 v-model:value="localDateRangeValue"
                  :picker="pickerMode === 'time' ? 'time' : 'date'"
+                 :show-time="pickerMode === 'datetime' || pickerMode === 'time'"
                  :format="getDateFormat"
                  class="w-full"
-                 placement="topLeft"
-                 dropdown-class-name="chat-date-picker-dropdown"
+                 :placeholder="['开始时间', '结束时间']"
+                 popup-class-name="chat-date-picker-dropdown"
+                 :get-popup-container="(trigger) => trigger?.parentElement || trigger"
+                 @change="(val: any) => { if (val && typeof val[0] !== 'string') { localDateRangeValue = val; } }"
+                 @ok="(val: any) => { if (val && typeof val[0] !== 'string') { localDateRangeValue = val; } }"
                />
              </div>
            

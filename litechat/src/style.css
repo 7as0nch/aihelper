@@ -1,8 +1,18 @@
+@import 'ant-design-vue/dist/reset.css';
+/* @import 'github-markdown-css/github-markdown-light.css';
+
+
+@media (prefers-color-scheme: dark) {
+  @import 'github-markdown-css/github-markdown-dark.css';
+} */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html, body, #app {
+html,
+body,
+#app {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -41,7 +51,8 @@ html, body, #app {
 }
 
 .dark {
-  --hljs-bg: #1a1a1a; /* Darker background for code blocks in dark mode */
+  --hljs-bg: #1a1a1a;
+  /* Darker background for code blocks in dark mode */
   --hljs-color: #c9d1d9;
   --hljs-keyword: #ff7b72;
   --hljs-string: #a5d6ff;
@@ -133,9 +144,17 @@ html, body, #app {
 
 /* InputArea Animations */
 @keyframes jump {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }
 
 .animate-jump {
@@ -147,6 +166,7 @@ html, body, #app {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -155,4 +175,182 @@ html, body, #app {
 
 .animate-fade-in-up {
   animation: fadeInUp 0.2s ease-out forwards;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Basic Markdown Styles for AI response */
+.markdown-body {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  color: #24292f;
+}
+
+.dark .markdown-body {
+  color: #c9d1d9;
+}
+
+.markdown-body p {
+  margin-bottom: 0.75em;
+  white-space: pre-wrap;
+}
+
+.markdown-body ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.markdown-body ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.markdown-body li {
+  margin-bottom: 0.25em;
+}
+
+/* Code block styles are now handled by utility classes in the render function */
+/* But we keep some resets */
+.markdown-body pre code {
+  word-break: normal;
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875em;
+}
+
+/* Table styles */
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-body th,
+.markdown-body td {
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.dark .markdown-body th,
+.dark .markdown-body td {
+  border-color: #374151;
+}
+
+.markdown-body th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.dark .markdown-body th {
+  background-color: #1f2937;
+}
+
+/* Mermaid styles */
+.mermaid {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.dark .mermaid {
+  background: #1f2937;
+}
+
+/* Custom Code Block Styles */
+.chat-code-block {
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  max-width: 100%;
+}
+
+.dark .chat-code-block {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.chat-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background-color: #f3f4f6;
+  /* Match block bg for seamless look or slightly darker */
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.dark .chat-code-header {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.chat-code-lang {
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.dark .chat-code-lang {
+  color: #9ca3af;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  transition: color 0.2s;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.dark .copy-btn {
+  color: #9ca3af;
+}
+
+.copy-btn:hover {
+  color: #3b82f6;
+  /* Primary color */
+}
+
+.chat-code-content {
+  overflow-x: auto;
+}
+
+.chat-code-content pre {
+  margin: 0 !important;
+  padding: 1rem !important;
+  background-color: transparent !important;
+  border: 0 !important;
 }

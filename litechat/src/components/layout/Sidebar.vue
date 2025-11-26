@@ -3,6 +3,7 @@ import { ref, nextTick, watch, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
+import { getConfig } from '../../config';
 import ThemeToggle from '../ThemeToggle.vue';
 import { 
   Search, 
@@ -42,8 +43,8 @@ const authStore = useAuthStore();
 const isHistoryOpen = ref(true);
 const isSettingsOpen = ref(false);
 
-const appTitle = import.meta.env.VITE_APP_TITLE || 'AI Chat';
-const appLogo = import.meta.env.VITE_APP_LOGO || '/logo.png';
+const appTitle = getConfig('VITE_APP_TITLE') || 'AI Chat';
+const appLogo = getConfig('VITE_APP_LOGO') || '/logo.png';
 
 // Watch auth state to fetch/clear history
 watch(() => authStore.isAuthenticated, (isAuthenticated) => {

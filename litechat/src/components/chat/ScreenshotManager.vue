@@ -5,6 +5,7 @@ import { X, Download, Copy, Check } from 'lucide-vue-next';
 const props = defineProps<{
   isScreenshotMode: boolean;
   selectedIds: Set<string>;
+  targetElement?: HTMLElement | null;
 }>();
 
 const emit = defineEmits<{
@@ -35,8 +36,12 @@ const generateScreenshot = async () => {
     // Wait for UI to update if needed
     await nextTick();
     
-    const messageListEl = document.querySelector('.message-list-container');
-    if (!messageListEl) throw new Error('Message list not found');
+    const messageListEl = props.targetElement;
+    
+    if (!messageListEl) {
+      console.error('Message list element not provided or not found');
+      throw new Error('Message list not found');
+    }
 
     // Create a temporary container for the screenshot
     const container = document.createElement('div');
@@ -222,7 +227,7 @@ const triggerFlash = () => {
     <!-- Screenshot Mode Floating Bar -->
     <div 
       v-if="isScreenshotMode"
-      class="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 md:gap-4 bg-white dark:bg-[#2a2a2a] px-4 md:px-6 py-2.5 md:py-3 rounded-full shadow-xl border border-gray-200 dark:border-gray-700 animate-fade-in-up min-w-[200px] md:min-w-fit justify-between"
+      class="fixed bottom-32 left-0 right-0 mx-auto z-50 flex items-center gap-3 md:gap-4 bg-white dark:bg-[#2a2a2a] px-4 md:px-6 py-2.5 md:py-3 rounded-full shadow-xl border border-gray-200 dark:border-gray-700 animate-fade-in-up w-fit max-w-[90%] justify-between"
     >
       <span class="text-sm font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">
         <span class="md:hidden">已选 {{ selectedIds.size }}</span>
@@ -325,11 +330,11 @@ const triggerFlash = () => {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translate(-50%, 20px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
 }
 

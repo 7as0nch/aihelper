@@ -5,6 +5,7 @@ import { authApi, type AuthConfig } from '../api/auth';
 export interface User {
     id: string;
     username: string;
+    role?: string; // user, admin: default: user.
     avatar?: string;
 }
 

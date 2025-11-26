@@ -1,17 +1,7 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import './style.css'
-import 'ant-design-vue/dist/reset.css';
-import App from './App.vue'
-import router from './router'
-import { useThemeStore } from './stores/theme'
+import { mountApp } from './mount';
 
-const pinia = createPinia()
-const app = createApp(App)
-
-app.use(pinia)
-app.use(router)
-app.mount('#app')
-
-// Initialize theme store to apply theme on load
-useThemeStore()
+// Auto-mount if running in standalone mode (not imported as library)
+// We check if we are in a browser environment and if the default container exists
+if (typeof window !== 'undefined' && document.getElementById('app')) {
+    mountApp({ routerMode: 'web' });
+}
