@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { sendMessageStream, type Attachment, type Message, chatApi } from '../api/chat';
 import { getConfig } from '@/config';
+import { useStorage } from '@vueuse/core';
 export type { Attachment, Message };
 
 
@@ -11,7 +12,7 @@ export const useChatStore = defineStore('chat', () => {
     const messages = ref<Message[]>([]);
     const isLoading = ref(false);
     const isThinking = ref(false);
-    const thinkingMode = ref<'smart' | 'deep' | 'quick'>('smart');
+    const thinkingMode = useStorage<'smart' | 'deep' | 'quick'>('litechat_thinking_mode', 'smart');
 
     const currentChatId = ref<string | null>(null);
 

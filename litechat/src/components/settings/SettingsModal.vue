@@ -75,12 +75,12 @@ const submitFeedback = async () => {
 };
 
 // Profile Logic
-const username = ref(authStore.user?.username || '');
+const username = ref(authStore.user?.userName || '');
 const updateProfile = () => {
   if (username.value.trim()) {
     // Mock update
     if (authStore.user) {
-        authStore.user.username = username.value;
+        authStore.user.userName = username.value;
     }
     alert('个人信息更新成功');
   }
@@ -146,7 +146,7 @@ const updateProfile = () => {
                 </div>
               </div>
               <div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ authStore.user?.username }}</h3>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ authStore.user?.userName }}</h3>
                 <p class="text-sm text-gray-500">ID: {{ authStore.user?.id || 'Unknown' }}</p>
               </div>
             </div>

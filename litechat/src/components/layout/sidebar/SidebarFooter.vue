@@ -37,7 +37,7 @@ defineExpose({
           class="w-8 h-8 rounded-full bg-gray-100"
         />
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ authStore.user?.username }}</div>
+          <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ authStore.user?.userName }}</div>
         </div>
         <button 
           @click="isSettingsOpen = true"

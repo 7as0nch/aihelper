@@ -32,7 +32,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "build:widget": "vue-tsc -b && vite build --config vite.widget.config.ts",
+    "build:widget": "vue-tsc -b && vite build --config vite.widget.config.ts --mode lite",
+    "build:widget:prod": "vue-tsc -b && vite build --config vite.widget.config.ts --mode prod",
     "preview": "vite preview"
   },
   "dependencies": {

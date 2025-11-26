@@ -1,14 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { authApi, type AuthConfig } from '../api/auth';
+import { authApi, type AuthConfig, type UserInfo as User } from '../api/auth';
 import { getConfig } from '@/config';
-
-export interface User {
-    id: string;
-    username: string;
-    role?: string; // user, admin: default: user.
-    avatar?: string;
-}
+import { setToken, removeToken } from '@/utils/cookie';
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<User | null>(null);
@@ -48,18 +42,26 @@ export const useAuthStore = defineStore('auth', () => {
         return false;
     };
 
-    const handleLoginSuccess = (userData: User, token: string) => {
+    const handleLoginSuccess = async (userData: User, token: string) => {
+        if (!userData) {
+            try {
+                const res = await authApi.getUserInfo();
+                userData = res.user;
+            } catch (e) {
+                console.error('Failed to load user info', e);
+            }
+        }
         user.value = userData;
         isAuthenticated.value = true;
         localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', token);
+        setToken(token);
         closeModal();
     };
 
     const loginWithPhone = async (phone: string, code: string): Promise<boolean> => {
         try {
             const response = await authApi.loginWithPhone(phone, code);
-            handleLoginSuccess(response.user, response.token);
+            handleLoginSuccess(response.user, response.accessToken);
             return true;
         } catch (e) {
             console.error('Login failed', e);
@@ -70,7 +72,8 @@ export const useAuthStore = defineStore('auth', () => {
     const loginWithPassword = async (username: string, password: string): Promise<boolean> => {
         try {
             const response = await authApi.loginWithPassword(username, password);
-            handleLoginSuccess(response.user, response.token);
+            console.log(response);
+            handleLoginSuccess(response.user, response.accessToken);
             return true;
         } catch (e) {
             console.error('Login failed', e);
@@ -81,7 +84,7 @@ export const useAuthStore = defineStore('auth', () => {
     const register = async (username: string, password: string): Promise<boolean> => {
         try {
             const response = await authApi.register(username, password);
-            handleLoginSuccess(response.user, response.token);
+            handleLoginSuccess(response.user, response.accessToken);
             return true;
         } catch (e) {
             console.error('Registration failed', e);
@@ -93,7 +96,7 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null;
         isAuthenticated.value = false;
         localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        removeToken();
     };
 
     init();

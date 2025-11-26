@@ -143,7 +143,7 @@ export function createAppRouter(history: any) {
                     const authStore = useAuthStore();
                     if (!authStore.checkAuth()) {
                         authStore.openModal();
-                        next('/');
+                        next('/chat');
                     } else {
                         next();
                     }

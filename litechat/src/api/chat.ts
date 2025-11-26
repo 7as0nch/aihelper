@@ -74,8 +74,13 @@ export const chatApi = {
             const saved = localStorage.getItem('litechat_history');
             return saved ? JSON.parse(saved) : [];
         }
+        // 检查是否登录，登录后才能请求。
+        const token = getToken();
+        if (!token) {
+            return [];
+        }
         // Backend mode: Call API
-        return request({ url: '/chat/history', method: 'get' });
+        return request<any[]>({ url: '/chat/history', method: 'get' });
     },
 
     async getHistoryMsg(id: string): Promise<Message[]> {
@@ -272,7 +277,7 @@ async function fetchData(url) {
             return saved ? JSON.parse(saved) : [];
         }
         // Backend mode: Call API
-        return request({ url: `/chat/history/${id}`, method: 'get' });
+        return request<Message[]>({ url: `/chat/history/${id}`, method: 'get' });
     },
 
     async deleteChat(id: string): Promise<void> {
@@ -289,7 +294,7 @@ async function fetchData(url) {
             return;
         }
         // Backend mode: Call API
-        return request({ url: `/chat/history/${id}`, method: 'delete' });
+        return request<void>({ url: `/chat/history/${id}`, method: 'delete' });
     },
 
     async renameChat(id: string, title: string): Promise<void> {
@@ -305,7 +310,7 @@ async function fetchData(url) {
             return;
         }
         // Backend mode: Call API
-        return request({ url: `/chat/history/${id}/rename`, method: 'post', data: { title } });
+        return request<void>({ url: `/chat/history/${id}/rename`, method: 'post', data: { title } });
     },
 
     // Helper to save chat history and messages in frontend mode
@@ -338,6 +343,8 @@ async function fetchData(url) {
 
 
 
+import { getToken } from '@/utils/cookie';
+
 async function streamBackend(
     data: SendMessageParams,
     onChunk: (data: { content?: string; reasoning_content?: string }) => void,
@@ -351,8 +358,7 @@ async function streamBackend(
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            // Add auth token if needed
-            // 'Authorization': `Bearer ${token}`
+            ...(getToken() ? { 'Authorization': `Bearer ${getToken()}` } : {})
         },
         body: JSON.stringify(data),
         signal
