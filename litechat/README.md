@@ -156,6 +156,24 @@ open demo-npm.html
 
 MIT
 
+## 🌐 浏览器兼容性
+
+本项目使用现代 JavaScript (ESM) 打包，支持以下浏览器：
+
+| 浏览器 | 最低版本 |
+|--------|---------|
+| Chrome | 87+ |
+| Edge | 88+ |
+| Firefox | 78+ |
+| Safari | 14+ |
+| Opera | 73+ |
+
+**注意事项：**
+- 需要支持 ES2020 特性（如 `import()`, `Promise.allSettled`, `??` 等）
+- 需要支持 ES Modules (ESM)
+- 不支持 IE11 及更早版本
+- 移动端浏览器：iOS Safari 14+, Chrome for Android 87+
+
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！

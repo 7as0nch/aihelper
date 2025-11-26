@@ -7,6 +7,7 @@
   "module": "./dist-widget/litechat-widget.es.js",
   "types": "./dist-widget/index.d.ts",
   "license": "MIT",
+  "homepage": "",
   "repository": {
     "type": "git",
     "url": "https://github.com/7as0nch/litechat.git",
