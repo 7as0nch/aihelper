@@ -65,38 +65,221 @@ export const chatApi = {
         const aiType = getConfig('VITE_AI_TYPE');
         if (aiType === 'demo') {
             return [
-                { id: '1', title: 'Demo Chat 1', updateTime: Date.now() },
+                { id: '1', title: '如何使用 Vue3 Composition API', updateTime: Date.now() },
                 { id: '2', title: 'Demo Chat 2', updateTime: Date.now() - 86400000 }
             ];
         }
-        if (aiType === 'backend') {
-            // Pure frontend mode might store in local storage
+        if (aiType === 'frontend') {
+            // Frontend mode: Load from local storage
             const saved = localStorage.getItem('litechat_history');
             return saved ? JSON.parse(saved) : [];
         }
+        // Backend mode: Call API
         return request({ url: '/chat/history', method: 'get' });
     },
 
     async getHistoryMsg(id: string): Promise<Message[]> {
         const aiType = getConfig('VITE_AI_TYPE');
         if (aiType === 'demo') {
-            return [
-                { id: 'msg1', role: 'user', content: 'Hello', timestamp: Date.now() - 10000 },
-                { id: 'msg2', role: 'assistant', content: 'Hi! This is a demo.', timestamp: Date.now() }
-            ];
+            const mockChats: Record<string, Message[]> = {
+                '1': [
+                    {
+                        id: '1-1',
+                        role: 'user',
+                        content: '是否',
+                        timestamp: Date.now() - 120000,
+                    },
+                    {
+                        id: '1-2',
+                        role: 'assistant',
+                        content: `Here is a markdown response for: "是否"
+
+## Features
+- **Markdown** support
+- *Streaming* output
+- Code blocks:
+
+\`\`\`typescript
+const x = 1;
+\`\`\``,
+                        timestamp: Date.now() - 118000,
+                    },
+                    {
+                        id: '1-3',
+                        role: 'user',
+                        content: '能展示一些图片和文件吗？',
+                        timestamp: Date.now() - 100000,
+                        attachments: [
+                            {
+                                id: 'img-1',
+                                type: 'image',
+                                name: 'screenshot.png',
+                                url: 'https://picsum.photos/400/300',
+                            },
+                        ],
+                    },
+                    {
+                        id: '1-4',
+                        role: 'assistant',
+                        content: `当然可以！这里有一些示例：
+
+## 图片展示
+我可以展示各种图片。
+
+## 代码示例
+\`\`\`python
+def hello_world():
+    print("Hello, World!")
+    return True
+\`\`\`
+
+## Markdown 功能
+- **粗体文本**
+- *斜体文本*
+- \`代码片段\`
+- [链接示例](https://example.com)
+
+## 列表示例
+1. 第一项
+2. 第二项
+3. 第三项
+
+## 表格示例
+| 功能 | 状态 | 说明 |
+| :--- | :---: | ---: |
+| Markdown | ✅ | 支持标准语法 |
+| 代码高亮 | ✅ | 支持多种语言 |
+| 移动端适配 | ✅ | 响应式设计 |`,
+                        timestamp: Date.now() - 95000,
+                        attachments: [
+                            {
+                                id: 'img-2',
+                                type: 'image',
+                                name: 'diagram.png',
+                                url: 'https://picsum.photos/500/350',
+                            },
+                            {
+                                id: 'file-1',
+                                type: 'file',
+                                name: 'document.pdf',
+                            },
+                        ],
+                    },
+                    {
+                        id: '1-5',
+                        role: 'user',
+                        content: '展示一些复杂的代码块',
+                        timestamp: Date.now() - 60000,
+                        aiModel: {
+                            id: 'gpt-4',
+                            modelName: 'GPT-4',
+                            thinkingMode: 'smart',
+                        },
+                        tokenUsage: {
+                            currentTokens: 15,
+                            totalTokens: 150,
+                        },
+                    },
+                    {
+                        id: '1-6',
+                        role: 'assistant',
+                        content: `好的，这里有一些复杂的代码示例：
+
+## Vue 3 组件示例
+\`\`\`vue
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+
+const count = ref(0);
+const doubled = computed(() => count.value * 2);
+
+function increment() {
+  count.value++;
+}
+</script>
+
+<template>
+  <div>
+    <p>Count: {{ count }}</p>
+    <p>Doubled: {{ doubled }}</p>
+    <button @click="increment">Increment</button>
+  </div>
+</template>
+\`\`\`
+
+## TypeScript 高级类型
+\`\`\`typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+type PartialUser = Partial<User>;
+type RequiredUser = Required<User>;
+
+function updateUser<T extends User>(user: T, updates: Partial<T>): T {
+  return { ...user, ...updates };
+}
+\`\`\`
+
+## JavaScript 异步处理
+\`\`\`javascript
+async function fetchData(url) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}
+\`\`\``,
+                        timestamp: Date.now() - 55000,
+                        aiModel: {
+                            id: 'gpt-4',
+                            modelName: 'GPT-4',
+                            thinkingMode: 'smart',
+                        },
+                        tokenUsage: {
+                            currentTokens: 500,
+                            totalTokens: 650,
+                        },
+                        callingTools: [
+                            {
+                                name: 'Code Search',
+                                description: 'Searching for code examples',
+                                functionName: 'search_code',
+                            }
+                        ],
+                        quoteSearchLinks: [
+                            {
+                                url: 'https://vuejs.org/guide/introduction.html',
+                                title: 'Vue.js Documentation',
+                                content: 'Vue.js is a progressive framework for building user interfaces.',
+                                highlight: ['Vue.js', 'progressive framework'],
+                            }
+                        ]
+                    },
+                ],
+            };
+            return mockChats[id] || [];
         }
-        if (aiType === 'backend') {
-            // Pure frontend mode might store in local storage
+        if (aiType === 'frontend') {
+            // Frontend mode: Load from local storage
             const saved = localStorage.getItem(`litechat_msg_${id}`);
             return saved ? JSON.parse(saved) : [];
         }
+        // Backend mode: Call API
         return request({ url: `/chat/history/${id}`, method: 'get' });
     },
 
     async deleteChat(id: string): Promise<void> {
         const aiType = getConfig('VITE_AI_TYPE');
         if (aiType === 'demo') return;
-        if (aiType === 'backend') {
+        if (aiType === 'frontend') {
+            // Frontend mode: Delete from local storage
             const saved = localStorage.getItem('litechat_history');
             if (saved) {
                 const list = JSON.parse(saved).filter((item: any) => item.id !== id);
@@ -105,13 +288,15 @@ export const chatApi = {
             localStorage.removeItem(`litechat_msg_${id}`);
             return;
         }
+        // Backend mode: Call API
         return request({ url: `/chat/history/${id}`, method: 'delete' });
     },
 
     async renameChat(id: string, title: string): Promise<void> {
         const aiType = getConfig('VITE_AI_TYPE');
         if (aiType === 'demo') return;
-        if (aiType === 'backend') {
+        if (aiType === 'frontend') {
+            // Frontend mode: Update local storage
             const saved = localStorage.getItem('litechat_history');
             if (saved) {
                 const list = JSON.parse(saved).map((item: any) => item.id === id ? { ...item, title } : item);
@@ -119,26 +304,54 @@ export const chatApi = {
             }
             return;
         }
+        // Backend mode: Call API
         return request({ url: `/chat/history/${id}/rename`, method: 'post', data: { title } });
     },
 
     async sendMessage(messages: Message[], onProgress?: (content: string) => void): Promise<string> {
-        const apiKey = getConfig('VITE_OPENAI_API_KEY');
-        const baseURL = getConfig('VITE_OPENAI_BASE_URL');
-        const model = getConfig('VITE_OPENAI_MODEL', 'gpt-3.5-turbo');
+        // This method is mainly used for non-streaming or initial setup if needed.
+        // For streaming, sendMessageStream is used.
+        // However, we might need to save the initial user message here if not handled in store.
+        // But the store handles saving messages to its state.
+        // Persistence to LocalStorage should ideally happen in the store or here.
+        // Since the store calls sendMessageStream directly for streaming, 
+        // we should add a helper to save messages to LS in frontend mode.
 
-        if (!apiKey) {
-            throw new Error('OpenAI API Key is missing');
-        }
+        // Actually, the store manages the message list. 
+        // We need a way to persist the updated message list to LS.
+        // Let's expose a save helper or handle it in the store.
+        // But to keep store clean, maybe we can't fully avoid store logic.
+        // Let's stick to the plan: API handles persistence "logic", but store calls it?
+        // Or better: Store calls a "saveChat" API method.
 
-        // Silence unused variable warnings for now
-        void messages;
-        void onProgress;
-        void baseURL;
-        void model;
-
-        // Placeholder
         return "Message sent";
+    },
+
+    // Helper to save chat history and messages in frontend mode
+    async saveChat(id: string, title: string, messages: Message[]): Promise<void> {
+        const aiType = getConfig('VITE_AI_TYPE');
+        if (aiType === 'frontend') {
+            // 1. Update history list
+            const historyStr = localStorage.getItem('litechat_history');
+            let history = historyStr ? JSON.parse(historyStr) : [];
+
+            const existingIndex = history.findIndex((h: any) => h.id === id);
+            if (existingIndex > -1) {
+                history[existingIndex].updateTime = Date.now();
+                // Update title if it's the first message or explicitly changed (handled by rename)
+                // Here we just update time. Title is usually set on creation.
+            } else {
+                history.unshift({
+                    id,
+                    title,
+                    updateTime: Date.now()
+                });
+            }
+            localStorage.setItem('litechat_history', JSON.stringify(history));
+
+            // 2. Save messages
+            localStorage.setItem(`litechat_msg_${id}`, JSON.stringify(messages));
+        }
     }
 };
 

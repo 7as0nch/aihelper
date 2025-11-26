@@ -18,11 +18,20 @@ interface Route {
 const routes: Route[] = [
     {
         path: '/',
+        name: 'page',
+        hidden: true,
+        component: ChatView,
+        meta: {
+            title: '首页',
+        }
+    },
+    {
+        path: '/info',
         name: 'Landing',
         hidden: true,
         component: LandingView,
         meta: {
-            title: '首页',
+            title: '官网',
         }
     },
     {
@@ -132,7 +141,7 @@ export function createAppRouter(history: any) {
                 // Let's try to access the store.
                 import('@/stores/auth').then(({ useAuthStore }) => {
                     const authStore = useAuthStore();
-                    if (!authStore.isAuthenticated) {
+                    if (!authStore.checkAuth()) {
                         authStore.openModal();
                         next('/');
                     } else {

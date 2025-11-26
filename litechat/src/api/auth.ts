@@ -35,8 +35,8 @@ export const authApi = {
             };
         }
 
-        // Frontend mode (Backend API): Real login
-        if (aiType === 'frontend') {
+        // Backend mode (Backend API): Real login
+        if (aiType === 'backend') {
             return request({
                 url: '/auth/login/phone',
                 method: 'post',
@@ -65,8 +65,8 @@ export const authApi = {
             };
         }
 
-        // Frontend mode (Backend API): Real login
-        if (aiType === 'frontend') {
+        // Backend mode (Backend API): Real login
+        if (aiType === 'backend') {
             return request({
                 url: '/auth/login',
                 method: 'post',
@@ -93,8 +93,8 @@ export const authApi = {
             };
         }
 
-        // Frontend mode (Backend API): Real register
-        if (aiType === 'frontend') {
+        // Backend mode (Backend API): Real register
+        if (aiType === 'backend') {
             return request({
                 url: '/auth/register',
                 method: 'post',
@@ -108,7 +108,7 @@ export const authApi = {
     getAuthConfig: async (): Promise<AuthConfig> => {
         const aiType = getConfig('VITE_AI_TYPE');
 
-        if (aiType === 'frontend') {
+        if (aiType === 'backend') {
             // Try to get config from backend, fallback to env
             try {
                 const res = await request({ url: '/auth/config', method: 'get' });

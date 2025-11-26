@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { authApi, type AuthConfig } from '../api/auth';
+import { getConfig } from '@/config';
 
 export interface User {
     id: string;
@@ -39,7 +40,8 @@ export const useAuthStore = defineStore('auth', () => {
     };
 
     const checkAuth = (): boolean => {
-        if (isAuthenticated.value) {
+        // 前端模式不需要登录
+        if (isAuthenticated.value || getConfig('VITE_AI_TYPE') === 'frontend') {
             return true;
         }
         openModal();
