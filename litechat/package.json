@@ -1,7 +1,7 @@
 {
   "name": "@7as0nch/litechat",
   "private": false,
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "main": "./dist-widget/litechat-widget.es.js",
   "module": "./dist-widget/litechat-widget.es.js",
