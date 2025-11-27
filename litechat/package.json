@@ -24,6 +24,7 @@
   ],
   "exports": {
     ".": {
+      "types": "./widget/index.ts",
       "import": "./dist-widget/litechat-widget.es.js",
       "require": "./dist-widget/litechat-widget.es.js"
     },

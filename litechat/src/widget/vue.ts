@@ -1,7 +1,8 @@
 import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
 import { initAiChat, type InitOptions } from './index';
+import type { AiChat } from './types';
 
-export function useAiChat(options: InitOptions = {}) {
+export function useAiChat(options: InitOptions = {}): AiChat {
     const widgetInstance = shallowRef<ReturnType<typeof initAiChat> | null>(null);
     const isMounted = ref(false);
 
@@ -27,6 +28,13 @@ export function useAiChat(options: InitOptions = {}) {
     return {
         widgetInstance,
         isMounted,
+        unmount: () => {
+            if (widgetInstance.value) {
+                widgetInstance.value.unmount();
+                widgetInstance.value = null;
+                isMounted.value = false;
+            }
+        },
         open,
         close,
         toggle,

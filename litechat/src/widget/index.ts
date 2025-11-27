@@ -1,11 +1,11 @@
 import { createWidgetShell } from '@/widget/shadow-wrapper';
 import { createIframeRenderer } from '@/widget/iframe-renderer';
 import { setRuntimeConfig } from '../config';
-import type { InitOptions } from './types';
+import type { InitOptions, AiChat } from './types';
 
 export type { InitOptions } from './types';
 
-export function initAiChat(options: InitOptions = {}) {
+export function initAiChat(options: InitOptions = {}): AiChat {
     // 1. Set global config
     if (options.config) {
         setRuntimeConfig(options.config);
