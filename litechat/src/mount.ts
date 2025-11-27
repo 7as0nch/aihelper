@@ -31,6 +31,10 @@ export function mountApp(options: MountOptions = {}) {
     const history = options.routerMode === 'memory' ? createMemoryHistory() : createWebHistory();
     const router = createAppRouter(history);
 
+    // 
+    if (import.meta.env.TRACKER_ENABLE) {
+
+    }
     tracker
         .setUserId(0)
         // 2. Before 拦截器：针对【每一条】数据处理
