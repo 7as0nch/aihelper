@@ -19,6 +19,7 @@ const currentTheme = computed(() => themes.find(t => t.value === themeStore.mode
   <div class="relative">
     <button
       @click="isOpen = !isOpen"
+      v-tracker="{ type: 'click', name: '主题切换' }"
       class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       :title="currentTheme?.label"
     >

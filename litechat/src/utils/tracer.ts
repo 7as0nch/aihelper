@@ -297,7 +297,7 @@ class AnalyticsTracker {
 
 export const tracker = new AnalyticsTracker({
     appId: 'litechat',
-    baseUrl: 'http://127.0.0.1:6039/tracker/batch', // 优先使用环境变量配置
+    baseUrl: 'http://aihelper.chat:6039/tracker/batch', // 优先使用环境变量配置
     batchSize: 5,  // 积累5条发送一次
     wait: 3000     // 或者每3秒发送一次
 });

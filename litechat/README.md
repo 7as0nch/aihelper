@@ -1,9 +1,9 @@
 # LiteChat - 可嵌入式 AI 聊天组件
 
-一个轻量级、可嵌入的 AI 聊天组件，支持拖拽、全屏、响应式布局，使用 Shadow DOM + iframe 实现完全的样式隔离。
+一个轻量级、可嵌入的 AI 聊天组件，支持拖拽，使用 Shadow DOM + iframe 实现完全的样式隔离。
 
 ## 写在前面
-> 目前支持demo模式和前端模式，后端模式正在开发中。需要集成后台管理端（配置管理、工作流、用户管理、会话管理、知识库管理等）。
+> 目前支持demo模式和前端模式，后端模式正在开发中。需要集成后台管理端（配置管理、工作流、用户管理、会话管理、知识库管理、支持插件回调callback等）。
 > 后续考虑接入客服功能。
 
 ## 展示
@@ -14,16 +14,16 @@
 ### 聊天
 ![alt text](/images/chat_page.png)
 
-## ✨ 特性
+## 特性
 
-- **🎨 零样式冲突** - Shadow DOM + iframe 双层隔离，互不影响
-- **📱 完美响应式** - 自适应 PC / 移动端布局
-- **🎯 拖拽浮窗** - 可自由拖动的浮动按钮和聊天窗口
-- **⚙️ 运行时配置** - 无需重新构建即可动态修改配置
-- **🔒 TypeScript** - 提供完整的类型定义支持
-- **📦 开箱即用** - 无需引入额外 CSS，简单集成
+- ** 零样式冲突** - Shadow DOM + iframe 双层隔离，互不影响
+- ** 完美响应式** - 自适应 PC / 移动端布局
+- ** 拖拽浮窗** - 可自由拖动的浮动按钮和聊天窗口
+- ** 运行时配置** - 无需重新构建即可动态修改配置
+- ** TypeScript** - 提供完整的类型定义支持
+- ** 开箱即用** - 无需引入额外 CSS，简单集成
 
-## 📦 安装
+## 安装
 
 ```bash
 npm install @7as0nch/litechat
@@ -33,7 +33,7 @@ yarn add @7as0nch/litechat
 pnpm add @7as0nch/litechat
 ```
 
-## 🚀 快速开始
+## 快速开始
 
 ### 在 Vue 3 项目中使用
 
@@ -48,6 +48,7 @@ const { open, close, show, hide, toggle } = useAiChat({
     VITE_APP_TITLE: '我的 AI 助手',
   },
   defaultOpen: false,
+  defaultShow: true,  // 控制浮球是否展示
   containerId: 'my-chat-container' // 可选
 });
 ```
@@ -84,7 +85,7 @@ const { open, close, show, hide, toggle } = useAiChat({
 </script>
 ```
 
-## ⚙️ 配置选项
+## 配置选项
 
 ```typescript
 interface InitOptions {
@@ -107,7 +108,7 @@ interface InitOptions {
 }
 ```
 
-## 🎮 程序化控制
+## 程序化控制
 
 `initAiChat` 返回 (或通过 Hook 暴露) 的实例包含以下方法：
 
@@ -118,7 +119,7 @@ interface InitOptions {
 - `hide()`: 隐藏组件 (完全不可见)
 - `unmount()`: 销毁组件并从 DOM 移除
 
-## 🎨 样式隔离
+## 样式隔离
 
 组件使用 **Shadow DOM + iframe** 双层隔离技术：
 
@@ -135,7 +136,7 @@ interface InitOptions {
 - 启用移动端工具栏
 - 优化触摸交互体验
 
-## 🔧 开发
+## 开发
 
 ```bash
 # 安装依赖
@@ -152,11 +153,11 @@ open demo-widget.html
 open demo-npm.html
 ```
 
-## 📄 License
+## License
 
 MIT
 
-## 🌐 浏览器兼容性
+## 浏览器兼容性
 
 本项目使用现代 JavaScript (ESM) 打包，支持以下浏览器：
 
@@ -174,11 +175,11 @@ MIT
 - 不支持 IE11 及更早版本
 - 移动端浏览器：iOS Safari 14+, Chrome for Android 87+
 
-## 🤝 贡献
+## 贡献
 
 欢迎提交 Issue 和 Pull Request！
 
-## 📞 联系方式
+## 联系方式
 
 - **邮箱**：7as0nch@gmail.com
 - **WeChat**：JasonC12o9

@@ -78,6 +78,7 @@ defineExpose({
         ]"
         :disabled="(!modelValue.trim() && !hasAttachments) && !isLoading"
         @click="isLoading ? emit('stop') : emit('send')"
+        v-tracker="{ type: 'click', name: '发送消息' }"
       >
         <div v-if="isLoading" class="flex items-center justify-center w-5 h-5">
           <Square class="w-3 h-3 fill-current" />

@@ -45,6 +45,7 @@ defineExpose({
       <div class="relative" ref="dropdownRef">
         <button 
           @click.stop="toggleDropdown"
+          v-tracker="{ type: 'click', name: '模型选择' }"
           class="flex items-center gap-1.5 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-[#333] transition-colors"
         >
           <component :is="currentModeIcon" class="w-4 h-4 text-primary" />
@@ -80,6 +81,7 @@ defineExpose({
       <!-- Web Search Toggle -->
       <button 
         @click="emit('trigger-bounce', 'search')"
+        v-tracker="{ type: 'click', name: '搜索' }"
         class="flex items-center justify-center h-9 p-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333]"
         :class="{ 'animate-jump': activeButton === 'search' }"
       >
@@ -90,6 +92,7 @@ defineExpose({
       <!-- Screenshot -->
       <button 
         @click="emit('screenshot'); emit('trigger-bounce', 'screenshot')"
+        v-tracker="{ type: 'click', name: '截屏'}"
         class="flex items-center justify-center h-9 p-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333]"
         :class="{ 'animate-jump': activeButton === 'screenshot' }"
       >
@@ -99,6 +102,7 @@ defineExpose({
 
       <!-- Upload -->
       <button 
+        v-tracker="{ type: 'click', name: '上传' }"
         @click="emit('upload'); emit('trigger-bounce', 'upload')"
         class="flex items-center justify-center h-9 p-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333]"
         :class="{ 'animate-jump': activeButton === 'upload' }"

@@ -292,6 +292,7 @@ onMounted(async () => {
             <div class="flex gap-2 w-max px-1">
               <button
                 v-for="question in recommendationStore.questionList"
+                v-tracker="{ type: 'click', name: 'randomQuestion', data: { question: question.content } }"
                 :key="question.id"
                 @click="handleQuestionClick(question.content)"
                 class="px-4 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a] hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all whitespace-nowrap shadow-sm"

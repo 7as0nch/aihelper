@@ -23,6 +23,14 @@ export default defineConfig(function (_a) {
                     target: env.VITE_OPENAI_BASE_URL || 'http://127.0.0.1:6039',
                     ws: true,
                 },
+                '/log': {
+                    changeOrigin: true,
+                    rewrite: function (path) { return path.replace(/^\/log/, ''); },
+                    // Use VITE_API_TARGET if defined, otherwise fallback to local backend
+                    // You can add VITE_API_TARGET=http://127.0.0.1:6039 to your .env files
+                    target: env.VITE_OPENAI_BASE_URL || 'http://127.0.0.1:6039',
+                    ws: true,
+                },
             },
         },
     };
