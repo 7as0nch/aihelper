@@ -9,11 +9,15 @@ RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 make build
 
 FROM debian:stable-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		ca-certificates  \
-        netbase \
-        && rm -rf /var/lib/apt/lists/ \
-        && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+# 		ca-certificates  \
+#         netbase \
+#         && rm -rf /var/lib/apt/lists/ \
+#         && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
+#         && echo Asia/Shanghai > /etc/timezone \
+#         && apt-get autoremove -y && apt-get autoclean -y
+
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
         && echo Asia/Shanghai > /etc/timezone \
         && apt-get autoremove -y && apt-get autoclean -y
 
