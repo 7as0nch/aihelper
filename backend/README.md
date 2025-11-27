@@ -49,3 +49,73 @@ docker build -t <your-docker-image-name> .
 docker run --rm -p 8000:8000 -p 9000:9000 -v </path/to/your/configs>:/data/conf <your-docker-image-name>
 ```
 
+## 部署流程
+
+### 1. 构建部署包
+```bash
+# 在项目根目录执行构建脚本
+./build_and_package.sh
+```
+
+### 2. 上传部署包到目标服务器
+```bash
+# 使用scp命令上传部署包到目标服务器
+scp aichat-backend-deploy.tar.gz root@your-server-ip:/root/
+```
+
+### 3. 在目标服务器上解压和运行
+```bash
+# 登录目标服务器
+ssh root@your-server-ip
+
+# 解压部署包
+tar -xzf aichat-backend-deploy.tar.gz
+
+# 进入部署目录
+cd deploy
+
+# 运行部署脚本
+./run.sh
+```
+
+### 4. 配置和日志管理
+
+#### 配置文件
+- 配置文件目录：`/root/workspace/conf`
+- 主要配置文件：`/root/workspace/conf/config.yaml`
+- 可以通过修改该文件来调整服务配置
+
+#### 日志文件
+- 日志文件目录：`/root/workspace/logs`
+- 服务日志会自动写入该目录
+- 可以通过配置文件调整日志级别和格式
+
+### 5. 服务管理
+
+#### 查看服务状态
+```bash
+docker-compose ps
+```
+
+#### 查看服务日志
+```bash
+docker-compose logs -f
+```
+
+#### 停止服务
+```bash
+docker-compose down
+```
+
+#### 重启服务
+```bash
+docker-compose restart
+```
+
+### 6. 访问服务
+- HTTP端口：`8000`
+- gRPC端口：`9000`
+- 可以通过 `http://your-server-ip:8000` 访问HTTP接口
+- 可以通过 `your-server-ip:9000` 访问gRPC接口
+
+

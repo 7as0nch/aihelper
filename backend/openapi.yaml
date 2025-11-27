@@ -3,21 +3,21 @@
 
 openapi: 3.0.3
 info:
-    title: Auth API
-    description: The chat service definition.
+    title: Tracker API
+    description: The tracker service definition.
     version: 0.0.1
 paths:
-    /auth/login:
+    /tracker/batch:
         post:
             tags:
-                - Auth
-            description: Login
-            operationId: Auth_Login
+                - Tracker
+            description: Batch 批量新增埋点数据
+            operationId: Tracker_Batch
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/LoginRequest'
+                            $ref: '#/components/schemas/BatchRequest'
                 required: true
             responses:
                 "200":
@@ -25,129 +25,74 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/LoginReply'
+                                $ref: '#/components/schemas/BatchReply'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /auth/logout:
-        post:
-            tags:
-                - Auth
-            operationId: Auth_Logout
-            requestBody:
-                content:
-                    application/json: {}
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /auth/user/info:
+    /tracker/list:
         get:
             tags:
-                - Auth
-            description: getInfo
-            operationId: Auth_GetInfo
+                - Tracker
+            description: List 分页查询埋点数据
+            operationId: Tracker_List
+            parameters:
+                - name: pageNum
+                  in: query
+                  description: 页码
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  description: 每页数量
+                  schema:
+                    type: integer
+                    format: int32
+                - name: appId
+                  in: query
+                  description: 应用ID
+                  schema:
+                    type: string
+                - name: deviceId
+                  in: query
+                  description: 设备ID
+                  schema:
+                    type: string
+                - name: userId
+                  in: query
+                  description: 用户ID
+                  schema:
+                    type: string
+                - name: type
+                  in: query
+                  description: 类型
+                  schema:
+                    type: string
+                - name: pageUrl
+                  in: query
+                  description: 页面URL
+                  schema:
+                    type: string
+                - name: startTime
+                  in: query
+                  description: 开始时间
+                  schema:
+                    type: string
+                - name: endTime
+                  in: query
+                  description: 结束时间
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetInfoReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /auth/user/profile:
-        get:
-            tags:
-                - Auth
-            description: /user/profile
-            operationId: Auth_GetProfile
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/GetInfoReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        put:
-            tags:
-                - Auth
-            description: /user/profile
-            operationId: Auth_UpdateProfile
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/User'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /auth/user/profile/updatePwd:
-        put:
-            tags:
-                - Auth
-            description: /user/profile/updatePwd
-            operationId: Auth_UpdatePwd
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdatePwdRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /auth/user/register:
-        post:
-            tags:
-                - Auth
-            description: Register
-            operationId: Auth_Register
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/RegisterRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
+                                $ref: '#/components/schemas/ListReply'
                 default:
                     description: Default error response
                     content:
@@ -156,19 +101,27 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        GetInfoReply:
+        BatchReply:
             type: object
             properties:
-                user:
-                    $ref: '#/components/schemas/User'
-                roles:
+                successCount:
+                    type: integer
+                    description: 成功数量
+                    format: int32
+                failedCount:
+                    type: integer
+                    description: 失败数量
+                    format: int32
+            description: BatchReply 批量新增响应
+        BatchRequest:
+            type: object
+            properties:
+                logs:
                     type: array
                     items:
-                        type: string
-                permissions:
-                    type: array
-                    items:
-                        type: string
+                        $ref: '#/components/schemas/TrackerMessage'
+                    description: 埋点数据列表
+            description: BatchRequest 批量新增请求
         GoogleProtobufAny:
             type: object
             properties:
@@ -177,53 +130,19 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        LoginReply:
+        ListReply:
             type: object
             properties:
-                accessToken:
-                    type: string
-                token:
-                    type: string
-        LoginRequest:
-            type: object
-            properties:
-                username:
-                    type: string
-                password:
-                    type: string
-        RegisterRequest:
-            type: object
-            properties:
-                account:
-                    type: string
-                password:
-                    type: string
-                email:
-                    type: string
-                phonenumber:
-                    type: string
-                sex:
-                    type: string
-        Role:
-            type: object
-            properties:
-                dataScope:
-                    type: string
-                flag:
-                    type: boolean
-                roleId:
-                    type: string
-                roleKey:
-                    type: string
-                roleName:
-                    type: string
-                roleSort:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TrackerMessage'
+                    description: 埋点数据列表
+                total:
                     type: integer
+                    description: 总数量
                     format: int32
-                status:
-                    type: string
-                superAdmin:
-                    type: boolean
+            description: ListReply 分页查询响应
         Status:
             type: object
             properties:
@@ -240,51 +159,33 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        UpdatePwdRequest:
+        TrackerMessage:
             type: object
             properties:
-                oldPassword:
+                appId:
                     type: string
-                newPassword:
+                    description: 应用ID
+                deviceId:
                     type: string
-        User:
-            type: object
-            properties:
-                avatar:
-                    type: string
-                createTime:
-                    type: string
-                deptId:
-                    type: string
-                deptName:
-                    type: string
-                email:
-                    type: string
-                loginDate:
-                    type: string
-                loginIp:
-                    type: string
-                nickName:
-                    type: string
-                phonenumber:
-                    type: string
-                remark:
-                    type: string
-                roles:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Role'
-                sex:
-                    type: string
-                status:
-                    type: string
-                tenantId:
-                    type: string
+                    description: 设备ID
                 userId:
                     type: string
-                userName:
+                    description: 用户ID
+                timestamp:
                     type: string
-                userType:
+                    description: 时间戳
+                userAgent:
                     type: string
+                    description: 用户代理
+                pageUrl:
+                    type: string
+                    description: 页面URL
+                type:
+                    type: string
+                    description: 类型
+                data:
+                    type: string
+                    description: 数据
+            description: Tracker 埋点数据消息
 tags:
-    - name: Auth
+    - name: Tracker

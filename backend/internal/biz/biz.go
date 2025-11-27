@@ -17,4 +17,5 @@ var ProviderSet = wire.NewSet(
 	base.NewSysMenuUseCase,
 	NewUserFeedbackUsecase,
 	base.NewDictTypeUseCase,
-	base.NewDictDataUseCase)
+	base.NewDictDataUseCase,
+	base.NewTrackerUseCase)

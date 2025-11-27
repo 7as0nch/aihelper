@@ -19,7 +19,8 @@ var ProviderSet = wire.NewSet(
 	auth.NewAuthRepo,
 	NewData, NewUserFeedbackRepo,
 	NewDictTypeRepo,
-	NewDictDataRepo)
+	NewDictDataRepo,
+	NewTrackerRepo)
 
 type DataRepo interface {
 	GetDB() *gorm.DB

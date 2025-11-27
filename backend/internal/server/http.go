@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	basepb "github.com/example/aichat/backend/api/base"
 	chatv1 "github.com/example/aichat/backend/api/chat/v1"
 	userfeedbackv1 "github.com/example/aichat/backend/api/userfeedback/v1"
@@ -19,7 +21,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/semconv/v1.24.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
 // NewHTTPServer new an HTTP server.
@@ -29,6 +31,7 @@ func NewHTTPServer(c *conf.Server,
 	authServ *base.AuthService,
 	authRepo auth.AuthRepo,
 	system *base.SystemService,
+	tracker *base.TrackerService,
 	logg log.Logger) *kratoshttp.Server {
 
 	// 初始化 tracer provider（开发环境使用采样率100%，生产环境可调整）
@@ -47,12 +50,14 @@ func NewHTTPServer(c *conf.Server,
 		kratoshttp.Middleware(
 			recovery.Recovery(),
 			logging.Server(logg),
-			tracing.Server(), // 启用分布式追踪中间件
+			tracing.Server(),      // 启用分布式追踪中间件
+			auth.MiddlewareCors(), // 跨域中间件，只对特定接口开放
 			selector.Server(
 				auth.NewHeaderServer(),
 				authRepo.Server()).
 				Match(auth.NewWhiteListMatcher(map[string]bool{
-					basepb.OperationAuthLogin:   true,
+					basepb.OperationAuthLogin:    true,
+					basepb.OperationTrackerBatch: true,
 				})).Build(),
 		),
 	}
@@ -67,12 +72,22 @@ func NewHTTPServer(c *conf.Server,
 	}
 	opts = append(opts,
 		kratoshttp.ResponseEncoder(auth.DefaultResponseEncoder),
-		kratoshttp.ErrorEncoder(auth.DefaultErrorEncoder))
+		kratoshttp.ErrorEncoder(auth.DefaultErrorEncoder),
+		kratoshttp.RequestDecoder(func(r *http.Request, v interface{}) error {
+			// 处理text/plain类型请求
+			if r.Header.Get("Content-Type") == "text/plain; charset=utf-8" {
+				// 将Content-Type设置为application/json，以便使用默认的JSON解码器
+				r.Header.Set("Content-Type", "application/json")
+			}
+			// 使用默认的请求解码器
+			return kratoshttp.DefaultRequestDecoder(r, v)
+		}))
 	srv := kratoshttp.NewServer(opts...)
 	userfeedbackv1.RegisterUserFeedbackHTTPServer(srv, userFeedback)
 	chatv1.RegisterChatHTTPServer(srv, chat)
 	basepb.RegisterAuthHTTPServer(srv, authServ)
 	basepb.RegisterSystemHTTPServer(srv, system)
+	basepb.RegisterTrackerHTTPServer(srv, tracker)
 	srv.HandleFunc("/chat/send", chat.SSEHandler)
 	srv.HandlePrefix("/q/", openapiv2.NewHandler())
 	return srv

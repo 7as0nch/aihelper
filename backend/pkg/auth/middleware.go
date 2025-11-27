@@ -6,13 +6,14 @@ package auth
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/golang-jwt/jwt/v4"
-	"strings"
 )
 
 // NewWhiteListMatcher 白名单, is the white list for url request.
@@ -25,17 +26,31 @@ func NewWhiteListMatcher(whiteList map[string]bool) selector.MatchFunc {
 	}
 }
 
-// PHMMiddlewareCors 对跨域做出过滤
-func PHMMiddlewareCors() middleware.Middleware {
+// 需要开放跨域的接口路径
+var allowedPaths = map[string]bool{
+	"/tracker/batch": true,
+}
+// PHMMiddlewareCors 对跨域做出过滤，只对特定接口开放
+func MiddlewareCors() middleware.Middleware {
+
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if ts, ok := transport.FromServerContext(ctx); ok {
 				if ht, ok := ts.(http.Transporter); ok {
-					ht.ReplyHeader().Set("Access-Control-Allow-Origin", "*")
-					ht.ReplyHeader().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,PATCH,DELETE")
-					ht.ReplyHeader().Set("Access-Control-Allow-Credentials", "true")
-					ht.ReplyHeader().Set("Access-Control-Allow-Headers", "Content-Type,Token,"+
-						"X-Requested-With,Access-Control-Allow-Credentials,User-Agent,Content-Length,Authorization,Accept,Accept-Language,Content-Language,Origin")
+					// 获取请求路径
+					path := ht.RequestHeader().Get(":path")
+					// 对于OPTIONS预检请求，也需要设置跨域头
+					method := ht.RequestHeader().Get("x-method")
+					isOptions := method == "OPTIONS"
+
+					// 如果是允许的路径或者OPTIONS预检请求（针对允许的路径），则设置跨域头
+					if allowedPaths[path] || (isOptions && allowedPaths[ht.RequestHeader().Get("x-path")]) {
+						ht.ReplyHeader().Set("Access-Control-Allow-Origin", "*")
+						ht.ReplyHeader().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,PATCH,DELETE")
+						ht.ReplyHeader().Set("Access-Control-Allow-Credentials", "true")
+						ht.ReplyHeader().Set("Access-Control-Allow-Headers", "Content-Type,Token,"+
+							"X-Requested-With,Access-Control-Allow-Credentials,User-Agent,Content-Length,Authorization,Accept,Accept-Language,Content-Language,Origin")
+					}
 				}
 			}
 			return handler(ctx, req)

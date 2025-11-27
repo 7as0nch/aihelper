@@ -20,6 +20,7 @@ var (
 	SysDict     *sysDict
 	SysDictType *sysDictType
 	SysMenu     *sysMenu
+	SysTracker  *sysTracker
 	SysUser     *sysUser
 )
 
@@ -28,6 +29,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	SysDict = &Q.SysDict
 	SysDictType = &Q.SysDictType
 	SysMenu = &Q.SysMenu
+	SysTracker = &Q.SysTracker
 	SysUser = &Q.SysUser
 }
 
@@ -37,6 +39,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		SysDict:     newSysDict(db, opts...),
 		SysDictType: newSysDictType(db, opts...),
 		SysMenu:     newSysMenu(db, opts...),
+		SysTracker:  newSysTracker(db, opts...),
 		SysUser:     newSysUser(db, opts...),
 	}
 }
@@ -47,6 +50,7 @@ type Query struct {
 	SysDict     sysDict
 	SysDictType sysDictType
 	SysMenu     sysMenu
+	SysTracker  sysTracker
 	SysUser     sysUser
 }
 
@@ -58,6 +62,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		SysDict:     q.SysDict.clone(db),
 		SysDictType: q.SysDictType.clone(db),
 		SysMenu:     q.SysMenu.clone(db),
+		SysTracker:  q.SysTracker.clone(db),
 		SysUser:     q.SysUser.clone(db),
 	}
 }
@@ -76,6 +81,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		SysDict:     q.SysDict.replaceDB(db),
 		SysDictType: q.SysDictType.replaceDB(db),
 		SysMenu:     q.SysMenu.replaceDB(db),
+		SysTracker:  q.SysTracker.replaceDB(db),
 		SysUser:     q.SysUser.replaceDB(db),
 	}
 }
@@ -84,6 +90,7 @@ type queryCtx struct {
 	SysDict     ISysDictDo
 	SysDictType ISysDictTypeDo
 	SysMenu     ISysMenuDo
+	SysTracker  ISysTrackerDo
 	SysUser     ISysUserDo
 }
 
@@ -92,6 +99,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		SysDict:     q.SysDict.WithContext(ctx),
 		SysDictType: q.SysDictType.WithContext(ctx),
 		SysMenu:     q.SysMenu.WithContext(ctx),
+		SysTracker:  q.SysTracker.WithContext(ctx),
 		SysUser:     q.SysUser.WithContext(ctx),
 	}
 }

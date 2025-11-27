@@ -17,6 +17,8 @@ import (
 // NewGRPCServer new a gRPC server.
 func NewGRPCServer(c *conf.Server,
 	authServ *base.AuthService,
+	systemServ *base.SystemService,
+	trackerServ *base.TrackerService,
 	chat *service.ChatService, logg log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
@@ -37,5 +39,7 @@ func NewGRPCServer(c *conf.Server,
 	srv := grpc.NewServer(opts...)
 	chatv1.RegisterChatServer(srv, chat)
 	basepb.RegisterAuthServer(srv, authServ)
+	basepb.RegisterSystemServer(srv, systemServ)
+	basepb.RegisterTrackerServer(srv, trackerServ)
 	return srv
 }

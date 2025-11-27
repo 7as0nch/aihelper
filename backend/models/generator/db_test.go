@@ -14,14 +14,14 @@ const URL = "host=115.120.248.67 port=31042 user=pgadmin password=123456 dbname=
 
 // Dynamic SQL
 type Querier interface {
-  // SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
-  FilterWithNameAndRole(name, role string) ([]gen.T, error)
+	// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+	FilterWithNameAndRole(name, role string) ([]gen.T, error)
 }
 
 func TestDb(t *testing.T) {
 	g := gen.NewGenerator(gen.Config{
-		OutPath:        "./query",
-		Mode:           gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode gen.WithoutContext |
+		OutPath: "./query",
+		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode gen.WithoutContext |
 		// FieldNullable:  true,
 		// FieldCoverable: false,
 		// WithUnitTest:   false, // 不生成单元测试
@@ -53,9 +53,10 @@ func TestDb(t *testing.T) {
 		model.SysMenu{},
 		model.SysDict{},
 		model.SysDictType{},
+		model.SysTracker{},
 	}
 	g.ApplyBasic(models...)
-	g.ApplyInterface(func(Querier){}, models...)
+	g.ApplyInterface(func(Querier) {}, models...)
 	// Generate the code
 	g.Execute()
 	t.Log("PostgreSQL数据库表结构生成成功，schema: aichat")
@@ -70,29 +71,29 @@ func TestMigrate(t *testing.T) {
 	// 使用schema: aichat
 	// gormdb.Migrator().AutoMigrate(&model.SysMenu{})
 	// var modelInterface ModelInterface = &model.SysMenu{}
-    
-	err := gormdb.Migrator().AutoMigrate(&model.SysDictType{})
+
+	err := gormdb.Migrator().AutoMigrate(&model.SysTracker{})
 	if err != nil {
 		t.Logf("迁移失败: %v", err)
 		return
 	}
-    // // 1. 创建备份表并复制数据
-    // err := gormdb.Exec(fmt.Sprintf("CREATE TABLE %s_backup AS SELECT * FROM %s", 
-    //     modelInterface.TableName(), modelInterface.TableName())).Error
-    // if err != nil {
-    //     t.Logf("备份失败: %v", err)
-    //     return
-    // }
+	// // 1. 创建备份表并复制数据
+	// err := gormdb.Exec(fmt.Sprintf("CREATE TABLE %s_backup AS SELECT * FROM %s",
+	//     modelInterface.TableName(), modelInterface.TableName())).Error
+	// if err != nil {
+	//     t.Logf("备份失败: %v", err)
+	//     return
+	// }
 	// gormdb.Migrator().DropTable(modelInterface)
 	// gormdb.Migrator().CreateTable(modelInterface)
 	// // 4. 恢复数据
-    // gormdb.Exec(fmt.Sprintf("INSERT INTO %s SELECT * FROM %s_backup", 
-    //     modelInterface.TableName(), modelInterface.TableName()))
-    
-    // // 5. 清理备份表
-    // gormdb.Exec(fmt.Sprintf("DROP TABLE %s_backup", modelInterface.TableName()))
-    
-    t.Log("安全迁移完成，数据已保留")
+	// gormdb.Exec(fmt.Sprintf("INSERT INTO %s SELECT * FROM %s_backup",
+	//     modelInterface.TableName(), modelInterface.TableName()))
+
+	// // 5. 清理备份表
+	// gormdb.Exec(fmt.Sprintf("DROP TABLE %s_backup", modelInterface.TableName()))
+
+	t.Log("安全迁移完成，数据已保留")
 }
 
 type ModelInterface interface {

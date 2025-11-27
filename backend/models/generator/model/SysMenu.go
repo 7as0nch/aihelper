@@ -45,7 +45,7 @@ func (m MenuType) String() string {
 }
 
 // ToMenuType 将字符串转换为 MenuType 枚举值
-func ToMenuType(str string) (MenuType) {
+func ToMenuType(str string) MenuType {
 	switch str {
 	case "M":
 		return MenuTypeDir
@@ -67,7 +67,7 @@ type SysMenu struct {
 	Redirect   string        `json:"redirect" db:"redirect"` // 是否重定向
 	Component  string        `json:"component" db:"component"`
 	AlwaysShow bool          `json:"alwaysShow" db:"always_show"`
-	Meta       *Meta         `json:"meta" gorm:"meta;type:jsonb" db:"meta"`
+	Meta       *Meta         `json:"meta" gorm:"meta;type:json" db:"meta"`
 	ParentID   int64         `json:"parentId" db:"parent_id"`
 	Sort       int           `json:"sort" db:"sort"`
 	Type       MenuType      `json:"type" gorm:"type:smallint" db:"type"`
