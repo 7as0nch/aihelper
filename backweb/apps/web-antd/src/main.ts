@@ -1,9 +1,9 @@
 import { initPreferences } from '@vben/preferences';
 import { unmountGlobalLoading } from '@vben/utils';
 
-import { overridesPreferences } from './preferences';
-
 import { initAiChat } from '@7as0nch/litechat';
+
+import { overridesPreferences } from './preferences';
 
 initAiChat({
   config: {
