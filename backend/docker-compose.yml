@@ -6,7 +6,7 @@ services:
     container_name: aichat-backend
     restart: unless-stopped
     ports:
-      - "8000:8000"  # HTTP端口
+      - "6039:6039"  # HTTP端口
       - "9000:9000"  # gRPC端口
     volumes:
       - /root/workspace/conf:/data/conf  # 配置文件映射
