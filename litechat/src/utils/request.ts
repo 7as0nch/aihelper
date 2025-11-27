@@ -1,11 +1,11 @@
 import axios from 'axios';
 // import { getConfig } from '@/config';
 
-import { getToken, setToken } from '@/utils/cookie';
+import { getToken } from '@/utils/cookie';
 import { message } from 'ant-design-vue';
 import { useAuthStore } from '@/stores/auth';
 
-const request = axios.create({
+export const request = axios.create({
     // Use /api to trigger Vite proxy in dev mode
     baseURL: '/api',
     timeout: 60000,
@@ -35,10 +35,10 @@ request.interceptors.response.use(
     (response) => {
         const res = response.data as ResultBody;
 
-        // Handle token refresh
-        if (res.newToken) {
-            setToken(res.newToken);
-        }
+        // // Handle token refresh
+        // if (res.newToken) {
+        //     setToken(res.newToken);
+        // }
 
         // Check business code
         if (res.code === 200) {

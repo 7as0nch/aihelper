@@ -170,6 +170,7 @@ onMounted(async () => {
             <div class="flex flex-col gap-3 items-start">
               <button
                 v-for="(question, index) in randomQuestions"
+                v-tracker="{ type: 'click', name: 'randomQuestion', data: { question: question.content } }"
                 :key="question.id"
                 @click="handleQuestionClick(question.content)"
                 class="px-5 py-3 bg-white dark:bg-[#2a2a2a] rounded-full border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all shadow-sm hover:shadow-md text-left text-sm text-gray-600 dark:text-gray-300 animate-float"

@@ -43,6 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
     };
 
     const handleLoginSuccess = async (userData: User, token: string) => {
+        setToken(token);
         if (!userData) {
             try {
                 const res = await authApi.getUserInfo();
@@ -54,7 +55,6 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = userData;
         isAuthenticated.value = true;
         localStorage.setItem('user', JSON.stringify(userData));
-        setToken(token);
         closeModal();
     };
 
