@@ -7,5 +7,6 @@ declare module '@7as0nch/litechat' {
   export function initAiChat(options: {
     config: Record<string, string>;
     defaultOpen?: boolean;
+    defaultShow?: boolean;
   }): void;
 }

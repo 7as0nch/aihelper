@@ -4,7 +4,10 @@
 
 ## 写在前面
 > 目前支持demo模式和前端模式，后端模式正在开发中。需要集成后台管理端（配置管理、工作流、用户管理、会话管理、知识库管理、支持插件回调callback等）。
-> 后续考虑接入客服功能。
+> 后续考虑接入客服功能。\
+> // # backend : 纯前端模式：无需登录，只需要接入模型key即可，记录存到本地。\
+> // # frontend : 后台模式： 需要登录，接入配套的后台管理。（这里可考虑与宿主完成单点登录配置）\
+> // # demo : 样例模式：里面包含各种demo例子。全部使用mock数据。
 
 ## 展示
 
@@ -93,7 +96,16 @@ interface InitOptions {
   config?: {
     VITE_APP_TITLE?: string;         // 应用标题
     VITE_APP_LOGO?: string;           // Logo URL
-    VITE_API_BASE_URL?: string;       // API 基础 URL
+    VITE_API_BASE_URL?: string;       // API 基础 UR
+    VITE_OPENAI_API_KEY?: string; // OpenAI API Key
+    VITE_OPENAI_BASE_URL?: string; // 后台接口
+    VITE_OPENAI_MODEL?: string;
+    // # backend : 纯前端模式：无需登录，只需要接入模型key即可，记录存到本地。
+    // # frontend : 后台模式： 需要登录，接入配套的后台管理。（这里可考虑与宿主完成单点登录配置）
+    // # demo : 样例模式：里面包含各种demo例子。全部使用mock数据。
+    VITE_AI_TYPE?: string; // 
+    VITE_ENABLE_QR_LOGIN?: string;
+    VITE_BASE_URL?: string;
     // ... 其他配置
   };
   

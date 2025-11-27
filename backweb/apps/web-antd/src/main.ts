@@ -11,6 +11,7 @@ initAiChat({
     VITE_API_BASE_URL: 'https://api.example.com',
   },
   defaultOpen: false,
+  defaultShow: false,
 });
 /**
  * 应用初始化完成之后再进行页面加载渲染
