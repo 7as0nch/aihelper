@@ -1,8 +1,59 @@
 <script setup lang="ts">
 import { computed, onMounted, nextTick, watch, ref } from 'vue';
 import MarkdownIt from 'markdown-it';
-import hljs from 'highlight.js';
-import mermaid from 'mermaid';
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import python from 'highlight.js/lib/languages/python';
+import java from 'highlight.js/lib/languages/java';
+import go from 'highlight.js/lib/languages/go';
+import xml from 'highlight.js/lib/languages/xml';
+import css from 'highlight.js/lib/languages/css';
+import json from 'highlight.js/lib/languages/json';
+import bash from 'highlight.js/lib/languages/bash';
+import sql from 'highlight.js/lib/languages/sql';
+import markdown from 'highlight.js/lib/languages/markdown';
+import yaml from 'highlight.js/lib/languages/yaml';
+import shell from 'highlight.js/lib/languages/shell';
+import c from 'highlight.js/lib/languages/c';
+import cpp from 'highlight.js/lib/languages/cpp';
+import csharp from 'highlight.js/lib/languages/csharp';
+import rust from 'highlight.js/lib/languages/rust';
+import php from 'highlight.js/lib/languages/php';
+import ruby from 'highlight.js/lib/languages/ruby';
+import swift from 'highlight.js/lib/languages/swift';
+import kotlin from 'highlight.js/lib/languages/kotlin';
+import diff from 'highlight.js/lib/languages/diff';
+import ini from 'highlight.js/lib/languages/ini';
+import dockerfile from 'highlight.js/lib/languages/dockerfile';
+import graphql from 'highlight.js/lib/languages/graphql';
+
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('java', java);
+hljs.registerLanguage('go', go);
+hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('html', xml);
+hljs.registerLanguage('css', css);
+hljs.registerLanguage('json', json);
+hljs.registerLanguage('bash', bash);
+hljs.registerLanguage('sql', sql);
+hljs.registerLanguage('markdown', markdown);
+hljs.registerLanguage('yaml', yaml);
+hljs.registerLanguage('shell', shell);
+hljs.registerLanguage('c', c);
+hljs.registerLanguage('cpp', cpp);
+hljs.registerLanguage('csharp', csharp);
+hljs.registerLanguage('rust', rust);
+hljs.registerLanguage('php', php);
+hljs.registerLanguage('ruby', ruby);
+hljs.registerLanguage('swift', swift);
+hljs.registerLanguage('kotlin', kotlin);
+hljs.registerLanguage('diff', diff);
+hljs.registerLanguage('ini', ini);
+hljs.registerLanguage('dockerfile', dockerfile);
+hljs.registerLanguage('graphql', graphql);
 import type { Message, Attachment } from '../../stores/chat';
 import { useChatStore } from '../../stores/chat';
 import { User, Bot, Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight } from 'lucide-vue-next';
@@ -29,17 +80,28 @@ const emit = defineEmits<{
   (e: 'previewImage', url: string): void;
 }>();
 
-// Initialize mermaid
-// Initialize mermaid
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-  securityLevel: 'loose',
-  suppressErrorRendering: true, // Suppress default error rendering
-});
+// Lazy load and initialize Mermaid only when needed
+let mermaidInstance: any = null;
 
-// Override parseError to prevent console spam
-mermaid.parseError = () => {};
+const initMermaid = async () => {
+  if (!mermaidInstance) {
+    const mermaidModule = await import('mermaid');
+    mermaidInstance = mermaidModule.default;
+    
+    // Initialize mermaid
+    mermaidInstance.initialize({
+      startOnLoad: false,
+      theme: 'default',
+      securityLevel: 'loose',
+      suppressErrorRendering: true, // Suppress default error rendering
+    });
+    
+    // Override parseError to prevent console spam
+    mermaidInstance.parseError = () => {};
+  }
+  
+  return mermaidInstance;
+};
 
 const md: MarkdownIt = new MarkdownIt({
   html: false,
@@ -120,6 +182,13 @@ const renderedContent = computed(() => {
 const renderMermaid = async () => {
   await nextTick();
   const mermaidDivs = document.querySelectorAll('.mermaid-view');
+  
+  // Only load mermaid if there are mermaid diagrams to render
+  if (mermaidDivs.length === 0) return;
+  
+  // Dynamically load mermaid when needed
+  const mermaid = await initMermaid();
+  
   mermaidDivs.forEach(async (div) => {
     const id = div.id;
     const content = decodeURIComponent(div.getAttribute('data-code') || '');
@@ -368,7 +437,7 @@ const handleFileClick = (file: Attachment) => {
             v-for="img in message.attachments.filter(a => a.type === 'image')" 
             :key="img.id"
             class="relative group cursor-zoom-in shrink-0"
-            @click="handleImageClick(img.url!)"
+            @click="handleImageClick(img.url || '')"
           >
             <img 
               :src="img.url" 

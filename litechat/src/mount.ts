@@ -32,7 +32,7 @@ export function mountApp(options: MountOptions = {}) {
     const router = createAppRouter(history);
 
     // 
-    if (import.meta.env.VITE_TRACKER_ENABLE === 'true') {
+    if ((import.meta as any).env.VITE_TRACKER_ENABLE === 'true') {
         tracker
             .setUserId(0)
             // 2. Before 拦截器：针对【每一条】数据处理
@@ -56,6 +56,9 @@ export function mountApp(options: MountOptions = {}) {
             .installRouter(router)
             .installApi(request)
             .installDirective(app);
+    } else {
+        // Prevent "Failed to resolve directive: tracker" warning when tracking is disabled
+        app.directive('tracker', {});
     }
 
     app.use(router)

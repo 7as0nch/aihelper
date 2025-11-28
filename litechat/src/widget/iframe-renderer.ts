@@ -1,5 +1,6 @@
 import { mountApp } from '../mount';
 import type { InitOptions } from './types';
+// @ts-ignore
 import styleContent from '../style.css?inline';
 // import markdownLightCss from 'github-markdown-css/github-markdown-light.css?inline';
 // import markdownDarkCss from 'github-markdown-css/github-markdown-dark.css?inline';
