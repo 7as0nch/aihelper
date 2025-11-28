@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 
 	basepb "github.com/example/aichat/backend/api/base"
@@ -19,6 +20,7 @@ import (
 	"github.com/go-kratos/swagger-api/openapiv2"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
@@ -46,14 +48,28 @@ func NewHTTPServer(c *conf.Server,
 
 	// 设置全局 tracer provider
 	otel.SetTracerProvider(tp)
+
+	// 设置全局 propagator,使 tracing.Server() 能够从 HTTP headers 提取 trace context
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+
 	var opts = []kratoshttp.ServerOption{
 		kratoshttp.Middleware(
 			recovery.Recovery(),
-			logging.Server(logg),
-			tracing.Server(),      // 启用分布式追踪中间件
-			auth.MiddlewareCors(), // 跨域中间件，只对特定接口开放
+			// 先提取 ClientID,这样后续的 logging.Server 可以记录它
 			selector.Server(
-				auth.NewHeaderServer(),
+				auth.NewHeaderServer()).
+				Match(func(ctx context.Context, operation string) bool {
+					// 对所有请求都执行 NewHeaderServer,提取 ClientID
+					return true
+				}).Build(),
+			logging.Server(logg),  // 此时 ClientID 已经在 context 中
+			tracing.Server(),      // 启用分布式追踪中间件,通过 propagator 提取 trace context
+			auth.MiddlewareCors(), // 跨域中间件,只对特定接口开放
+			// JWT 验证保持在最后,使用原有的白名单逻辑
+			selector.Server(
 				authRepo.Server()).
 				Match(auth.NewWhiteListMatcher(map[string]bool{
 					basepb.OperationAuthLogin:    true,
