@@ -107,7 +107,7 @@ const handleRegister = async () => {
         v-if="authStore.config.enableQrLogin && view === 'login'" 
         class="w-1/2 bg-gray-50 dark:bg-[#242424] p-8 flex flex-col items-center justify-center border-r border-gray-100 dark:border-gray-800 hidden md:flex"
       >
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">打开知乎 App</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">打开 App</h3>
         <p class="text-sm text-gray-500 mb-8">在「我的页」右上角打开扫一扫</p>
         
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4">
@@ -313,7 +313,7 @@ const handleRegister = async () => {
         </div>
 
         <div class="mt-auto pt-4 text-[10px] text-gray-400 text-center leading-relaxed">
-          {{ view === 'login' ? '未注册手机验证后自动登录，' : '' }}注册即代表同意《知乎协议》《隐私保护指引》
+          {{ view === 'login' ? '未注册手机验证后自动登录，' : '' }}注册即代表同意《LiteChat 协议》《隐私保护指引》
         </div>
       </div>
     </div>
