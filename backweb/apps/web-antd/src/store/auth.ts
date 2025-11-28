@@ -14,11 +14,13 @@ import { doLogout, getUserInfoApi, loginApi, seeConnectionClose } from '#/api';
 import { $t } from '#/locales';
 
 import { useDictStore } from './dict';
+import { useAiStore } from './ai';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
   const userStore = useUserStore();
   const router = useRouter();
+  const aiStore = useAiStore();
 
   const loginLoading = ref(false);
 
@@ -36,6 +38,10 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loginLoading.value = true;
       const { accessToken } = await loginApi(params);
+
+
+      // 登录成功
+      aiStore.show();
 
       // 将 accessToken 存储到 accessStore 中
       accessStore.setAccessToken(accessToken);
@@ -77,6 +83,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await seeConnectionClose();
       await doLogout();
+      aiStore.hide();
     } catch (error) {
       console.error(error);
     } finally {
@@ -88,8 +95,8 @@ export const useAuthStore = defineStore('auth', () => {
         path: LOGIN_PATH,
         query: redirect
           ? {
-              redirect: encodeURIComponent(router.currentRoute.value.fullPath),
-            }
+            redirect: encodeURIComponent(router.currentRoute.value.fullPath),
+          }
           : {},
       });
     }
@@ -103,6 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!backUserInfo) {
       throw new Error('获取用户信息失败.');
     }
+    aiStore.show();
     const { permissions = [], roles = [], user } = backUserInfo;
     /**
      * 从后台user -> vben user转换

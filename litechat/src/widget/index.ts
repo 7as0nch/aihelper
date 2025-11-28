@@ -3,7 +3,8 @@ import { createIframeRenderer } from '@/widget/iframe-renderer';
 import { setRuntimeConfig } from '../config';
 import type { InitOptions, AiChat } from './types';
 
-export type { InitOptions } from './types';
+export type { InitOptions, AiChat } from './types';
+export { useAiChat } from './vue';
 
 export function initAiChat(options: InitOptions = {}): AiChat {
     // 1. Set global config

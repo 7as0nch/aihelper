@@ -29,16 +29,18 @@ func (s *TrackerService) Batch(ctx context.Context, req *pb.BatchRequest) (*pb.B
 	// 将proto消息转换为model
 	var trackers []*model.SysTracker
 	for _, t := range req.Logs {
-		trackers = append(trackers, &model.SysTracker{
+		temp := &model.SysTracker{
 			AppId:     t.AppId,
 			DeviceId:  t.DeviceId,
 			UserId:    t.UserId,
 			Timestamp: t.Timestamp,
 			UserAgent: t.UserAgent,
 			PageUrl:   t.PageUrl,
-			Type:      t.Type,
+			Type:      model.TrackerType(t.Type),
 			Data:      t.Data,
-		})
+		}
+		temp.New()
+		trackers = append(trackers, temp)
 	}
 
 	// 调用biz层批量创建
@@ -82,7 +84,7 @@ func (s *TrackerService) List(ctx context.Context, req *pb.ListRequest) (*pb.Lis
 			Timestamp: t.Timestamp,
 			UserAgent: t.UserAgent,
 			PageUrl:   t.PageUrl,
-			Type:      t.Type,
+			Type:      string(t.Type),
 			Data:      t.Data,
 		})
 	}

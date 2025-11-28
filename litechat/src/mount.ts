@@ -32,32 +32,31 @@ export function mountApp(options: MountOptions = {}) {
     const router = createAppRouter(history);
 
     // 
-    if (import.meta.env.TRACKER_ENABLE) {
+    if (import.meta.env.VITE_TRACKER_ENABLE === 'true') {
+        tracker
+            .setUserId(0)
+            // 2. Before 拦截器：针对【每一条】数据处理
+            // 作用：数据清洗、黑名单过滤、添加额外参数
+            .before((logItem) => {
+                if (logItem.type === 'api' && logItem.data.method === 'OPTIONS') {
+                    return false; // 不入队，不记录
+                }
 
+                // 示例：给所有埋点增加当前语言环境
+                logItem.data.lang = navigator.language;
+
+                return true; // 继续执行
+            })
+            // 3. After 拦截器：针对【每一次批量发送】处理
+            // 作用：监控上报状态，Debug 打印
+            // .after((batchData) => {
+            //     console.log(`[Tracker] 🚀 成功批量上报 ${batchData.length} 条数据:`, batchData);
+            // })
+            // 4. 安装插件
+            .installRouter(router)
+            .installApi(request)
+            .installDirective(app);
     }
-    tracker
-        .setUserId(0)
-        // 2. Before 拦截器：针对【每一条】数据处理
-        // 作用：数据清洗、黑名单过滤、添加额外参数
-        .before((logItem) => {
-            if (logItem.type === 'api' && logItem.data.method === 'OPTIONS') {
-                return false; // 不入队，不记录
-            }
-
-            // 示例：给所有埋点增加当前语言环境
-            logItem.data.lang = navigator.language;
-
-            return true; // 继续执行
-        })
-        // 3. After 拦截器：针对【每一次批量发送】处理
-        // 作用：监控上报状态，Debug 打印
-        // .after((batchData) => {
-        //     console.log(`[Tracker] 🚀 成功批量上报 ${batchData.length} 条数据:`, batchData);
-        // })
-        // 4. 安装插件
-        .installRouter(router)
-        .installApi(request)
-        .installDirective(app);
 
     app.use(router)
 

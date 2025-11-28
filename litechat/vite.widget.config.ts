@@ -1,10 +1,21 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import dts from 'vite-plugin-dts'
 import * as path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [vue()],
+    plugins: [
+        vue(),
+        dts({
+            include: ['src/widget/**/*.ts', 'src/config.ts', 'src/types/**/*.ts'],
+            outDir: 'dist-widget',
+            rollupTypes: true,
+            copyDtsFiles: true,
+            staticImport: true,
+            insertTypesEntry: true,
+        })
+    ],
     build: {
         lib: {
             entry: path.resolve(__dirname, 'src/widget/index.ts'),

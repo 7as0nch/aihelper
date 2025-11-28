@@ -43,10 +43,10 @@ pnpm add @7as0nch/litechat
 推荐使用我们提供的 `useAiChat` 组合式函数：
 
 ```typescript
-import { useAiChat } from '@7as0nch/litechat/vue';
+import { initAiChat } from '@7as0nch/litechat';
 
 // 在组件中
-const { open, close, show, hide, toggle } = useAiChat({
+const AiChat = initAiChat({
   config: {
     VITE_APP_TITLE: '我的 AI 助手',
   },
