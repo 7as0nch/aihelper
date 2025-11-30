@@ -71,3 +71,14 @@
 2. redis 对接。
 3. mcp对接：支持热重启。脱离管理端，单独部署。
 4. 系统工具支持。
+
+# 输入-生成消息流程：
+## 流程图：
+![alt text](input流程图.png)
+![alt text](input-md-流程图.png) 
+## 时序图：
+![alt text](input时序图.png) 
+![alt text](input-md-时序图.png) 
+## 支持转人工：
+![alt text](input-md-转人工-时序图.png) 
+![alt text](input-md-转人工-流程图.png) 
