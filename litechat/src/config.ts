@@ -10,6 +10,8 @@ export interface RuntimeConfig {
     VITE_AI_TYPE?: string;
     VITE_ENABLE_QR_LOGIN?: string;
     VITE_BASE_URL?: string;
+    VITE_FLOAT_BALL_IMAGE?: string;
+    VITE_FLOAT_BALL_WELCOME_CONTENTS?: string;
     [key: string]: string | undefined;
 }
 
@@ -27,6 +29,8 @@ const defaultConfig: RuntimeConfig = {
     VITE_OPENAI_MODEL: import.meta.env.VITE_OPENAI_MODEL,
     VITE_AI_TYPE: import.meta.env.VITE_AI_TYPE,
     VITE_ENABLE_QR_LOGIN: import.meta.env.VITE_ENABLE_QR_LOGIN,
+    VITE_FLOAT_BALL_WELCOME_CONTENTS: import.meta.env.VITE_FLOAT_BALL_WELCOME_CONTENTS,
+    VITE_FLOAT_BALL_IMAGE: import.meta.env.VITE_FLOAT_BALL_IMAGE,
 };
 
 export const runtimeConfig = reactive<RuntimeConfig>({ ...defaultConfig });
