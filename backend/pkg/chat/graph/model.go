@@ -11,7 +11,7 @@ import (
 func newChatModel(ctx context.Context) (cm model.ChatModel, err error) {
 	// TODO Modify component configuration here.
 	config := &deepseek.ChatModelConfig{
-		APIKey:      "sk-a76a955533c649d6922a5042af6c0492",
+		APIKey:      "sk-dc49fec5d27a416f8758ece703aed2ff",
 		BaseURL:     "https://api.deepseek.com",
 		Model:       "deepseek-reasoner",
 		Temperature: 0.5}
@@ -26,7 +26,7 @@ func newChatModel(ctx context.Context) (cm model.ChatModel, err error) {
 func newChatModel1(ctx context.Context) (cm model.ChatModel, err error) {
 	// TODO Modify component configuration here.
 	config := &deepseek.ChatModelConfig{
-		APIKey:      "sk-a76a955533c649d6922a5042af6c0492",
+		APIKey:      "sk-dc49fec5d27a416f8758ece703aed2ff",
 		BaseURL:     "https://api.deepseek.com",
 		Model:       "deepseek-reasoner",
 		Temperature: 0.5}

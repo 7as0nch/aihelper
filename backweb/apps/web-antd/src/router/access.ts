@@ -81,7 +81,7 @@ function backMenuToVbenMenu(
      * menu.path为''(根目录路由) 则不拼接
      */
     if (parentPath && menu.path) {
-      menu.path = `${parentPath}/${menu.path}`;
+      menu.path = `${menu.path}`;
     }
 
     // 创建vben路由对象
