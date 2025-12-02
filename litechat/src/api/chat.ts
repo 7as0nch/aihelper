@@ -28,7 +28,7 @@ export interface QuoteSearchLink {
 
 export interface Message {
     id: string;
-    role: 'user' | 'assistant';
+    role: 'user' | 'assistant' | 'human'; // 用户，ai，人工客服
     aiModel?: AIModel; // 选择的AI模型。
     content: string;
     reasoning_content?: string; // 深度思考内容。
@@ -38,8 +38,8 @@ export interface Message {
     quoteContent?: string;
     quoteSearchLinks?: QuoteSearchLink[]; // 联网搜索引用文章链接和内容。
     tokenUsage?: { // token消耗累计。
-        currentTokens: number;
-        totalTokens: number;
+        currentTokens: number; // 当前消耗
+        totalTokens: number; // 累计消耗
     };
     callingTools?: CallingTool[]; // agent工具调用情况。
     attachments?: Attachment[]; // 生成或者发送的附件/图片。
