@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v3.21.12
-// source: chat/v1/chat.proto
+// source: api/chat/v1/chat.proto
 
 package v1
 
@@ -10,6 +10,7 @@ import (
 	context "context"
 	http "github.com/go-kratos/kratos/v2/transport/http"
 	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,68 +20,127 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationChatGetMessages = "/chat.v1.Chat/GetMessages"
-const OperationChatSendMessage = "/chat.v1.Chat/SendMessage"
+const OperationChatHistory = "/chat.v1.Chat/History"
+const OperationChatHistoryById = "/chat.v1.Chat/HistoryById"
+const OperationChatHistoryDeleteById = "/chat.v1.Chat/HistoryDeleteById"
+const OperationChatHistoryRenameById = "/chat.v1.Chat/HistoryRenameById"
 
 type ChatHTTPServer interface {
-	// GetMessages Get chat messages
-	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesReply, error)
-	// SendMessage Send a chat message
-	SendMessage(context.Context, *SendMessageRequest) (*SendMessageReply, error)
+	// History History
+	History(context.Context, *HistoryRequest) (*HistoryReply, error)
+	// HistoryById history by id
+	HistoryById(context.Context, *HistoryRequest) (*MessagesReply, error)
+	// HistoryDeleteById delete history by id
+	HistoryDeleteById(context.Context, *HistoryRequest) (*emptypb.Empty, error)
+	// HistoryRenameById history rename by id
+	HistoryRenameById(context.Context, *HistoryRequest) (*emptypb.Empty, error)
 }
 
 func RegisterChatHTTPServer(s *http.Server, srv ChatHTTPServer) {
 	r := s.Route("/")
-	r.POST("/chat/msg", _Chat_SendMessage0_HTTP_Handler(srv))
-	r.GET("/v1/chat/messages", _Chat_GetMessages0_HTTP_Handler(srv))
+	r.GET("/chat/history", _Chat_History0_HTTP_Handler(srv))
+	r.GET("/chat/history/{session_id}", _Chat_HistoryById0_HTTP_Handler(srv))
+	r.PUT("/chat/history/{session_id}", _Chat_HistoryRenameById0_HTTP_Handler(srv))
+	r.DELETE("/chat/history/{session_id}", _Chat_HistoryDeleteById0_HTTP_Handler(srv))
 }
 
-func _Chat_SendMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
+func _Chat_History0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in SendMessageRequest
+		var in HistoryRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationChatHistory)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.History(ctx, req.(*HistoryRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*HistoryReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Chat_HistoryById0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in HistoryRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationChatHistoryById)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.HistoryById(ctx, req.(*HistoryRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*MessagesReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Chat_HistoryRenameById0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in HistoryRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationChatSendMessage)
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationChatHistoryRenameById)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.SendMessage(ctx, req.(*SendMessageRequest))
+			return srv.HistoryRenameById(ctx, req.(*HistoryRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*SendMessageReply)
+		reply := out.(*emptypb.Empty)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Chat_GetMessages0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
+func _Chat_HistoryDeleteById0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in GetMessagesRequest
+		var in HistoryRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationChatGetMessages)
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationChatHistoryDeleteById)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.GetMessages(ctx, req.(*GetMessagesRequest))
+			return srv.HistoryDeleteById(ctx, req.(*HistoryRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*GetMessagesReply)
+		reply := out.(*emptypb.Empty)
 		return ctx.Result(200, reply)
 	}
 }
 
 type ChatHTTPClient interface {
-	// GetMessages Get chat messages
-	GetMessages(ctx context.Context, req *GetMessagesRequest, opts ...http.CallOption) (rsp *GetMessagesReply, err error)
-	// SendMessage Send a chat message
-	SendMessage(ctx context.Context, req *SendMessageRequest, opts ...http.CallOption) (rsp *SendMessageReply, err error)
+	// History History
+	History(ctx context.Context, req *HistoryRequest, opts ...http.CallOption) (rsp *HistoryReply, err error)
+	// HistoryById history by id
+	HistoryById(ctx context.Context, req *HistoryRequest, opts ...http.CallOption) (rsp *MessagesReply, err error)
+	// HistoryDeleteById delete history by id
+	HistoryDeleteById(ctx context.Context, req *HistoryRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	// HistoryRenameById history rename by id
+	HistoryRenameById(ctx context.Context, req *HistoryRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 }
 
 type ChatHTTPClientImpl struct {
@@ -91,12 +151,12 @@ func NewChatHTTPClient(client *http.Client) ChatHTTPClient {
 	return &ChatHTTPClientImpl{client}
 }
 
-// GetMessages Get chat messages
-func (c *ChatHTTPClientImpl) GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...http.CallOption) (*GetMessagesReply, error) {
-	var out GetMessagesReply
-	pattern := "/v1/chat/messages"
+// History History
+func (c *ChatHTTPClientImpl) History(ctx context.Context, in *HistoryRequest, opts ...http.CallOption) (*HistoryReply, error) {
+	var out HistoryReply
+	pattern := "/chat/history"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationChatGetMessages))
+	opts = append(opts, http.Operation(OperationChatHistory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
@@ -105,14 +165,42 @@ func (c *ChatHTTPClientImpl) GetMessages(ctx context.Context, in *GetMessagesReq
 	return &out, nil
 }
 
-// SendMessage Send a chat message
-func (c *ChatHTTPClientImpl) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...http.CallOption) (*SendMessageReply, error) {
-	var out SendMessageReply
-	pattern := "/chat/msg"
-	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationChatSendMessage))
+// HistoryById history by id
+func (c *ChatHTTPClientImpl) HistoryById(ctx context.Context, in *HistoryRequest, opts ...http.CallOption) (*MessagesReply, error) {
+	var out MessagesReply
+	pattern := "/chat/history/{session_id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationChatHistoryById))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// HistoryDeleteById delete history by id
+func (c *ChatHTTPClientImpl) HistoryDeleteById(ctx context.Context, in *HistoryRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/chat/history/{session_id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationChatHistoryDeleteById))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// HistoryRenameById history rename by id
+func (c *ChatHTTPClientImpl) HistoryRenameById(ctx context.Context, in *HistoryRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/chat/history/{session_id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationChatHistoryRenameById))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

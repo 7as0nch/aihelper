@@ -203,14 +203,14 @@ func (ws *WebSocketServer) GetAllRooms() map[string]int {
 // 流式消息推送
 func (ws *WebSocketServer) streamMessages(s socketio.Conn, sessionId string) {
 	// 使用chat service发送流式消息
-	ws.chat.StreamMessagesToWebSocket(sessionId, 
-		func(message map[string]interface{}) {
-			s.Emit("stream_message", message)
-		},
-		func() {
-			s.Emit("stream_complete", map[string]string{
-				"session_id": sessionId,
-				"message": "Stream completed",
-			})
-		})
+	// ws.chat.StreamMessagesToWebSocket(sessionId, 
+	// 	func(message map[string]interface{}) {
+	// 		s.Emit("stream_message", message)
+	// 	},
+	// 	func() {
+	// 		s.Emit("stream_complete", map[string]string{
+	// 			"session_id": sessionId,
+	// 			"message": "Stream completed",
+	// 		})
+	// 	})
 }

@@ -48,6 +48,7 @@ export interface Message {
 export interface SendMessageParams {
     history: Message[]; // 历史消息
     curMessage: Message; // 当前消息
+    needTODOPlan?: 'smart' | 'need' | 'no'; // 是否需要生成待办计划。
 }
 
 export function sendMessage(data: SendMessageParams) {

@@ -7,15 +7,13 @@ package chat
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
-	"strings"
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino/adk"
+
 	// "github.com/cloudwego/eino/adk/prebuilt/supervisor"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
@@ -142,32 +140,10 @@ func (a *AdkAgent) Run(ctx context.Context, messages []adk.Message, opts ...adk.
 	return runner.Run(ctx, messages, opts...)
 }
 
-func (a *AdkAgent) SSEHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/event-stream")
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
-		return
-	}
-	// 拿到post body
-	body := r.Body
-	defer body.Close()
-	// 读取post body
-	bodyBytes, err := io.ReadAll(body)
-	if err != nil {
-		log.Info("Read body error:", err)
-		return
-	}
-	var req v1.SendMessageRequest
-	if err = json.Unmarshal(bodyBytes, &req); err != nil {
-		log.Info("Unmarshal body error:", err)
-		return
-	}
-
-	var messages []adk.Message
+func (a *AdkAgent) Stream(ctx context.Context, req *v1.SendStreamRequest) (<-chan *v1.Message, error) {
+	var messages []*schema.Message
 	messages = append(messages, PgHelperPrompt())
-	for _, msg := range req.Messages {
+	for _, msg := range req.History {
 		if msg.Role == "system" {
 			continue
 		}
@@ -176,42 +152,86 @@ func (a *AdkAgent) SSEHandler(w http.ResponseWriter, r *http.Request) {
 			Content: msg.Content,
 		})
 	}
-	runner := a.Run(context.Background(), messages)
-	for {
-		event, ok := runner.Next()
-		if !ok {
-			flusher.Flush()
-			log.Info("event退出")
-			break
-		}
-		if event.Err != nil {
-			flusher.Flush()
-			break
-		}
-		prints.EventHandler(event, func(content string, err error) {
-			if err == io.EOF {
-				log.Info("Stream completed")
-				event := "data: [DONE]\n\n"
-				if _, err = w.Write([]byte(event)); err != nil {
-					log.Info("Write error:", err)
-					return
-				}
-				flusher.Flush()
-			}
-			// if msg.ReasoningContent != "" {
-			// 	content = fmt.Sprintf("</think>%v</think>", msg.ReasoningContent)
-			// } else {
-			// }
-			// content = fmt.Sprintf("%v", msg.Content)
-			// 处理换行符，将其转换为\\n以便在SSE中正确传输
-			content = strings.ReplaceAll(content, "\n", "\\n")
-			event := "data: " + content + "\n\n"
 
-			if _, err := w.Write([]byte(event)); err != nil {
-				log.Info("Write error:", err)
-				return
-			}
-			flusher.Flush()
+	// Add current message if needed, or assume it's in history?
+	// The original code appended PgHelperPrompt and then history.
+	// Usually the current user message is also needed.
+	// Let's assume req.Message is the current message if not in history.
+	// But looking at original code: `var req v1.SendStreamRequest; ... messages = append(messages, PgHelperPrompt()); for _, msg := range req.History ...`
+	// It seems it only used history? Or maybe the current message is appended to history by the caller?
+	// Let's stick to the original logic: just use req.History (and prompt).
+	// Wait, the original code used `req.History`.
+	// But usually `SendStreamRequest` has a `message` field for the new message.
+	// Let's check `SendStreamRequest` definition in proto.
+	// `message Message = 1; repeated Message history = 2;`
+	// The original code ONLY used `req.History`. This might be a bug or specific usage in original code.
+	// However, to be safe and robust, I should probably include `req.Message` if it's not empty.
+	// But for now, I will strictly follow the original logic to avoid breaking behavior,
+	// BUT I will add `req.Message` if it exists, as it's standard.
+
+	if req.Message != nil {
+		messages = append(messages, &schema.Message{
+			Role:    schema.RoleType(req.Message.Role),
+			Content: req.Message.Content,
 		})
 	}
+
+	runner := adk.NewRunner(ctx, adk.RunnerConfig{
+		Agent:           a.agent,
+		EnableStreaming: true,
+	})
+
+	// Convert []*schema.Message to []adk.Message
+	// adk.Message is an interface, schema.Message implements it?
+	// Let's check adk.Run signature: `Run(ctx context.Context, messages []Message, ...)`
+	// And `type Message = schema.Message` in some versions or compatible.
+	// In `pkg/chat/adk.go`: `func (a *AdkAgent) Run(ctx context.Context, messages []adk.Message, ...)`
+	// And `messages = append(messages, PgHelperPrompt())` where PgHelperPrompt returns `*schema.Message`.
+	// So `[]*schema.Message` might need conversion if `adk.Message` is an interface.
+	// Actually `adk.Message` is likely `*schema.Message` or interface implemented by it.
+	// The original code: `var messages []adk.Message; messages = append(messages, PgHelperPrompt()); ... append(messages, &schema.Message{...})`
+	// So `*schema.Message` satisfies `adk.Message`.
+
+	adkMessages := make([]adk.Message, len(messages))
+	for i, m := range messages {
+		adkMessages[i] = m
+	}
+
+	iter := runner.Run(ctx, adkMessages)
+
+	out := make(chan *v1.Message)
+
+	go func() {
+		defer close(out)
+		for {
+			event, ok := iter.Next()
+			if !ok {
+				break
+			}
+			if event.Err != nil {
+				log.Errorf("Stream error: %v", event.Err)
+				break
+			}
+
+			// Convert event to pb.Message
+			if event.Output != nil && event.Output.MessageOutput != nil {
+				// msgOut := event.Output.MessageOutput
+				// role := string(msgOut.Message.Role)
+
+				prints.EventHandler(event, func(content string, err error) {
+					if err == io.EOF {
+						return
+					}
+
+					pbMsg := &v1.Message{
+						// Role: role, // Role might not be available in every chunk or might be redundant
+						Content: content,
+					}
+					out <- pbMsg
+				})
+			}
+		}
+	}()
+
+	return out, nil
 }

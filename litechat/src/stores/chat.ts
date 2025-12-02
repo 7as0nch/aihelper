@@ -134,8 +134,8 @@ export const useChatStore = defineStore('chat', () => {
             quoteId: quote?.quoteId,
             quoteContent: quote?.quoteContent,
             aiModel: {
-                id: 'gpt-4', // Default mock model
-                modelName: 'GPT-4',
+                id: 'deepseek', // Default mock model
+                modelName: 'deepseek',
                 thinkingMode: thinkingMode.value,
             }
         };

@@ -3,11 +3,13 @@ syntax = "proto3";
 package chat.v1;
 
 import "google/api/annotations.proto";
-
+import "google/protobuf/empty.proto";
 option go_package = "backend/api/chat/v1;v1";
 option java_multiple_files = true;
 option java_package = "dev.kratos.api.chat.v1";
 option java_outer_classname = "ChatProtoV1";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
 // import "openapi/v3/annotations.proto";
 
 // option (openapi.v3.document) = {
@@ -26,25 +28,52 @@ option java_outer_classname = "ChatProtoV1";
 
 // The chat service definition.
 service Chat {
-  // Send a chat message
-  rpc SendMessage (SendMessageRequest) returns (SendMessageReply) {
+
+  // History
+  rpc History (HistoryRequest) returns (HistoryReply) {
     option (google.api.http) = {
-      post: "/chat/msg"
-      body: "*"
+      get: "/chat/history"
+    };
+    option (openapiv2.operation) = {
+      summary: "获取聊天会话记录"
     };
   }
 
-  // Get chat messages
-  rpc GetMessages (GetMessagesRequest) returns (GetMessagesReply) {
+  // history by id 
+  rpc HistoryById (HistoryRequest) returns (MessagesReply) {
     option (google.api.http) = {
-      get: "/v1/chat/messages"
+      get: "/chat/history/{session_id}"
+    };
+    option (openapiv2.operation) = {
+      summary: "根据会话ID获取聊天记录"
+    };
+  }
+
+  // history rename by id 
+  rpc HistoryRenameById (HistoryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/chat/history/{session_id}"
+      body: "*"
+    };
+    option (openapiv2.operation) = {  
+      summary: "根据会话ID重命名聊天记录"
+    };
+  }
+
+  // delete history by id 
+  rpc HistoryDeleteById (HistoryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/chat/history/{session_id}"
+    };
+    option (openapiv2.operation) = {  
+      summary: "根据会话ID删除聊天记录"
     };
   }
 
 
 
   // Stream chat messages for real-time communication
-  rpc StreamMessages (StreamMessagesRequest) returns (stream StreamMessagesReply) {
+  rpc SendStream (SendStreamRequest) returns (stream SendStreamReply) {
     option (google.api.http) = {
       post: "/chat/send"
       body: "*"
@@ -52,85 +81,120 @@ service Chat {
   }
 }
 
-
-// Request for sending a message
-message SendMessageRequest {
-  // // 用户输入的内容
-  // string content = 1;
-  // // 用户唯一标识符
-  // string user_id = 2;
-  // // 会话唯一标识符
-  // string session_id = 3;
-  // 最大生成令牌数
-  int32 max_tokens = 4;
-  // 使用的AI模型名称
-  string model = 5;
-  // 控制生成文本随机性的参数，值越高结果越随机
-  float temperature = 6;
-  // 控制生成文本多样性的参数，0-1之间
-  float top_p = 7;
-  // 存在惩罚因子，防止重复话题
-  float presence_penalty = 8;
-  // 频率惩罚因子，防止重复词汇
-  float frequency_penalty = 9;
-  // 聊天历史记录消息列表
-  repeated Message messages = 10;
-  // 是否启用流式响应
-  bool stream = 11;
-  // 密钥标识符
-  string kid = 12;
-  // 应用程序标识符
-  string app_id = 13;
-  // 是否包含附件
-  bool has_attachment = 14;
-  // 是否自动选择模型
-  bool auto_select_model = 15;
+// export interface Attachment {
+//     id: string;
+//     type: 'image' | 'file';
+//     name: string;
+//     url?: string;
+// }
+message Attachment {
+    string id = 1;
+    string type = 2; // 'image' | 'file'
+    string name = 3;
+    string url = 4;
 }
 
-// Message structure for chat history
+// export interface AIModel {
+//     id: string;
+//     modelName: string;
+//     thinkingMode: 'smart' | 'deep' | 'quick'; // 思考类型，深度思考，快速思考，智能思考。
+// }
+message AIModel {
+    int64 id = 1;
+    string modelName = 2;
+    string thinkingMode = 3; // 'smart' | 'deep' | 'quick'
+}
+
+// export interface CallingTool {
+//     name: string;
+//     description: string;
+//     functionName: string;
+// }
+message CallingTool {
+    string name = 1;
+    string description = 2;
+    string functionName = 3;
+}
+
+// export interface QuoteSearchLink {
+//     url: string;
+//     title: string;
+//     content: string;
+//     highlight: string[];
+// }
+message QuoteSearchLink {
+    string url = 1;
+    string title = 2;
+    string content = 3;
+    repeated string highlight = 4;
+}
+
+// export interface Message {
+//     id: string;
+//     role: 'user' | 'assistant' | 'human'; // 用户，ai，人工客服
+//     aiModel?: AIModel; // 选择的AI模型。
+//     content: string;
+//     reasoning_content?: string; // 深度思考内容。
+//     timestamp: number; // 消息发送时间。
+//     quoteId?: string; // 引用消息ID。
+//     quoteContent?: string; // 引用消息内容。
+//     quoteSearchLinks?: QuoteSearchLink[]; // 联网搜索引用文章链接和内容。
+//     tokenUsage?: { // token消耗累计。
+//         currentTokens: number; // 当前消耗
+//         totalTokens: number; // 累计消耗
+//     };
+//     callingTools?: CallingTool[]; // agent工具调用情况。
+//     attachments?: Attachment[]; // 生成或者发送的附件/图片。
+// }
 message Message {
-  // 消息发送者角色 ("system", "user", "assistant")
-  string role = 1;
-  // 消息内容
-  string content = 2;
+    int64 id = 1;
+    string role = 2; // 'user' | 'assistant' | 'human'
+    AIModel aiModel = 3; // 选择的AI模型。
+    string content = 4;
+    string reasoning_content = 5; // 深度思考内容。
+    int64 timestamp = 6; // 消息发送时间。
+    string quoteId = 7; // 引用消息ID。
+    string quoteContent = 8; // 引用消息内容。
+    repeated QuoteSearchLink quoteSearchLinks = 9; // 联网搜索引用文章链接和内容。
+    TokenUsage tokenUsage = 10; // token消耗累计。
+    repeated CallingTool callingTools = 11; // agent工具调用情况。
+    repeated Attachment attachments = 12; // 生成或者发送的附件/图片。
 }
 
-// Reply for sending a message
-message SendMessageReply {
-  string message_id = 1;
-  bool success = 2;
-  string error_message = 3;
+message TokenUsage {
+    int64 currentTokens = 1; // 当前消耗
+    int64 totalTokens = 2; // 累计消耗
 }
 
-// Request for getting messages
-message GetMessagesRequest {
-  string session_id = 1;
-  int32 page = 2;
-  int32 page_size = 3;
+
+
+// history
+message HistoryRequest {
+  int64 session_id = 1;
+  string name = 2;
+  int32 page = 3;
+  int32 page_size = 4;
 }
 
-// Reply for getting messages
-message GetMessagesReply {
-  repeated ChatMessage messages = 1;
+// Reply for history
+message HistoryReply {
+  repeated string messages = 1;
   int32 total = 2;
 }
 
-// Request for streaming messages
-message StreamMessagesRequest {
-  string session_id = 1;
+message MessagesReply {
+  repeated Message messages = 1;
+  int32 total = 2;
 }
 
-// Reply for streaming messages
-message StreamMessagesReply {
-  ChatMessage message = 1;
-}
 
-// Chat message structure
-message ChatMessage {
-  string id = 1;
-  string content = 2;
-  string user_id = 3;
-  string session_id = 4;
-  string timestamp = 5;
-  string type = 6; // e.g., "user", "assistant"
+
+// Request for sending a message
+message SendStreamRequest {
+  Message message = 1;
+  repeated Message history = 2;
+  string needTODOPlan = 3; // 是否需要生成待办计划。 'smart' | 'need' | 'no'
+}
+message SendStreamReply {
+  Message message = 1;
 }
