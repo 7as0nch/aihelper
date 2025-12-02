@@ -139,7 +139,7 @@ func Event(event *adk.AgentEvent) {
 }
 
 
-func EventHandler(event *adk.AgentEvent, handlerFn func(content string, err error)) {
+func EventHandler(event *adk.AgentEvent, handlerFn func(thinking, content string, err error)) {
 	fmt.Printf("name: %s\npath: %s", event.AgentName, event.RunPath)
 	if event.Output != nil && event.Output.MessageOutput != nil {
 		if m := event.Output.MessageOutput.Message; m != nil {
@@ -165,11 +165,11 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(content string, err erro
 				chunk, err := s.Recv()
 				if err != nil {
 					if err == io.EOF {
-						handlerFn("", err)
+						handlerFn("", "", err)
 						break
 					}
 					fmt.Printf("error: %v", err)
-					handlerFn(err.Error(), err)
+					handlerFn("", "", err)
 					return
 				}
 				if chunk.ReasoningContent != "" {
@@ -190,7 +190,7 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(content string, err erro
 						charNumOfOneRow = 0
 					}
 					fmt.Printf("%v", chunk.ReasoningContent)
-					handlerFn(chunk.ReasoningContent, nil)
+					handlerFn(chunk.ReasoningContent, "", nil)
 				}
 				if chunk.Content != "" {
 					if !contentStart {
@@ -210,7 +210,7 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(content string, err erro
 						charNumOfOneRow = 0
 					}
 					fmt.Printf("%v", chunk.Content)
-					handlerFn(chunk.Content, nil)
+					handlerFn("", chunk.Content, nil)
 				}
 
 				if len(chunk.ToolCalls) > 0 {

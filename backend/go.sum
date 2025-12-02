@@ -126,8 +126,6 @@ github.com/cloudwego/eino-ext/callbacks/cozeloop v0.1.6 h1:gS4nAOpQQC5WItt1k32yj
 github.com/cloudwego/eino-ext/callbacks/cozeloop v0.1.6/go.mod h1:ZniRkgN+9FUFxtN60X7yzD6UOruqrKQusjrOiGcH4I8=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.45 h1:LWvSHJVlvS1S/IxN9XUKNw/MI0I7YPePt3LMNxyCrZ0=
 github.com/cloudwego/eino-ext/components/model/ark v0.1.45/go.mod h1:e8P5dGVI/JMQ1FYNgmu5EFRWA8fivBc6NwNJ9g8FBK8=
-github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20251117090452-bd6375a0b3cf h1:JA2W09VU+9zG9qRXheARRbi31cH+xHVzSJ/kFMxZvlo=
-github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20251117090452-bd6375a0b3cf/go.mod h1:3AlAYkxwlOAP0SnFj7Yu1Lsgp8XHpbSMaE3l0+vDHKQ=
 github.com/cloudwego/eino-ext/components/model/deepseek v0.1.0 h1:LutIVpQaqXaXNhn3RkSB0dWyBldQ0oxq2pecyW4jqyU=
 github.com/cloudwego/eino-ext/components/model/deepseek v0.1.0/go.mod h1:vw0nNT4ihlVwR8EuyZQZEbKaxXY/86v7LIwyeoyO6R0=
 github.com/cloudwego/eino-ext/components/model/openai v0.1.5 h1:+yvGbTPw93li9GSmdm6Rix88Yy8AXg5NNBcRbWx3CQU=
@@ -251,8 +249,8 @@ github.com/gogo/protobuf v1.3.2/go.mod h1:P1XiOD3dCwIKUDQYPy72D8LYyHL2YPYrpS2s69
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang-jwt/jwt/v4 v4.0.0/go.mod h1:/xlHOz8bRuivTWchD4jCa+NbatV+wEUSzwAxVc6locg=
-github.com/golang-jwt/jwt/v4 v4.4.1 h1:pC5DB52sCeK48Wlb9oPcdhnjkz1TKt1D/P7WKJ0kUcQ=
-github.com/golang-jwt/jwt/v4 v4.4.1/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w39/MY0Ch0=
+github.com/golang-jwt/jwt/v4 v4.5.2 h1:YtQM7lnr8iZ+j5q71MGKkNw9Mn7AjHM68uc9g5fXeUI=
+github.com/golang-jwt/jwt/v4 v4.5.2/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w39/MY0Ch0=
 github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 h1:au07oEsX2xN0ktxqI+Sida1w446QrXBRJ0nee3SNZlA=
 github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9/go.mod h1:8vg3r2VgvsThLBIFL93Qb5yWzgyZWhEmBwUJWevAkK0=
 github.com/golang-sql/sqlexp v0.1.0 h1:ZCD6MBpcuOVfGVqsEmY5/4FtYiKz6tSyUv9LPEDei6A=

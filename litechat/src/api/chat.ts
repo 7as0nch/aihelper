@@ -354,7 +354,7 @@ async function streamBackend(
     const baseURL = getConfig('VITE_BASE_URL', '/');
     // Remove trailing slash if present to avoid double slashes
     const cleanBaseURL = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
-
+    console.log('baseURL', cleanBaseURL);
     const response = await fetch(`${cleanBaseURL}/chat/send`, {
         method: 'POST',
         headers: {
@@ -459,7 +459,7 @@ export async function sendMessageStream(
 
     if (aiType === 'demo') {
         await streamDemo(onChunk, signal);
-    } else if (aiType === 'frontend') {
+    } else if (aiType === '-') {
         // Pure Frontend Mode (Direct OpenAI)
         // Use the Provider Factory to select the correct provider based on model
         const provider = createChatProvider();

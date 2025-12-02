@@ -89,8 +89,8 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 
 	for msg := range stream {
 		// Escape newlines for SSE data
-		msg.Content = strings.ReplaceAll(msg.Content, "\n", "\\n")
-		msg.ReasoningContent = strings.ReplaceAll(msg.ReasoningContent, "\n", "\\n")
+		// msg.Content = strings.ReplaceAll(msg.Content, "\n", "\\n")
+		// msg.ReasoningContent = strings.ReplaceAll(msg.ReasoningContent, "\n", "\\n")
 		jsonMsg, err := json.Marshal(msg)
 		if err != nil {
 			s.log.Error("Marshal message error:", zap.Error(err))

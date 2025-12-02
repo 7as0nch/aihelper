@@ -17,7 +17,7 @@ require (
 	github.com/coze-dev/cozeloop-go v0.1.11
 	github.com/go-kratos/kratos/v2 v2.8.0
 	github.com/go-kratos/swagger-api v1.0.1
-	github.com/golang-jwt/jwt/v4 v4.4.1
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/wire v0.6.0
 	github.com/googollee/go-socket.io v1.7.0
 	github.com/kaptinlin/jsonrepair v0.2.4
@@ -102,7 +102,7 @@ require (
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
