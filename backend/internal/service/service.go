@@ -16,6 +16,5 @@ var ProviderSet = wire.NewSet(
 	base.NewAuthService,
 	base.NewSystemService,
 	base.NewTrackerService,
-	NewUserFeedbackService,
 	NewChatService,
 )

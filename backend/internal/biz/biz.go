@@ -15,7 +15,6 @@ import (
 var ProviderSet = wire.NewSet(
 	base.NewSysUserUseCase,
 	base.NewSysMenuUseCase,
-	NewUserFeedbackUsecase,
 	base.NewDictTypeUseCase,
 	base.NewDictDataUseCase,
 	base.NewTrackerUseCase)

@@ -6,7 +6,6 @@ import (
 
 	basepb "github.com/example/aichat/backend/api/base"
 	chatv1 "github.com/example/aichat/backend/api/chat/v1"
-	userfeedbackv1 "github.com/example/aichat/backend/api/userfeedback/v1"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/service"
 	"github.com/example/aichat/backend/internal/service/base"
@@ -28,7 +27,6 @@ import (
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server,
-	userFeedback *service.UserFeedbackService,
 	chat *service.ChatService,
 	authServ *base.AuthService,
 	authRepo auth.AuthRepo,
@@ -99,7 +97,6 @@ func NewHTTPServer(c *conf.Server,
 			return kratoshttp.DefaultRequestDecoder(r, v)
 		}))
 	srv := kratoshttp.NewServer(opts...)
-	userfeedbackv1.RegisterUserFeedbackHTTPServer(srv, userFeedback)
 	chatv1.RegisterChatHTTPServer(srv, chat)
 	basepb.RegisterAuthHTTPServer(srv, authServ)
 	basepb.RegisterSystemHTTPServer(srv, system)

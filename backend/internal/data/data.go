@@ -17,7 +17,7 @@ var ProviderSet = wire.NewSet(
 	NewSysUserRepo,
 	NewSysMenuRepo,
 	auth.NewAuthRepo,
-	NewData, NewUserFeedbackRepo,
+	NewData,
 	NewDictTypeRepo,
 	NewDictDataRepo,
 	NewTrackerRepo)
