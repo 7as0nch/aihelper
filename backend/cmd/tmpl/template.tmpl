@@ -3,40 +3,35 @@ package {{.Package}}
 import (
     "context"
     "github.com/go-kratos/kratos/v2/log"
-    "gorm.io/gorm"
-    "phm/internal/biz"
+    "github.com/example/aichat/backend/internal/biz/base"
     "{{.ModelPath}}"
-    "phm/models/generator/query"
+    "github.com/example/aichat/backend/models/generator/query"
 )
 
 type {{.RepoName}}Repo struct {
-	Db  biz.DataRepo
+	db  DataRepo
+	query *query.Query
 	log *log.Helper
 }
 
-func New{{.ModelName}}Repo(data biz.DataRepo, logger log.Logger) biz.{{.ModelName}}Repo {
-	return &{{.RepoName}}Repo{Db: data, log: log.NewHelper(logger)}
+func New{{.ModelName}}Repo(data DataRepo, logger log.Logger) base.{{.ModelName}}Repo {
+	return &{{.RepoName}}Repo{
+		db: data, 
+		query: query.Use(data.GetDB()),
+		log: log.NewHelper(logger),
+	}
 }
 
-func (u *{{.RepoName}}Repo) Create{{.ModelName}}(ctx context.Context, uModel *model.{{.ModelName}}, db *gorm.DB) error {
-	var s = db
-	if db == nil {
-		s = u.Db.GetDB()
-	}
-	opt := query.Use(s).{{.ModelName}}
-	err := opt.WithContext(ctx).Create(uModel)
+func (u *{{.RepoName}}Repo) Create(ctx context.Context, uModel *model.{{.ModelName}}) error {
+	err := u.query.{{.ModelName}}.WithContext(ctx).Create(uModel)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *{{.RepoName}}Repo) Update{{.ModelName}}(ctx context.Context, uModel *model.{{.ModelName}}, db *gorm.DB) error {
-	var s = db
-	if db == nil {
-		s = u.Db.GetDB()
-	}
-	opt := query.Use(s).{{.ModelName}}
+func (u *{{.RepoName}}Repo) Update(ctx context.Context, uModel *model.{{.ModelName}}) error {
+	opt := u.query.{{.ModelName}}
 	info, err := opt.WithContext(ctx).Where(opt.ID.Eq(uModel.ID)).Updates(uModel)
 	u.log.Info(info)
 	if err != nil {
@@ -46,13 +41,9 @@ func (u *{{.RepoName}}Repo) Update{{.ModelName}}(ctx context.Context, uModel *mo
 	return nil
 }
 
-func (u *{{.RepoName}}Repo) Delete{{.ModelName}}ByIds(ctx context.Context, ids []string, db *gorm.DB) error {
-	var s = db
-	if db == nil {
-		s = u.Db.GetDB()
-	}
-	role := query.Use(s).{{.ModelName}}
-	info, err := role.WithContext(ctx).Where(role.ID.In(ids...)).Delete()
+func (u *{{.RepoName}}Repo) DeleteByIds(ctx context.Context, ids []int64) error {
+	opt := u.query.{{.ModelName}}
+	info, err := opt.WithContext(ctx).Where(opt.ID.In(ids...)).Delete()
 	u.log.Info(info)
 	if err != nil {
 		u.log.Errorf("删除错误：%v", ids)
@@ -61,45 +52,43 @@ func (u *{{.RepoName}}Repo) Delete{{.ModelName}}ByIds(ctx context.Context, ids [
 	return nil
 }
 
-func (u *{{.RepoName}}Repo) Get{{.ModelName}}ById(ctx context.Context, id string) (*model.{{.ModelName}}, error) {
-	s := u.Db.GetDB()
-	opt := query.Use(s).{{.ModelName}}
-	user, err := opt.WithContext(ctx).Where(opt.IsSoftDelete.Eq(0), opt.ID.Eq(id)).First()
+func (u *{{.RepoName}}Repo) GetById(ctx context.Context, id int64) (*model.{{.ModelName}}, error) {
+	opt := u.query.{{.ModelName}}
+	res, err := opt.WithContext(ctx).Where(opt.ID.Eq(id)).First()
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return res, nil
 }
 
-func (u *{{.RepoName}}Repo) Get{{.ModelName}}ByIds(ctx context.Context, ids []string) ([]*model.{{.ModelName}}, error) {
-	s := u.Db.GetDB()
-	opt := query.Use(s).{{.ModelName}}
-	users, err := opt.WithContext(ctx).Where(opt.IsSoftDelete.Eq(0), opt.ID.In(ids...)).Find()
+func (u *{{.RepoName}}Repo) GetByIds(ctx context.Context, ids []int64) ([]*model.{{.ModelName}}, error) {
+	opt := u.query.{{.ModelName}}
+	res, err := opt.WithContext(ctx).Where(opt.ID.In(ids...)).Find()
 	if err != nil {
 		return nil, err
 	}
-	return users, nil
+	return res, nil
 }
 
-func (u *{{.RepoName}}Repo) Get{{.ModelName}}List(ctx context.Context, queryParam string, pageNum, pageSize int64) ([]*model.{{.ModelName}}, int64, error) {
-	s := u.Db.GetDB()
-	opt := query.Use(s).{{.ModelName}}
-	if pageNum == 0 && pageSize == 0 {
-		radars, err := opt.WithContext(ctx).Where(opt.IsSoftDelete.Eq(0)).Find()
+func (u *{{.RepoName}}Repo) PageList(ctx context.Context, param base.{{.ModelName}}PageParams) ([]*model.{{.ModelName}}, int64, error) {
+	opt := u.query.{{.ModelName}}
+	
+	q := opt.WithContext(ctx)
+	// if param.Query != "" {
+	// 	q = q.Where(opt.Name.Like("%" + param.Query + "%"))
+	// }
+
+	if param.PageNum == 0 && param.PageSize == 0 {
+		list, err := q.Find()
 		if err != nil {
 			return nil, 0, err
 		}
-		return radars, 0, nil
+		return list, 0, nil
 	}
-	list, err := opt.WithContext(ctx).Where(opt.IsSoftDelete.Eq(0)).Limit(int(pageSize)).Offset(int((pageNum - 1) * pageSize)).Find()
+	
+	list, count, err := q.FindByPage(int(param.PageNum-1)*int(param.PageSize), int(param.PageSize))
 	if err != nil {
 		return nil, 0, err
 	}
-	// 计算总数
-	count, _ := opt.WithContext(ctx).Count()
 	return list, count, nil
-}
-
-func (u *{{.RepoName}}Repo) GetDB() *gorm.DB {
-	return u.Db.GetDB()
 }

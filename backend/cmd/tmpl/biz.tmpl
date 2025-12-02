@@ -1,21 +1,24 @@
-package biz
+package base
 
 import (
     "context"
     "github.com/go-kratos/kratos/v2/log"
-    "gorm.io/gorm"
     "{{.ModelPath}}"
 )
 
+type {{.ModelName}}PageParams struct {
+	PageNum  int `form:"page_num"`
+	PageSize int `form:"page_size"`
+	Query    string `form:"query"`
+}
+
 type {{.ModelName}}Repo interface {
-	Create{{.ModelName}}(ctx context.Context, uModel *model.{{.ModelName}}, db *gorm.DB) error
-	Update{{.ModelName}}(ctx context.Context, uModel *model.{{.ModelName}}, db *gorm.DB) error
-	Delete{{.ModelName}}ByIds(ctx context.Context, ids []string, db *gorm.DB) error
-	Get{{.ModelName}}ById(ctx context.Context, id string) (*model.{{.ModelName}}, error)
-	Get{{.ModelName}}ByIds(ctx context.Context, ids []string) ([]*model.{{.ModelName}}, error)
-	Get{{.ModelName}}List(ctx context.Context, query string, pageNum, pageSize int64) ([]*model.{{.ModelName}}, int64, error)
-	// GetDB 得到db以方便事务处理
-	GetDB() *gorm.DB
+	Create(ctx context.Context, uModel *model.{{.ModelName}}) error
+	Update(ctx context.Context, uModel *model.{{.ModelName}}) error
+	DeleteByIds(ctx context.Context, ids []int64) error
+	GetById(ctx context.Context, id int64) (*model.{{.ModelName}}, error)
+	GetByIds(ctx context.Context, ids []int64) ([]*model.{{.ModelName}}, error)
+	PageList(ctx context.Context, param {{.ModelName}}PageParams) ([]*model.{{.ModelName}}, int64, error)
 }
 
 type {{.ModelName}}UseCase struct{
