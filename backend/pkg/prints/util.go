@@ -140,20 +140,20 @@ func Event(event *adk.AgentEvent) {
 
 
 func EventHandler(event *adk.AgentEvent, handlerFn func(thinking, content string, err error)) {
-	fmt.Printf("name: %s\npath: %s", event.AgentName, event.RunPath)
+	log.Printf("name: %s\npath: %s", event.AgentName, event.RunPath)
 	if event.Output != nil && event.Output.MessageOutput != nil {
 		if m := event.Output.MessageOutput.Message; m != nil {
 			if len(m.Content) > 0 {
 				if m.Role == schema.Tool {
-					fmt.Printf("\ntool response: %s", m.Content)
+					log.Printf("\ntool response: %s", m.Content)
 				} else {
-					fmt.Printf("\nanswer: %s", m.Content)
+					log.Printf("\nanswer: %s", m.Content)
 				}
 			}
 			if len(m.ToolCalls) > 0 {
 				for _, tc := range m.ToolCalls {
-					fmt.Printf("\ntool name: %s", tc.Function.Name)
-					fmt.Printf("\narguments: %s", tc.Function.Arguments)
+					log.Printf("\ntool name: %s", tc.Function.Name)
+					log.Printf("\narguments: %s", tc.Function.Arguments)
 				}
 			}
 		} else if s := event.Output.MessageOutput.MessageStream; s != nil {
@@ -168,7 +168,7 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(thinking, content string
 						handlerFn("", "", err)
 						break
 					}
-					fmt.Printf("error: %v", err)
+					log.Printf("error: %v", err)
 					handlerFn("", "", err)
 					return
 				}
@@ -176,9 +176,9 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(thinking, content string
 					if !thinkingStart {
 						thinkingStart = true
 						if chunk.Role == schema.Tool {
-							fmt.Printf("\ntool response: ")
+							log.Printf("\ntool response: ")
 						} else {
-							fmt.Printf("\nThinking: ")
+							log.Printf("\nThinking: ")
 						}
 					}
 
@@ -186,19 +186,19 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(thinking, content string
 					if strings.Contains(chunk.ReasoningContent, "\n") {
 						charNumOfOneRow = 0
 					} else if charNumOfOneRow >= maxCharNumOfOneRow {
-						fmt.Printf("\n")
+						log.Printf("\n")
 						charNumOfOneRow = 0
 					}
-					fmt.Printf("%v", chunk.ReasoningContent)
+					log.Printf("%v", chunk.ReasoningContent)
 					handlerFn(chunk.ReasoningContent, "", nil)
 				}
 				if chunk.Content != "" {
 					if !contentStart {
 						contentStart = true
 						if chunk.Role == schema.Tool {
-							fmt.Printf("\ntool response: ")
+							log.Printf("\ntool response: ")
 						} else {
-							fmt.Printf("\nanswer: ")
+							log.Printf("\nanswer: ")
 						}
 					}
 
@@ -206,10 +206,10 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(thinking, content string
 					if strings.Contains(chunk.Content, "\n") {
 						charNumOfOneRow = 0
 					} else if charNumOfOneRow >= maxCharNumOfOneRow {
-						fmt.Printf("\n")
+						log.Printf("\n")
 						charNumOfOneRow = 0
 					}
-					fmt.Printf("%v", chunk.Content)
+					log.Printf("%v", chunk.Content)
 					handlerFn("", chunk.Content, nil)
 				}
 
@@ -243,8 +243,8 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(thinking, content string
 					log.Fatalf("ConcatMessage failed: %v", err)
 					return
 				}
-				fmt.Printf("\ntool name: %s", m.ToolCalls[0].Function.Name)
-				fmt.Printf("\narguments: %s", m.ToolCalls[0].Function.Arguments)
+				log.Printf("\ntool name: %s", m.ToolCalls[0].Function.Name)
+				log.Printf("\narguments: %s", m.ToolCalls[0].Function.Arguments)
 			}
 		}
 	}
@@ -254,14 +254,14 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(thinking, content string
 		}
 		if event.Action.Interrupted != nil {
 			ii, _ := json.MarshalIndent(event.Action.Interrupted.Data, "  ", "  ")
-			fmt.Printf("\naction: interrupted")
-			fmt.Printf("\ninterrupt snapshot: %v", string(ii))
+			log.Println("action: interrupted")
+			log.Printf("interrupt snapshot: %v\n",  string(ii))
 		}
-		if event.Action.Exit {
-			fmt.Printf("\naction: exit")
-		}
+		// if event.Action.Exit {
+		// 	fmt.Printf("\naction: exit")
+		// }
 	}
 	if event.Err != nil {
-		fmt.Printf("\nerror: %v", event.Err)
+		handlerFn("", "", event.Err)
 	}
 }

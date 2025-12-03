@@ -48,6 +48,7 @@ func (uc *ChatUsecase) GetSessionMessages(ctx context.Context, sessionId int64) 
 }
 
 func (uc *ChatUsecase) SaveMessage(ctx context.Context, msg *model.AIChatMessage) (*model.AIChatMessage, error) {
+	msg.New()
 	return uc.repo.CreateMessage(ctx, msg)
 }
 

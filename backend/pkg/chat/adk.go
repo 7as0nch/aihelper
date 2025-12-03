@@ -168,9 +168,7 @@ func (a *AdkAgent) Stream(ctx context.Context, req *v1.SendStreamRequest) (<-cha
 	})
 
 	adkMessages := make([]adk.Message, len(messages))
-	for i, m := range messages {
-		adkMessages[i] = m
-	}
+	copy(adkMessages, messages)
 
 	iter := runner.Run(ctx, adkMessages)
 

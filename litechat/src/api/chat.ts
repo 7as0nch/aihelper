@@ -31,7 +31,7 @@ export interface Message {
     role: 'user' | 'assistant' | 'human'; // 用户，ai，人工客服
     aiModel?: AIModel; // 选择的AI模型。
     content: string;
-    reasoning_content?: string; // 深度思考内容。
+    reasoningContent?: string; // 深度思考内容。
     timestamp: number;
 
     quoteId?: string;
@@ -70,6 +70,11 @@ export interface Session {
 
 export interface HistoryListReply {
     sessions: Session[];
+    total: number;
+}
+
+export interface MessageListReply {
+    messages: Message[];
     total: number;
 }
 
@@ -291,7 +296,8 @@ async function fetchData(url) {
             return saved ? JSON.parse(saved) : [];
         }
         // Backend mode: Call API
-        return request<Message[]>({ url: `/chat/history/${id}`, method: 'get' });
+        const resp = await request<MessageListReply>({ url: `/chat/history/${id}`, method: 'get' });
+        return resp.messages;
     },
 
     async deleteChat(id: string): Promise<void> {
@@ -369,7 +375,7 @@ import { getToken } from '@/utils/cookie';
 
 async function streamBackend(
     data: SendMessageParams,
-    onChunk: (data: { content?: string; reasoning_content?: string }) => void,
+    onChunk: (data: { content?: string; reasoningContent?: string }) => void,
     signal?: AbortSignal
 ) {
     const baseURL = getConfig('VITE_BASE_URL', '/');
@@ -427,7 +433,7 @@ async function streamBackend(
                             const json = JSON.parse(dataStr);
                             onChunk({
                                 content: json.content,
-                                reasoning_content: json.reasoning_content
+                                reasoningContent: json.reasoningContent
                             });
                         } else {
                             onChunk({ content: dataStr });
@@ -444,21 +450,21 @@ async function streamBackend(
 }
 
 async function streamDemo(
-    onChunk: (data: { content?: string; reasoning_content?: string }) => void,
+    onChunk: (data: { content?: string; reasoningContent?: string }) => void,
     signal?: AbortSignal
 ) {
     const mockResponse = "This is a mock response from Demo Mode. I am simulating a streaming response.";
     const mockReasoning = "I am thinking about how to simulate this response...";
 
     // Simulate reasoning first
-    onChunk({ reasoning_content: "" });
+    onChunk({ reasoningContent: "" });
     const reasoningChars = mockReasoning.split('');
     for (const char of reasoningChars) {
         if (signal?.aborted) return;
         await new Promise(resolve => setTimeout(resolve, 50));
-        onChunk({ reasoning_content: char });
+        onChunk({ reasoningContent: char });
     }
-    onChunk({ reasoning_content: "\n" }); // End reasoning
+    onChunk({ reasoningContent: "\n" }); // End reasoning
 
     // Simulate content
     const chars = mockResponse.split('');
@@ -473,7 +479,7 @@ import { createChatProvider } from './providers/factory';
 
 export async function sendMessageStream(
     data: SendMessageParams,
-    onChunk: (data: { content?: string; reasoning_content?: string }) => void,
+    onChunk: (data: { content?: string; reasoningContent?: string }) => void,
     signal?: AbortSignal
 ): Promise<void> {
     const aiType = getConfig('VITE_AI_TYPE');

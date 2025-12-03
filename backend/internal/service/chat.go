@@ -140,14 +140,6 @@ func (s *ChatService) CreateSession(ctx context.Context, req *pb.CreateSessionRe
 	if err != nil {
 		return nil, err
 	}
-	for _, m := range req.Messages {
-		msg := s.uc.NewMessage(session.ID, model.RoleType(m.Role), m.Content)
-		msg.New()
-		_, err := s.uc.SaveMessage(ctx, msg)
-		if err != nil {
-			return nil, err
-		}
-	}
 	return &pb.HistorySession{
 		Id:         session.ID,
 		Title:      session.Title,
@@ -203,33 +195,27 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	userId := auth.GetUserId(ctx)
-
-	var sessionID int64
-	// I'll read `Session-Id` from header.
-	sessionIDStr := r.Header.Get("X-Session-Id")
-	if sessionIDStr != "" {
-		fmt.Sscanf(sessionIDStr, "%d", &sessionID)
-	}
-
+	var sessionID int64 = req.CurSessionID
 	// If sessionID is 0, create new session
 	if sessionID == 0 {
 		// Create new session
-		title := "New Chat"
-		if len(req.CurMessage.Content) > 0 {
-			runes := []rune(req.CurMessage.Content)
-			if len(runes) > 20 {
-				title = string(runes[:20])
-			} else {
-				title = string(runes)
-			}
-		}
-		session, err := s.uc.CreateSession(ctx, userId, title)
-		if err != nil {
-			s.log.Error("Create session error:", zap.Error(err))
-			return
-		}
-		sessionID = session.ID
+		// title := "New Chat"
+		// if len(req.CurMessage.Content) > 0 {
+		// 	runes := []rune(req.CurMessage.Content)
+		// 	if len(runes) > 20 {
+		// 		title = string(runes[:20]) + "..."
+		// 	} else {
+		// 		title = string(runes)
+		// 	}
+		// }
+		// session, err := s.uc.CreateSession(ctx, userId, title)
+		// if err != nil {
+		// 	s.log.Error("Create session error:", zap.Error(err))
+		// 	return
+		// }
+		// sessionID = session.ID
+		s.log.Error("Session ID is required for SSE chat")
+		return
 	}
 
 	// Save User Message
@@ -250,7 +236,7 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 
 	marshaler := protojson.MarshalOptions{
 		EmitUnpopulated: true,
-		UseProtoNames:   true,
+		UseProtoNames:   false,
 	}
 
 	// Accumulate AI response for saving

@@ -272,9 +272,9 @@ export const subModel= async (opt: subModelType)=>{
                  if(data=='[DONE]') opt.onMessage({text:'',isFinish:true})
                  else {
                     try{
-                        // TODO 思考处理，DeepSeek  API 字段reasoning_content ，本地部署标签<think>
+                        // TODO 思考处理，DeepSeek  API 字段reasoningContent ，本地部署标签<think>
                         const obj= JSON.parse(data );
-                        opt.onMessage({text:obj.choices[0].delta?.content??obj.choices[0].delta?.reasoning_content??'' ,isFinish:obj.choices[0].finish_reason!=null })
+                        opt.onMessage({text:obj.choices[0].delta?.content??obj.choices[0].delta?.reasoningContent??'' ,isFinish:obj.choices[0].finish_reason!=null })
                     }catch{
                         opt.onMessage({
                             text: data,

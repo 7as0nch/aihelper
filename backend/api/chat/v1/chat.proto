@@ -174,7 +174,7 @@ message Message {
     string role = 2; // 'user' | 'assistant' | 'human'
     AIModel aiModel = 3; // 选择的AI模型。
     string content = 4;
-    string reasoning_content = 5; // 深度思考内容。
+    string reasoningContent = 5; // 深度思考内容。
     int64 timestamp = 6; // 消息发送时间。
     string quoteId = 7; // 引用消息ID。
     string quoteContent = 8; // 引用消息内容。

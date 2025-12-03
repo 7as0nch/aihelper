@@ -67,7 +67,7 @@ watch(() => store.messages[store.messages.length - 1]?.content, async () => {
 });
 
 // Also watch reasoning content
-watch(() => store.messages[store.messages.length - 1]?.reasoning_content, async () => {
+watch(() => store.messages[store.messages.length - 1]?.reasoningContent, async () => {
   if (!showScrollButton.value) {
      bottomRef.value?.scrollIntoView({ behavior: 'auto' });
   }

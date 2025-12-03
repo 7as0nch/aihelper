@@ -69,10 +69,14 @@ const isReasoningCollapsed = ref(false);
 
 // Auto-collapse reasoning when content starts generating
 watch(() => props.message.content, (newContent, oldContent) => {
-  if (newContent && !oldContent && props.message.reasoning_content) {
+  if (newContent && !oldContent && props.message.reasoningContent) {
     isReasoningCollapsed.value = true;
   }
 });
+
+if (!chatStore.isLoading) {
+  isReasoningCollapsed.value = true;
+}
 
 const emit = defineEmits<{
   (e: 'quote', messageId: string, content: string): void;
@@ -383,7 +387,7 @@ const handleFileClick = (file: Attachment) => {
         :style="message.role === 'user' ? { backgroundColor: '#3b82f6', color: '#ffffff' } : {}"
       >
         <!-- Reasoning Content -->
-        <div v-if="message.reasoning_content" class="mb-4">
+        <div v-if="message.reasoningContent" class="mb-4">
           <div 
             class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
@@ -402,7 +406,7 @@ const handleFileClick = (file: Attachment) => {
             
             <div v-show="!isReasoningCollapsed" class="px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
               <div class="prose dark:prose-invert max-w-none text-xs text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap font-mono">
-                {{ message.reasoning_content }}
+                {{ message.reasoningContent }}
               </div>
             </div>
           </div>

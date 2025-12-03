@@ -49,9 +49,20 @@ func (r *chatRepo) GetSession(ctx context.Context, id int64) (*model.AIChat, err
 func (r *chatRepo) ListSessions(ctx context.Context, userId int64, page int, pageSize int) ([]*model.AIChat, int64, error) {
 	q := query.Use(r.data.GetDB())
 	offset := (page - 1) * pageSize
-	chats, count, err := q.AIChat.WithContext(ctx).Where(q.AIChat.UserID.Eq(userId)).Order(q.AIChat.UpdatedAt.Desc()).FindByPage(offset, pageSize)
-	if err != nil {
-		return nil, 0, err
+	var chats []*model.AIChat
+	var count int64
+	var err error
+	if page > 0 && pageSize > 0 {
+		chats, count, err = q.AIChat.WithContext(ctx).Where(q.AIChat.CreatedBy.Eq(userId)).Order(q.AIChat.UpdatedAt.Desc()).FindByPage(offset, pageSize)
+		if err != nil {
+			return nil, 0, err
+		}
+	}else {
+		chats, err = q.AIChat.WithContext(ctx).Where(q.AIChat.CreatedBy.Eq(userId)).Order(q.AIChat.UpdatedAt.Desc()).Find()
+		if err != nil {
+			return nil, 0, err
+		}
+		count = int64(len(chats))
 	}
 	return chats, count, nil
 }

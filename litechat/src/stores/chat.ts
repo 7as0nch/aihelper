@@ -34,14 +34,14 @@ export const useChatStore = defineStore('chat', () => {
         messages.value.push(message);
     };
 
-    const updateLastMessage = (data: { content?: string; reasoning_content?: string }) => {
+    const updateLastMessage = (data: { content?: string; reasoningContent?: string }) => {
         const lastMsg = messages.value[messages.value.length - 1];
         if (lastMsg && lastMsg.role === 'assistant') {
             if (data.content) {
                 lastMsg.content += data.content;
             }
-            if (data.reasoning_content) {
-                lastMsg.reasoning_content = (lastMsg.reasoning_content || '') + data.reasoning_content;
+            if (data.reasoningContent) {
+                lastMsg.reasoningContent = (lastMsg.reasoningContent || '') + data.reasoningContent;
             }
 
             // Persist to LocalStorage in frontend mode

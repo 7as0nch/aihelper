@@ -5,7 +5,7 @@ import type { SendMessageParams } from '../chat';
 export class OpenAIProvider implements IChatProvider {
     async streamChat(
         params: SendMessageParams,
-        onChunk: (data: { content?: string; reasoning_content?: string }) => void,
+        onChunk: (data: { content?: string; reasoningContent?: string }) => void,
         signal?: AbortSignal
     ): Promise<void> {
         const apiKey = getConfig('VITE_OPENAI_API_KEY');
@@ -74,7 +74,7 @@ export class OpenAIProvider implements IChatProvider {
                         if (delta) {
                             onChunk({
                                 content: delta.content || undefined,
-                                reasoning_content: delta.reasoning_content || undefined
+                                reasoningContent: delta.reasoningContent || undefined
                             });
                         }
                     } catch (e) {
