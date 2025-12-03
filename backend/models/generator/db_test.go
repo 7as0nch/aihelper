@@ -54,6 +54,8 @@ func TestDb(t *testing.T) {
 		model.SysDict{},
 		model.SysDictType{},
 		model.SysTracker{},
+		model.AIChat{},
+		model.AIChatMessage{},
 	}
 	g.ApplyBasic(models...)
 	g.ApplyInterface(func(Querier) {}, models...)
@@ -72,7 +74,8 @@ func TestMigrate(t *testing.T) {
 	// gormdb.Migrator().AutoMigrate(&model.SysMenu{})
 	// var modelInterface ModelInterface = &model.SysMenu{}
 
-	err := gormdb.Migrator().AutoMigrate(&model.SysTracker{})
+	err := gormdb.Migrator().AutoMigrate(model.AIChat{},
+		model.AIChatMessage{})
 	if err != nil {
 		t.Logf("迁移失败: %v", err)
 		return

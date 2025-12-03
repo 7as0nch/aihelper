@@ -20,7 +20,8 @@ var ProviderSet = wire.NewSet(
 	NewData,
 	NewDictTypeRepo,
 	NewDictDataRepo,
-	NewTrackerRepo)
+	NewTrackerRepo,
+	NewChatRepo)
 
 type DataRepo interface {
 	GetDB() *gorm.DB

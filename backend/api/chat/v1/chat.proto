@@ -3,6 +3,7 @@ syntax = "proto3";
 package chat.v1;
 
 import "google/api/annotations.proto";
+// import "validate/validate.proto";
 import "google/protobuf/empty.proto";
 option go_package = "backend/api/chat/v1;v1";
 option java_multiple_files = true;
@@ -70,6 +71,28 @@ service Chat {
     };
   }
 
+  // Create a new chat session
+  rpc CreateSession (CreateSessionRequest) returns (HistorySession) {
+    option (google.api.http) = {
+      post: "/chat/session"
+      body: "*"
+    };
+    option (openapiv2.operation) = {
+      summary: "创建新会话"
+    };
+  }
+
+  // Create a new message in a session
+  rpc CreateMessage (CreateMessageRequest) returns (Message) {
+    option (google.api.http) = {
+      post: "/chat/message"
+      body: "*"
+    };
+    option (openapiv2.operation) = {
+      summary: "创建新消息"
+    };
+  }
+
 
 
   // Stream chat messages for real-time communication
@@ -100,7 +123,7 @@ message Attachment {
 //     thinkingMode: 'smart' | 'deep' | 'quick'; // 思考类型，深度思考，快速思考，智能思考。
 // }
 message AIModel {
-    int64 id = 1;
+    string id = 1;
     string modelName = 2;
     string thinkingMode = 3; // 'smart' | 'deep' | 'quick'
 }
@@ -159,6 +182,7 @@ message Message {
     TokenUsage tokenUsage = 10; // token消耗累计。
     repeated CallingTool callingTools = 11; // agent工具调用情况。
     repeated Attachment attachments = 12; // 生成或者发送的附件/图片。
+    bool isStreaming = 13; // 是否流式响应。
 }
 
 message TokenUsage {
@@ -176,9 +200,15 @@ message HistoryRequest {
   int32 page_size = 4;
 }
 
+message HistorySession {
+  int64 id = 1;
+  string title = 2;
+  int64 updateTime = 3;
+}
+
 // Reply for history
 message HistoryReply {
-  repeated string messages = 1;
+  repeated HistorySession sessions = 1;
   int32 total = 2;
 }
 
@@ -187,13 +217,25 @@ message MessagesReply {
   int32 total = 2;
 }
 
+message CreateSessionRequest {
+  string title = 1;
+  repeated Message messages = 2;
+}
+
+message CreateMessageRequest {
+  int64 session_id = 1;
+  string role = 2;
+  string content = 3;
+}
+
 
 
 // Request for sending a message
 message SendStreamRequest {
-  Message message = 1;
+  Message curMessage = 1;
   repeated Message history = 2;
   string needTODOPlan = 3; // 是否需要生成待办计划。 'smart' | 'need' | 'no'
+  int64 curSessionID = 4;
 }
 message SendStreamReply {
   Message message = 1;

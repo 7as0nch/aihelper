@@ -16,16 +16,20 @@ import (
 )
 
 var (
-	Q           = new(Query)
-	SysDict     *sysDict
-	SysDictType *sysDictType
-	SysMenu     *sysMenu
-	SysTracker  *sysTracker
-	SysUser     *sysUser
+	Q             = new(Query)
+	AIChat        *aIChat
+	AIChatMessage *aIChatMessage
+	SysDict       *sysDict
+	SysDictType   *sysDictType
+	SysMenu       *sysMenu
+	SysTracker    *sysTracker
+	SysUser       *sysUser
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	AIChat = &Q.AIChat
+	AIChatMessage = &Q.AIChatMessage
 	SysDict = &Q.SysDict
 	SysDictType = &Q.SysDictType
 	SysMenu = &Q.SysMenu
@@ -35,35 +39,41 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:          db,
-		SysDict:     newSysDict(db, opts...),
-		SysDictType: newSysDictType(db, opts...),
-		SysMenu:     newSysMenu(db, opts...),
-		SysTracker:  newSysTracker(db, opts...),
-		SysUser:     newSysUser(db, opts...),
+		db:            db,
+		AIChat:        newAIChat(db, opts...),
+		AIChatMessage: newAIChatMessage(db, opts...),
+		SysDict:       newSysDict(db, opts...),
+		SysDictType:   newSysDictType(db, opts...),
+		SysMenu:       newSysMenu(db, opts...),
+		SysTracker:    newSysTracker(db, opts...),
+		SysUser:       newSysUser(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	SysDict     sysDict
-	SysDictType sysDictType
-	SysMenu     sysMenu
-	SysTracker  sysTracker
-	SysUser     sysUser
+	AIChat        aIChat
+	AIChatMessage aIChatMessage
+	SysDict       sysDict
+	SysDictType   sysDictType
+	SysMenu       sysMenu
+	SysTracker    sysTracker
+	SysUser       sysUser
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:          db,
-		SysDict:     q.SysDict.clone(db),
-		SysDictType: q.SysDictType.clone(db),
-		SysMenu:     q.SysMenu.clone(db),
-		SysTracker:  q.SysTracker.clone(db),
-		SysUser:     q.SysUser.clone(db),
+		db:            db,
+		AIChat:        q.AIChat.clone(db),
+		AIChatMessage: q.AIChatMessage.clone(db),
+		SysDict:       q.SysDict.clone(db),
+		SysDictType:   q.SysDictType.clone(db),
+		SysMenu:       q.SysMenu.clone(db),
+		SysTracker:    q.SysTracker.clone(db),
+		SysUser:       q.SysUser.clone(db),
 	}
 }
 
@@ -77,30 +87,36 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:          db,
-		SysDict:     q.SysDict.replaceDB(db),
-		SysDictType: q.SysDictType.replaceDB(db),
-		SysMenu:     q.SysMenu.replaceDB(db),
-		SysTracker:  q.SysTracker.replaceDB(db),
-		SysUser:     q.SysUser.replaceDB(db),
+		db:            db,
+		AIChat:        q.AIChat.replaceDB(db),
+		AIChatMessage: q.AIChatMessage.replaceDB(db),
+		SysDict:       q.SysDict.replaceDB(db),
+		SysDictType:   q.SysDictType.replaceDB(db),
+		SysMenu:       q.SysMenu.replaceDB(db),
+		SysTracker:    q.SysTracker.replaceDB(db),
+		SysUser:       q.SysUser.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	SysDict     ISysDictDo
-	SysDictType ISysDictTypeDo
-	SysMenu     ISysMenuDo
-	SysTracker  ISysTrackerDo
-	SysUser     ISysUserDo
+	AIChat        IAIChatDo
+	AIChatMessage IAIChatMessageDo
+	SysDict       ISysDictDo
+	SysDictType   ISysDictTypeDo
+	SysMenu       ISysMenuDo
+	SysTracker    ISysTrackerDo
+	SysUser       ISysUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		SysDict:     q.SysDict.WithContext(ctx),
-		SysDictType: q.SysDictType.WithContext(ctx),
-		SysMenu:     q.SysMenu.WithContext(ctx),
-		SysTracker:  q.SysTracker.WithContext(ctx),
-		SysUser:     q.SysUser.WithContext(ctx),
+		AIChat:        q.AIChat.WithContext(ctx),
+		AIChatMessage: q.AIChatMessage.WithContext(ctx),
+		SysDict:       q.SysDict.WithContext(ctx),
+		SysDictType:   q.SysDictType.WithContext(ctx),
+		SysMenu:       q.SysMenu.WithContext(ctx),
+		SysTracker:    q.SysTracker.WithContext(ctx),
+		SysUser:       q.SysUser.WithContext(ctx),
 	}
 }
 

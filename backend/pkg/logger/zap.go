@@ -15,17 +15,18 @@ import (
 )
 
 var defaultConfig = zapcore.EncoderConfig{
-	MessageKey:     "message",
-	LevelKey:       "level",
-	TimeKey:        "time",
-	NameKey:        "logger",
-	CallerKey:      "caller",
-	StacktraceKey:  "stacktrace",
-	LineEnding:     zapcore.DefaultLineEnding,
-	EncodeLevel:    zapcore.LowercaseColorLevelEncoder,
-	EncodeTime:     CustomTimeEncoder,
-	EncodeDuration: zapcore.SecondsDurationEncoder,
-	EncodeCaller:   zapcore.FullCallerEncoder,
+	MessageKey:       "message",
+	LevelKey:         "level",
+	TimeKey:          "time",
+	NameKey:          "logger",
+	CallerKey:        "caller",
+	StacktraceKey:    "stacktrace",
+	LineEnding:       zapcore.DefaultLineEnding,
+	EncodeLevel:      zapcore.LowercaseColorLevelEncoder,
+	EncodeTime:       CustomTimeEncoder,
+	EncodeDuration:   zapcore.SecondsDurationEncoder,
+	EncodeCaller:     zapcore.FullCallerEncoder,
+	ConsoleSeparator: " ",
 }
 
 // 获取解析类型

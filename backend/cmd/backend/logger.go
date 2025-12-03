@@ -38,18 +38,29 @@ func (l *ZapLogger) Log(level log.Level, keyvals ...interface{}) error {
 	}
 	// Zap.Field is used when keyvals pairs appear
 	var data []zap.Field
+	var msg string
 	for i := 0; i < len(keyvals); i += 2 {
-		data = append(data, zap.Any(fmt.Sprint(keyvals[i]), fmt.Sprint(keyvals[i+1])))
+		key := fmt.Sprint(keyvals[i])
+		val := fmt.Sprint(keyvals[i+1])
+		if key == "msg" {
+			msg = val
+			continue
+		}
+		if level == log.LevelDebug && (key == "error" || key == "err") {
+			msg += fmt.Sprintf("\nError: %v", val)
+			continue
+		}
+		data = append(data, zap.Any(key, val))
 	}
 	switch level {
 	case log.LevelDebug:
-		l.log.Debug("", data...)
+		l.log.Debug(msg, data...)
 	case log.LevelInfo:
-		l.log.Info("", data...)
+		l.log.Info(msg, data...)
 	case log.LevelWarn:
-		l.log.Warn("", data...)
+		l.log.Warn(msg, data...)
 	case log.LevelError:
-		l.log.Error("", data...)
+		l.log.Error(msg, data...)
 	}
 	return nil
 }

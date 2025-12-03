@@ -5,9 +5,10 @@ package auth
 
 import (
 	"context"
+	"strings"
+
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/golang-jwt/jwt/v4"
-	"strings"
 )
 
 type authKey struct{}
@@ -97,4 +98,9 @@ func FromContext(ctx context.Context) (token jwt.Claims, ok bool) {
 
 func authIsNotOK(auths []string) bool {
 	return len(auths) != 2 || !strings.EqualFold(auths[0], BearerWord)
+}
+
+func GetUserId(ctx context.Context) int64 {
+	u, _ := ctx.Value(UserId).(int64)
+	return u
 }

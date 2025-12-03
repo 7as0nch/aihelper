@@ -48,6 +48,7 @@ export interface Message {
 export interface SendMessageParams {
     history: Message[]; // 历史消息
     curMessage: Message; // 当前消息
+    curSessionID: string; // 当前会话ID
     needTODOPlan?: 'smart' | 'need' | 'no'; // 是否需要生成待办计划。
 }
 
@@ -61,8 +62,19 @@ export function sendMessage(data: SendMessageParams) {
 
 import { getConfig } from '@/config';
 
+export interface Session {
+    id: string;
+    title: string;
+    updateTime: number;
+}
+
+export interface HistoryListReply {
+    sessions: Session[];
+    total: number;
+}
+
 export const chatApi = {
-    async getHistoryList(): Promise<any[]> {
+    async getHistoryList(): Promise<Session[]> {
         const aiType = getConfig('VITE_AI_TYPE');
         if (aiType === 'demo') {
             return [
@@ -81,7 +93,8 @@ export const chatApi = {
             return [];
         }
         // Backend mode: Call API
-        return request<any[]>({ url: '/chat/history', method: 'get' });
+        const resp = await request<HistoryListReply>({ url: '/chat/history', method: 'get' });
+        return resp.sessions
     },
 
     async getHistoryMsg(id: string): Promise<Message[]> {
@@ -315,7 +328,7 @@ async function fetchData(url) {
     },
 
     // Helper to save chat history and messages in frontend mode
-    async saveChat(id: string, title: string, messages: Message[]): Promise<void> {
+    async saveChat(id: string, title: string, messages: Message[]): Promise<Session> {
         const aiType = getConfig('VITE_AI_TYPE');
         if (aiType === 'frontend') {
             // 1. Update history list
@@ -338,7 +351,15 @@ async function fetchData(url) {
 
             // 2. Save messages
             localStorage.setItem(`litechat_msg_${id}`, JSON.stringify(messages));
+        } else if (aiType === 'backend') {
+            // Backend mode: Call API
+            return request<Session>({ url: `/chat/session`, method: 'post', data: { title, messages } });
         }
+        return {
+            id,
+            title,
+            updateTime: Date.now()
+        };
     }
 };
 
@@ -459,7 +480,7 @@ export async function sendMessageStream(
 
     if (aiType === 'demo') {
         await streamDemo(onChunk, signal);
-    } else if (aiType === '-') {
+    } else if (aiType === 'frontend') {
         // Pure Frontend Mode (Direct OpenAI)
         // Use the Provider Factory to select the correct provider based on model
         const provider = createChatProvider();

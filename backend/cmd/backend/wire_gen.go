@@ -7,6 +7,7 @@
 package main
 
 import (
+	"github.com/example/aichat/backend/internal/biz"
 	"github.com/example/aichat/backend/internal/biz/base"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/data"
@@ -45,7 +46,9 @@ func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Log
 	trackerRepo := data.NewTrackerRepo(dataRepo, logger)
 	trackerUseCase := base.NewTrackerUseCase(trackerRepo)
 	trackerService := base2.NewTrackerService(trackerUseCase)
-	chatService := service.NewChatService(logger)
+	chatRepo := data.NewChatRepo(dataRepo, logLogger)
+	chatUsecase := biz.NewChatUsecase(chatRepo, logLogger)
+	chatService := service.NewChatService(chatUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, authService, systemService, trackerService, chatService, logLogger)
 	httpServer := server.NewHTTPServer(confServer, chatService, authService, authRepo, systemService, trackerService, logLogger)
 	webSocketServer := server.NewWebSocketServerWrapper(chatService, logger)

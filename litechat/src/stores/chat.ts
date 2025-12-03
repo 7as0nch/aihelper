@@ -109,21 +109,6 @@ export const useChatStore = defineStore('chat', () => {
     };
 
     const sendMessage = async (content: string, attachments: Attachment[] = [], quote?: { quoteId: string; quoteContent: string }) => {
-        // Auto-create session if not exists
-        if (!currentChatId.value) {
-            const newId = Date.now().toString();
-            currentChatId.value = newId;
-
-            // Generate title from first 20 chars of content
-            const title = content.slice(0, 20) + (content.length > 20 ? '...' : '');
-
-            // Add to history
-            historyItems.value.unshift({
-                id: newId,
-                title: title
-            });
-        }
-
         // User message
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -139,15 +124,31 @@ export const useChatStore = defineStore('chat', () => {
                 thinkingMode: thinkingMode.value,
             }
         };
+        // Auto-create session if not exists
+        if (!currentChatId.value) {
+            // Generate title from first 20 chars of content
+            const title = content.slice(0, 20) + (content.length > 20 ? '...' : '');
+
+            const session = await chatApi.saveChat("0", title, [userMessage]);
+            if (session.id && session.id !== "0") {
+                currentChatId.value = session.id;
+                // Add to history.
+                historyItems.value.unshift({
+                    id: session.id,
+                    title: title
+                });
+            }
+        }
 
         // User message
         addMessage(userMessage);
 
         // Persist immediately
         if (currentChatId.value && getConfig('VITE_AI_TYPE') === 'frontend') {
+            console.log('Persisting chat', currentChatId.value);
             const currentHistoryItem = historyItems.value.find(h => h.id === currentChatId.value);
             if (currentHistoryItem) {
-                (chatApi as any).saveChat(currentChatId.value, currentHistoryItem.title, messages.value);
+                chatApi.saveChat(currentChatId.value, currentHistoryItem.title, messages.value);
             }
         }
 
@@ -179,6 +180,7 @@ export const useChatStore = defineStore('chat', () => {
                 {
                     history: messages.value.slice(0, -2), // Exclude current user msg and pending assistant msg
                     curMessage: userMessage,
+                    curSessionID: currentChatId.value || '', // 当前会话ID
                 },
                 (data) => {
                     updateLastMessage(data);

@@ -7,8 +7,10 @@ package chat
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
@@ -153,26 +155,10 @@ func (a *AdkAgent) Stream(ctx context.Context, req *v1.SendStreamRequest) (<-cha
 		})
 	}
 
-	// Add current message if needed, or assume it's in history?
-	// The original code appended PgHelperPrompt and then history.
-	// Usually the current user message is also needed.
-	// Let's assume req.Message is the current message if not in history.
-	// But looking at original code: `var req v1.SendStreamRequest; ... messages = append(messages, PgHelperPrompt()); for _, msg := range req.History ...`
-	// It seems it only used history? Or maybe the current message is appended to history by the caller?
-	// Let's stick to the original logic: just use req.History (and prompt).
-	// Wait, the original code used `req.History`.
-	// But usually `SendStreamRequest` has a `message` field for the new message.
-	// Let's check `SendStreamRequest` definition in proto.
-	// `message Message = 1; repeated Message history = 2;`
-	// The original code ONLY used `req.History`. This might be a bug or specific usage in original code.
-	// However, to be safe and robust, I should probably include `req.Message` if it's not empty.
-	// But for now, I will strictly follow the original logic to avoid breaking behavior,
-	// BUT I will add `req.Message` if it exists, as it's standard.
-
-	if req.Message != nil {
+	if req.CurMessage != nil {
 		messages = append(messages, &schema.Message{
-			Role:    schema.RoleType(req.Message.Role),
-			Content: req.Message.Content,
+			Role:    schema.RoleType(req.CurMessage.Role),
+			Content: req.CurMessage.Content,
 		})
 	}
 
@@ -180,17 +166,6 @@ func (a *AdkAgent) Stream(ctx context.Context, req *v1.SendStreamRequest) (<-cha
 		Agent:           a.agent,
 		EnableStreaming: true,
 	})
-
-	// Convert []*schema.Message to []adk.Message
-	// adk.Message is an interface, schema.Message implements it?
-	// Let's check adk.Run signature: `Run(ctx context.Context, messages []Message, ...)`
-	// And `type Message = schema.Message` in some versions or compatible.
-	// In `pkg/chat/adk.go`: `func (a *AdkAgent) Run(ctx context.Context, messages []adk.Message, ...)`
-	// And `messages = append(messages, PgHelperPrompt())` where PgHelperPrompt returns `*schema.Message`.
-	// So `[]*schema.Message` might need conversion if `adk.Message` is an interface.
-	// Actually `adk.Message` is likely `*schema.Message` or interface implemented by it.
-	// The original code: `var messages []adk.Message; messages = append(messages, PgHelperPrompt()); ... append(messages, &schema.Message{...})`
-	// So `*schema.Message` satisfies `adk.Message`.
 
 	adkMessages := make([]adk.Message, len(messages))
 	for i, m := range messages {
@@ -209,7 +184,11 @@ func (a *AdkAgent) Stream(ctx context.Context, req *v1.SendStreamRequest) (<-cha
 				break
 			}
 			if event.Err != nil {
-				log.Errorf("Stream error: %v", event.Err)
+				if errors.Is(event.Err, context.Canceled) || strings.Contains(event.Err.Error(), "context canceled") {
+					log.Infof("Stream canceled: %v", event.Err)
+				} else {
+					log.Errorf("Stream error: %v", event.Err)
+				}
 				break
 			}
 
