@@ -101,10 +101,6 @@ func authIsNotOK(auths []string) bool {
 }
 
 func GetUserId(ctx context.Context) int64 {
-	if claims, ok := FromContext(ctx); ok {
-		if c, ok := claims.(*JwtClaims); ok {
-			return c.UserId
-		}
-	}
-	return 0
+	u, _ := ctx.Value(UserId).(int64)
+	return u
 }
