@@ -218,13 +218,6 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Save User Message
-	userMsg := s.uc.NewMessage(sessionID, model.RoleUser, req.CurMessage.Content)
-	if _, err := s.uc.SaveMessage(ctx, userMsg); err != nil {
-		s.log.Error("Save user message error:", zap.Error(err))
-		return
-	}
-
 	// Use the abstract Agent interface
 	var agent chat.Agent[*pb.SendStreamRequest, *pb.Message] = chat.NewAdkAgent()
 
@@ -262,11 +255,15 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 		flusher.Flush()
 	}
 
+	// Save User Message
+	userMsg := s.uc.NewMessage(sessionID, model.RoleUser, req.CurMessage.Content)
+	userMsg.New()
 	// Save AI Message
 	aiMsg = s.uc.NewMessage(sessionID, model.RoleAssistant, aiContentBuilder.String())
 	aiMsg.ReasoningContent = aiReasoningBuilder.String()
+	aiMsg.New()
 	// TODO: Save other fields like TokenUsage, etc. if available in the last message or accumulated
-	if _, err := s.uc.SaveMessage(ctx, aiMsg); err != nil {
+	if err := s.uc.BatchSaveMessages(ctx, []*model.AIChatMessage{userMsg, aiMsg}); err != nil {
 		s.log.Error("Save AI message error:", zap.Error(err))
 	}
 

@@ -57,7 +57,7 @@ func (r *chatRepo) ListSessions(ctx context.Context, userId int64, page int, pag
 		if err != nil {
 			return nil, 0, err
 		}
-	}else {
+	} else {
 		chats, err = q.AIChat.WithContext(ctx).Where(q.AIChat.CreatedBy.Eq(userId)).Order(q.AIChat.UpdatedAt.Desc()).Find()
 		if err != nil {
 			return nil, 0, err
@@ -73,11 +73,14 @@ func (r *chatRepo) UpdateSession(ctx context.Context, session *model.AIChat) err
 	return q.AIChat.WithContext(ctx).Save(session)
 }
 
-// CreateMessage implements biz.ChatRepo.
+// BatchCreateMessages implements biz.ChatRepo
+func (r *chatRepo) BatchCreateMessages(ctx context.Context, messages []*model.AIChatMessage) error {
+	return r.data.DB(ctx).Create(&messages).Error
+}
+
+// CreateMessage implements biz.ChatRepo
 func (r *chatRepo) CreateMessage(ctx context.Context, message *model.AIChatMessage) (*model.AIChatMessage, error) {
-	q := query.Use(r.data.GetDB())
-	err := q.AIChatMessage.WithContext(ctx).Create(message)
-	if err != nil {
+	if err := r.data.DB(ctx).Create(message).Error; err != nil {
 		return nil, err
 	}
 	return message, nil
@@ -93,5 +96,5 @@ func (r *chatRepo) DeleteMessagesBySessionID(ctx context.Context, sessionId int6
 // ListMessages implements biz.ChatRepo.
 func (r *chatRepo) ListMessages(ctx context.Context, sessionId int64) ([]*model.AIChatMessage, error) {
 	q := query.Use(r.data.GetDB())
-	return q.AIChatMessage.WithContext(ctx).Where(q.AIChatMessage.SessionID.Eq(sessionId)).Order(q.AIChatMessage.CreatedAt.Asc()).Find()
+	return q.AIChatMessage.WithContext(ctx).Where(q.AIChatMessage.SessionID.Eq(sessionId)).Order(q.AIChatMessage.ID.Asc()).Find()
 }
