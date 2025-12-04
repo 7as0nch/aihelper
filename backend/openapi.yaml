@@ -3,10 +3,114 @@
 
 openapi: 3.0.3
 info:
-    title: Chat API
-    description: The chat service definition.
+    title: ""
     version: 0.0.1
 paths:
+    /auth/login:
+        post:
+            tags:
+                - Auth
+            description: Login
+            operationId: Auth_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.LoginReply'
+    /auth/logout:
+        post:
+            tags:
+                - Auth
+            operationId: Auth_Logout
+            requestBody:
+                content:
+                    application/json: {}
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /auth/user/info:
+        get:
+            tags:
+                - Auth
+            description: getInfo
+            operationId: Auth_GetInfo
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.GetInfoReply'
+    /auth/user/profile:
+        get:
+            tags:
+                - Auth
+            description: /user/profile
+            operationId: Auth_GetProfile
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.GetInfoReply'
+        put:
+            tags:
+                - Auth
+            description: /user/profile
+            operationId: Auth_UpdateProfile
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.User'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /auth/user/profile/updatePwd:
+        put:
+            tags:
+                - Auth
+            description: /user/profile/updatePwd
+            operationId: Auth_UpdatePwd
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.UpdatePwdRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /auth/user/register:
+        post:
+            tags:
+                - Auth
+            description: Register
+            operationId: Auth_Register
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.RegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /chat/history:
         get:
             tags:
@@ -38,13 +142,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/HistoryReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/chat.v1.HistoryReply'
     /chat/history/{sessionId}:
         get:
             tags:
@@ -77,13 +175,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/MessagesReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/chat.v1.MessagesReply'
         put:
             tags:
                 - Chat
@@ -99,18 +191,12 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/HistoryRequest'
+                            $ref: '#/components/schemas/chat.v1.HistoryRequest'
                 required: true
             responses:
                 "200":
                     description: OK
                     content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         delete:
             tags:
                 - Chat
@@ -140,12 +226,6 @@ paths:
                 "200":
                     description: OK
                     content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /chat/message:
         post:
             tags:
@@ -156,7 +236,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CreateMessageRequest'
+                            $ref: '#/components/schemas/chat.v1.CreateMessageRequest'
                 required: true
             responses:
                 "200":
@@ -164,13 +244,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Message'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/chat.v1.Message'
     /chat/send:
         post:
             tags:
@@ -181,7 +255,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/SendStreamRequest'
+                            $ref: '#/components/schemas/chat.v1.SendStreamRequest'
                 required: true
             responses:
                 "200":
@@ -189,13 +263,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/SendStreamReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/chat.v1.SendStreamReply'
     /chat/session:
         post:
             tags:
@@ -206,7 +274,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CreateSessionRequest'
+                            $ref: '#/components/schemas/chat.v1.CreateSessionRequest'
                 required: true
             responses:
                 "200":
@@ -214,16 +282,780 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/HistorySession'
-                default:
-                    description: Default error response
+                                $ref: '#/components/schemas/chat.v1.HistorySession'
+    /system/dict/data:
+        put:
+            tags:
+                - System
+            description: edit dict data
+            operationId: System_UpdateDictData
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.DictData'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        post:
+            tags:
+                - System
+            description: add dict data
+            operationId: System_AddDictData
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.DictData'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /system/dict/data/list:
+        get:
+            tags:
+                - System
+            description: system/dict/data/list
+            operationId: System_DictDataList
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: dictLabel
+                  in: query
+                  schema:
+                    type: string
+                - name: dictType
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/base.DictDataListReply'
+    /system/dict/data/type/{dictType}:
+        get:
+            tags:
+                - System
+            description: data list by type
+            operationId: System_DictDataListByType
+            parameters:
+                - name: dictType
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.DictDataListReply'
+    /system/dict/data/{id}:
+        get:
+            tags:
+                - System
+            description: data by id
+            operationId: System_DictDataById
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.DictData'
+        delete:
+            tags:
+                - System
+            description: delete dict data
+            operationId: System_DeleteDictData
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /system/dict/type:
+        put:
+            tags:
+                - System
+            description: edit dict type
+            operationId: System_UpdateDictType
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.DictType'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        post:
+            tags:
+                - System
+            description: add dict type
+            operationId: System_AddDictType
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.DictType'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /system/dict/type/list:
+        get:
+            tags:
+                - System
+            description: system/dict/type/list
+            operationId: System_DictTypeList
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: dictType
+                  in: query
+                  schema:
+                    type: string
+                - name: dictName
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.DictTypeListReply'
+    /system/dict/type/{id}:
+        get:
+            tags:
+                - System
+            description: by id
+            operationId: System_DictTypeById
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.DictType'
+        delete:
+            tags:
+                - System
+            description: delete dict type
+            operationId: System_DeleteDictType
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /system/menu:
+        get:
+            tags:
+                - System
+            description: menu
+            operationId: System_Menu
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.MenuReply'
+        put:
+            tags:
+                - System
+            description: UpdateSysMenu implements base.SysMenuRepo.
+            operationId: System_UpdateSysMenu
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.AddSysMenuRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        post:
+            tags:
+                - System
+            description: sysMenu
+            operationId: System_AddSysMenu
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.AddSysMenuRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /system/menu/list:
+        get:
+            tags:
+                - System
+            operationId: System_AllMenu
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.AllMenuReply'
+    /system/menu/{id}:
+        get:
+            tags:
+                - System
+            description: GetSysMenu implements base.SysMenuRepo.
+            operationId: System_GetSysMenu
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.MenuItem'
+        delete:
+            tags:
+                - System
+            description: DeleteSysMenu implements base.SysMenuRepo.
+            operationId: System_DeleteSysMenu
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /tracker/batch:
+        post:
+            tags:
+                - Tracker
+            description: Batch 批量新增埋点数据
+            operationId: Tracker_Batch
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/base.BatchRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.BatchReply'
+    /tracker/list:
+        get:
+            tags:
+                - Tracker
+            description: List 分页查询埋点数据
+            operationId: Tracker_List
+            parameters:
+                - name: pageNum
+                  in: query
+                  description: 页码
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  description: 每页数量
+                  schema:
+                    type: integer
+                    format: int32
+                - name: appId
+                  in: query
+                  description: 应用ID
+                  schema:
+                    type: string
+                - name: deviceId
+                  in: query
+                  description: 设备ID
+                  schema:
+                    type: string
+                - name: userId
+                  in: query
+                  description: 用户ID
+                  schema:
+                    type: string
+                - name: type
+                  in: query
+                  description: 类型
+                  schema:
+                    type: string
+                - name: pageUrl
+                  in: query
+                  description: 页面URL
+                  schema:
+                    type: string
+                - name: startTime
+                  in: query
+                  description: 开始时间
+                  schema:
+                    type: string
+                - name: endTime
+                  in: query
+                  description: 结束时间
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/base.ListReply'
 components:
     schemas:
-        AIModel:
+        base.AddSysMenuRequest:
+            type: object
+            properties:
+                menuId:
+                    type: string
+                menuName:
+                    type: string
+                parentName:
+                    type: string
+                parentId:
+                    type: string
+                orderNum:
+                    type: integer
+                    format: int32
+                path:
+                    type: string
+                component:
+                    type: string
+                query:
+                    type: string
+                isFrame:
+                    type: string
+                isCache:
+                    type: string
+                menuType:
+                    type: string
+                visible:
+                    type: string
+                status:
+                    type: string
+                perms:
+                    type: string
+                icon:
+                    type: string
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.MenuItem'
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+                createBy:
+                    type: string
+                updateBy:
+                    type: string
+                remark:
+                    type: string
+        base.AllMenuReply:
+            type: object
+            properties:
+                menus:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.MenuItem'
+        base.BatchReply:
+            type: object
+            properties:
+                successCount:
+                    type: integer
+                    description: 成功数量
+                    format: int32
+                failedCount:
+                    type: integer
+                    description: 失败数量
+                    format: int32
+            description: BatchReply 批量新增响应
+        base.BatchRequest:
+            type: object
+            properties:
+                logs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.TrackerMessage'
+                    description: 埋点数据列表
+            description: BatchRequest 批量新增请求
+        base.DictData:
+            type: object
+            properties:
+                dictCode:
+                    type: string
+                    description: '"dictCode": "1954098808913211393",'
+                dictSort:
+                    type: integer
+                    description: '"dictSort": 0,'
+                    format: int32
+                dictLabel:
+                    type: string
+                    description: '"dictLabel": "STDIO",'
+                dictValue:
+                    type: string
+                    description: '"dictValue": "STDIO",'
+                dictType:
+                    type: string
+                    description: '"dictType": "mcp_transport_type",'
+                listClass:
+                    type: string
+                    description: '"listClass": "",'
+                isDefault:
+                    type: string
+                    description: '"isDefault": "N",'
+                status:
+                    type: string
+                    description: '"status": "0",'
+                createTime:
+                    type: string
+                    description: '"createTime": 1754728436000'
+        base.DictDataListReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.DictData'
+                total:
+                    type: integer
+                    format: int32
+        base.DictType:
+            type: object
+            properties:
+                dictId:
+                    type: string
+                    description: '"dictId": "1",'
+                dictName:
+                    type: string
+                    description: '"dictName": "用户性别",'
+                dictType:
+                    type: string
+                    description: '"dictType": "sys_user_sex",'
+                status:
+                    type: string
+                    description: '"status": "0",'
+                remark:
+                    type: string
+                    description: '"remark": "用户性别列表",'
+                createTime:
+                    type: string
+                    description: '"createTime": 1684048781000'
+        base.DictTypeListReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.DictType'
+                total:
+                    type: integer
+                    format: int32
+        base.GetInfoReply:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/base.User'
+                roles:
+                    type: array
+                    items:
+                        type: string
+                permissions:
+                    type: array
+                    items:
+                        type: string
+        base.ListReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.TrackerMessage'
+                    description: 埋点数据列表
+                total:
+                    type: integer
+                    description: 总数量
+                    format: int32
+            description: ListReply 分页查询响应
+        base.LoginReply:
+            type: object
+            properties:
+                accessToken:
+                    type: string
+                token:
+                    type: string
+        base.LoginRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+        base.Menu:
+            type: object
+            properties:
+                alwaysShow:
+                    type: boolean
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.Menu'
+                component:
+                    type: string
+                hidden:
+                    type: boolean
+                meta:
+                    $ref: '#/components/schemas/base.MenuMeta'
+                name:
+                    type: string
+                path:
+                    type: string
+                query:
+                    type: string
+                redirect:
+                    type: string
+                id:
+                    type: string
+                parentID:
+                    type: string
+        base.MenuItem:
+            type: object
+            properties:
+                menuId:
+                    type: string
+                menuName:
+                    type: string
+                parentName:
+                    type: string
+                parentId:
+                    type: string
+                orderNum:
+                    type: integer
+                    format: int32
+                path:
+                    type: string
+                component:
+                    type: string
+                query:
+                    type: string
+                isFrame:
+                    type: string
+                isCache:
+                    type: string
+                menuType:
+                    type: string
+                visible:
+                    type: string
+                status:
+                    type: string
+                perms:
+                    type: string
+                icon:
+                    type: string
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.MenuItem'
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+                createBy:
+                    type: string
+                updateBy:
+                    type: string
+                remark:
+                    type: string
+        base.MenuMeta:
+            type: object
+            properties:
+                icon:
+                    type: string
+                link:
+                    type: string
+                noCache:
+                    type: boolean
+                title:
+                    type: string
+        base.MenuReply:
+            type: object
+            properties:
+                menu:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.Menu'
+        base.RegisterRequest:
+            type: object
+            properties:
+                account:
+                    type: string
+                password:
+                    type: string
+                email:
+                    type: string
+                phonenumber:
+                    type: string
+                sex:
+                    type: string
+        base.Role:
+            type: object
+            properties:
+                dataScope:
+                    type: string
+                flag:
+                    type: boolean
+                roleId:
+                    type: string
+                roleKey:
+                    type: string
+                roleName:
+                    type: string
+                roleSort:
+                    type: integer
+                    format: int32
+                status:
+                    type: string
+                superAdmin:
+                    type: boolean
+        base.TrackerMessage:
+            type: object
+            properties:
+                appId:
+                    type: string
+                    description: 应用ID
+                deviceId:
+                    type: string
+                    description: 设备ID
+                userId:
+                    type: string
+                    description: 用户ID
+                timestamp:
+                    type: string
+                    description: 时间戳
+                userAgent:
+                    type: string
+                    description: 用户代理
+                pageUrl:
+                    type: string
+                    description: 页面URL
+                type:
+                    type: string
+                    description: 类型
+                data:
+                    type: string
+                    description: 数据
+            description: Tracker 埋点数据消息
+        base.UpdatePwdRequest:
+            type: object
+            properties:
+                oldPassword:
+                    type: string
+                newPassword:
+                    type: string
+        base.User:
+            type: object
+            properties:
+                avatar:
+                    type: string
+                createTime:
+                    type: string
+                deptId:
+                    type: string
+                deptName:
+                    type: string
+                email:
+                    type: string
+                loginDate:
+                    type: string
+                loginIp:
+                    type: string
+                nickName:
+                    type: string
+                phonenumber:
+                    type: string
+                remark:
+                    type: string
+                roles:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/base.Role'
+                sex:
+                    type: string
+                status:
+                    type: string
+                tenantId:
+                    type: string
+                userId:
+                    type: string
+                userName:
+                    type: string
+                userType:
+                    type: string
+        chat.v1.AIModel:
             type: object
             properties:
                 id:
@@ -238,7 +1070,7 @@ components:
                      modelName: string;
                      thinkingMode: 'smart' | 'deep' | 'quick'; // 思考类型，深度思考，快速思考，智能思考。
                  }
-        Attachment:
+        chat.v1.Attachment:
             type: object
             properties:
                 id:
@@ -256,7 +1088,7 @@ components:
                      name: string;
                      url?: string;
                  }
-        CallingTool:
+        chat.v1.CallingTool:
             type: object
             properties:
                 name:
@@ -271,7 +1103,7 @@ components:
                      description: string;
                      functionName: string;
                  }
-        CreateMessageRequest:
+        chat.v1.CreateMessageRequest:
             type: object
             properties:
                 sessionId:
@@ -280,7 +1112,7 @@ components:
                     type: string
                 content:
                     type: string
-        CreateSessionRequest:
+        chat.v1.CreateSessionRequest:
             type: object
             properties:
                 title:
@@ -288,27 +1120,19 @@ components:
                 messages:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Message'
-        GoogleProtobufAny:
-            type: object
-            properties:
-                '@type':
-                    type: string
-                    description: The type of the serialized message.
-            additionalProperties: true
-            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        HistoryReply:
+                        $ref: '#/components/schemas/chat.v1.Message'
+        chat.v1.HistoryReply:
             type: object
             properties:
                 sessions:
                     type: array
                     items:
-                        $ref: '#/components/schemas/HistorySession'
+                        $ref: '#/components/schemas/chat.v1.HistorySession'
                 total:
                     type: integer
                     format: int32
             description: Reply for history
-        HistoryRequest:
+        chat.v1.HistoryRequest:
             type: object
             properties:
                 sessionId:
@@ -322,7 +1146,7 @@ components:
                     type: integer
                     format: int32
             description: history
-        HistorySession:
+        chat.v1.HistorySession:
             type: object
             properties:
                 id:
@@ -331,7 +1155,7 @@ components:
                     type: string
                 updateTime:
                     type: string
-        Message:
+        chat.v1.Message:
             type: object
             properties:
                 id:
@@ -339,7 +1163,7 @@ components:
                 role:
                     type: string
                 aiModel:
-                    $ref: '#/components/schemas/AIModel'
+                    $ref: '#/components/schemas/chat.v1.AIModel'
                 content:
                     type: string
                 reasoningContent:
@@ -353,17 +1177,17 @@ components:
                 quoteSearchLinks:
                     type: array
                     items:
-                        $ref: '#/components/schemas/QuoteSearchLink'
+                        $ref: '#/components/schemas/chat.v1.QuoteSearchLink'
                 tokenUsage:
-                    $ref: '#/components/schemas/TokenUsage'
+                    $ref: '#/components/schemas/chat.v1.TokenUsage'
                 callingTools:
                     type: array
                     items:
-                        $ref: '#/components/schemas/CallingTool'
+                        $ref: '#/components/schemas/chat.v1.CallingTool'
                 attachments:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Attachment'
+                        $ref: '#/components/schemas/chat.v1.Attachment'
                 isStreaming:
                     type: boolean
             description: |-
@@ -384,17 +1208,17 @@ components:
                      callingTools?: CallingTool[]; // agent工具调用情况。
                      attachments?: Attachment[]; // 生成或者发送的附件/图片。
                  }
-        MessagesReply:
+        chat.v1.MessagesReply:
             type: object
             properties:
                 messages:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Message'
+                        $ref: '#/components/schemas/chat.v1.Message'
                 total:
                     type: integer
                     format: int32
-        QuoteSearchLink:
+        chat.v1.QuoteSearchLink:
             type: object
             properties:
                 url:
@@ -414,42 +1238,26 @@ components:
                      content: string;
                      highlight: string[];
                  }
-        SendStreamReply:
+        chat.v1.SendStreamReply:
             type: object
             properties:
                 message:
-                    $ref: '#/components/schemas/Message'
-        SendStreamRequest:
+                    $ref: '#/components/schemas/chat.v1.Message'
+        chat.v1.SendStreamRequest:
             type: object
             properties:
                 curMessage:
-                    $ref: '#/components/schemas/Message'
+                    $ref: '#/components/schemas/chat.v1.Message'
                 history:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Message'
+                        $ref: '#/components/schemas/chat.v1.Message'
                 needTODOPlan:
                     type: string
                 curSessionID:
                     type: string
             description: Request for sending a message
-        Status:
-            type: object
-            properties:
-                code:
-                    type: integer
-                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
-                    format: int32
-                message:
-                    type: string
-                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
-                details:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/GoogleProtobufAny'
-                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
-            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        TokenUsage:
+        chat.v1.TokenUsage:
             type: object
             properties:
                 currentTokens:
@@ -457,4 +1265,11 @@ components:
                 totalTokens:
                     type: string
 tags:
+    - name: Auth
+      description: The chat service definition.
     - name: Chat
+      description: The chat service definition.
+    - name: System
+      description: The chat service definition.
+    - name: Tracker
+      description: The tracker service definition.

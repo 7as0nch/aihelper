@@ -58,6 +58,7 @@ import type { Message, Attachment } from '../../stores/chat';
 import { useChatStore } from '../../stores/chat';
 import { User, Bot, Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight } from 'lucide-vue-next';
 import MessageActions from './MessageActions.vue';
+import { formatMessageTime } from '../../utils/time';
 
 const props = defineProps<{
   message: Message;
@@ -432,7 +433,7 @@ const handleFileClick = (file: Attachment) => {
 
         <!-- Timestamp -->
         <div class="mt-1 text-[10px] opacity-60 text-right">
-          {{ new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+          {{ formatMessageTime(message.timestamp) }}
         </div>
 
         <!-- Image Attachments -->

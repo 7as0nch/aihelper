@@ -32,7 +32,7 @@ export interface Message {
     aiModel?: AIModel; // 选择的AI模型。
     content: string;
     reasoningContent?: string; // 深度思考内容。
-    timestamp: number;
+    timestamp: string | number;
 
     quoteId?: string;
     quoteContent?: string;
