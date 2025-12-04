@@ -15,7 +15,7 @@ import (
 
 type sysUserRepo struct {
 	db    DataRepo
-	query *query.Query  // 存储预编译的查询实例
+	query *query.Query // 存储预编译的查询实例
 }
 
 func NewSysUserRepo(db DataRepo) base.SysUserRepo {

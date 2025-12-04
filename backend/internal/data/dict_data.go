@@ -17,7 +17,7 @@ import (
 type dictDataRepo struct {
 	db    DataRepo
 	log   *zap.Logger
-	query *query.Query  // 存储预编译的查询实例，避免重复获取DB连接
+	query *query.Query // 存储预编译的查询实例，避免重复获取DB连接
 }
 
 func NewDictDataRepo(db DataRepo, log *zap.Logger) base.DictDataRepo {
@@ -96,6 +96,17 @@ func (r *dictDataRepo) DeleteDictData(ctx context.Context, id int64) error {
 	}
 	if rowsAffected.RowsAffected == 0 {
 		return nil
+	}
+	return nil
+}
+
+// DeleteByDictType implements base.DictDataRepo
+func (r *dictDataRepo) DeleteByDictType(ctx context.Context, dictType string) error {
+	tx := query.Use(r.db.DB(ctx))
+	_, err := tx.SysDict.WithContext(ctx).Where(tx.SysDict.DictType.Eq(dictType)).Delete()
+	if err != nil {
+		r.log.Error("DeleteByDictType failed", zap.Error(err))
+		return err
 	}
 	return nil
 }

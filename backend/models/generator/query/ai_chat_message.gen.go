@@ -40,13 +40,13 @@ func newAIChatMessage(db *gorm.DB, opts ...gen.DOOption) aIChatMessage {
 	_aIChatMessage.Role = field.NewString(tableName, "role")
 	_aIChatMessage.Content = field.NewString(tableName, "content")
 	_aIChatMessage.ReasoningContent = field.NewString(tableName, "reasoning_content")
-	_aIChatMessage.AIModel = field.NewString(tableName, "ai_model")
+	_aIChatMessage.AIModel = field.NewField(tableName, "ai_model")
 	_aIChatMessage.QuoteId = field.NewString(tableName, "quote_id")
 	_aIChatMessage.QuoteContent = field.NewString(tableName, "quote_content")
-	_aIChatMessage.QuoteSearchLinks = field.NewString(tableName, "quote_search_links")
-	_aIChatMessage.TokenUsage = field.NewString(tableName, "token_usage")
-	_aIChatMessage.CallingTools = field.NewString(tableName, "calling_tools")
-	_aIChatMessage.Attachments = field.NewString(tableName, "attachments")
+	_aIChatMessage.QuoteSearchLinks = field.NewField(tableName, "quote_search_links")
+	_aIChatMessage.TokenUsage = field.NewField(tableName, "token_usage")
+	_aIChatMessage.CallingTools = field.NewField(tableName, "calling_tools")
+	_aIChatMessage.Attachments = field.NewField(tableName, "attachments")
 	_aIChatMessage.IsStreaming = field.NewBool(tableName, "is_streaming")
 
 	_aIChatMessage.fillFieldMap()
@@ -70,13 +70,13 @@ type aIChatMessage struct {
 	Role             field.String
 	Content          field.String
 	ReasoningContent field.String
-	AIModel          field.String
+	AIModel          field.Field
 	QuoteId          field.String
 	QuoteContent     field.String
-	QuoteSearchLinks field.String
-	TokenUsage       field.String
-	CallingTools     field.String
-	Attachments      field.String
+	QuoteSearchLinks field.Field
+	TokenUsage       field.Field
+	CallingTools     field.Field
+	Attachments      field.Field
 	IsStreaming      field.Bool
 
 	fieldMap map[string]field.Expr
@@ -106,13 +106,13 @@ func (a *aIChatMessage) updateTableName(table string) *aIChatMessage {
 	a.Role = field.NewString(table, "role")
 	a.Content = field.NewString(table, "content")
 	a.ReasoningContent = field.NewString(table, "reasoning_content")
-	a.AIModel = field.NewString(table, "ai_model")
+	a.AIModel = field.NewField(table, "ai_model")
 	a.QuoteId = field.NewString(table, "quote_id")
 	a.QuoteContent = field.NewString(table, "quote_content")
-	a.QuoteSearchLinks = field.NewString(table, "quote_search_links")
-	a.TokenUsage = field.NewString(table, "token_usage")
-	a.CallingTools = field.NewString(table, "calling_tools")
-	a.Attachments = field.NewString(table, "attachments")
+	a.QuoteSearchLinks = field.NewField(table, "quote_search_links")
+	a.TokenUsage = field.NewField(table, "token_usage")
+	a.CallingTools = field.NewField(table, "calling_tools")
+	a.Attachments = field.NewField(table, "attachments")
 	a.IsStreaming = field.NewBool(table, "is_streaming")
 
 	a.fillFieldMap()

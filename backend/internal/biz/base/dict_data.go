@@ -18,6 +18,7 @@ type DictDataRepo interface {
 	AddDictData(ctx context.Context, dictData *model.SysDict) error
 	UpdateDictData(ctx context.Context, dictData *model.SysDict) error
 	DeleteDictData(ctx context.Context, id int64) error
+	DeleteByDictType(ctx context.Context, dictType string) error
 }
 
 type DictDataUseCase struct {

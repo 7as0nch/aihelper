@@ -15,23 +15,20 @@ import (
 )
 
 type dictTypeRepo struct {
-	db    DataRepo
-	log   *zap.Logger
-	query *query.Query  // 存储预编译的查询实例，避免重复获取DB连接
+	db  DataRepo
+	log *zap.Logger
 }
 
 func NewDictTypeRepo(db DataRepo, log *zap.Logger) base.DictTypeRepo {
-	// 单例模式：复用查询实例，避免频繁获取数据库连接
 	return &dictTypeRepo{
-		db:    db,
-		log:   log,
-		query: query.Use(db.GetDB()),
+		db:  db,
+		log: log,
 	}
 }
 
 // GetAll implements base.DictTypeRepo
 func (r *dictTypeRepo) GetAll(ctx context.Context) ([]*model.SysDictType, error) {
-	dictTypes, err := r.query.SysDictType.WithContext(ctx).Find()
+	dictTypes, err := query.Use(r.db.DB(ctx)).SysDictType.WithContext(ctx).Find()
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +37,8 @@ func (r *dictTypeRepo) GetAll(ctx context.Context) ([]*model.SysDictType, error)
 
 // GetByTypeCode implements base.DictTypeRepo
 func (r *dictTypeRepo) GetByTypeCode(ctx context.Context, typeCode string) (*model.SysDictType, error) {
-	dictType, err := r.query.SysDictType.WithContext(ctx).Where(r.query.SysDictType.DictType.Eq(typeCode)).First()
+	q := query.Use(r.db.DB(ctx)).SysDictType
+	dictType, err := q.WithContext(ctx).Where(q.DictType.Eq(typeCode)).First()
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +47,7 @@ func (r *dictTypeRepo) GetByTypeCode(ctx context.Context, typeCode string) (*mod
 
 // Add implements base.DictTypeRepo
 func (r *dictTypeRepo) Add(ctx context.Context, dictType *model.SysDictType) error {
-	err := r.query.SysDictType.WithContext(ctx).Create(dictType)
+	err := query.Use(r.db.DB(ctx)).SysDictType.WithContext(ctx).Create(dictType)
 	if err != nil {
 		r.log.Error("Add dictType failed", zap.Error(err))
 		return err
@@ -59,7 +57,8 @@ func (r *dictTypeRepo) Add(ctx context.Context, dictType *model.SysDictType) err
 
 // Update implements base.DictTypeRepo
 func (r *dictTypeRepo) Update(ctx context.Context, dictType *model.SysDictType) error {
-	rowsAffected, err := r.query.SysDictType.WithContext(ctx).Where(r.query.SysDictType.ID.Eq(dictType.ID)).Updates(dictType)
+	q := query.Use(r.db.DB(ctx)).SysDictType
+	rowsAffected, err := q.WithContext(ctx).Where(q.ID.Eq(dictType.ID)).Updates(dictType)
 	if err != nil {
 		r.log.Error("Update dictType failed", zap.Error(err))
 		return err
@@ -72,7 +71,8 @@ func (r *dictTypeRepo) Update(ctx context.Context, dictType *model.SysDictType) 
 
 // Remove implements base.DictTypeRepo
 func (r *dictTypeRepo) Remove(ctx context.Context, id int64) error {
-	rowsAffected, err := r.query.SysDictType.WithContext(ctx).Where(r.query.SysDictType.ID.Eq(id)).Delete()
+	q := query.Use(r.db.DB(ctx)).SysDictType
+	rowsAffected, err := q.WithContext(ctx).Where(q.ID.Eq(id)).Delete()
 	if err != nil {
 		r.log.Error("Remove dictType failed", zap.Error(err))
 		return err
@@ -85,7 +85,8 @@ func (r *dictTypeRepo) Remove(ctx context.Context, id int64) error {
 
 // GetById implements base.DictTypeRepo
 func (r *dictTypeRepo) GetById(ctx context.Context, id int64) (*model.SysDictType, error) {
-	dictType, err := r.query.SysDictType.WithContext(ctx).Where(r.query.SysDictType.ID.Eq(id)).First()
+	q := query.Use(r.db.DB(ctx)).SysDictType
+	dictType, err := q.WithContext(ctx).Where(q.ID.Eq(id)).First()
 	if err != nil {
 		return nil, err
 	}
@@ -95,10 +96,16 @@ func (r *dictTypeRepo) GetById(ctx context.Context, id int64) (*model.SysDictTyp
 // DictTypeList implements base.DictTypeRepo
 func (r *dictTypeRepo) DictTypeList(ctx context.Context, pageNum, pageSize int32, dictType, dictName string) ([]*model.SysDictType, int64, error) {
 	offset := (pageNum - 1) * pageSize
-	dictTypes, count, err := r.query.SysDictType.WithContext(ctx).Where(
-		r.query.SysDictType.DictType.Like("%" + dictType + "%"),
-		r.query.SysDictType.DictName.Like("%" + dictName + "%"),
-	).FindByPage(int(offset), int(pageSize))
+	dict := query.Use(r.db.DB(ctx)).SysDictType
+	q := dict.WithContext(ctx)
+
+	if dictType != "" {
+		q = q.Where(dict.DictType.Like("%" + dictType + "%"))
+	}
+	if dictName != "" {
+		q = q.Where(dict.DictName.Like("%" + dictName + "%"))
+	}
+	dictTypes, count, err := q.FindByPage(int(offset), int(pageSize))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -107,7 +114,8 @@ func (r *dictTypeRepo) DictTypeList(ctx context.Context, pageNum, pageSize int32
 
 // DictTypeById implements base.DictTypeRepo
 func (r *dictTypeRepo) DictTypeById(ctx context.Context, id int64) (*model.SysDictType, error) {
-	dictType, err := r.query.SysDictType.WithContext(ctx).Where(r.query.SysDictType.ID.Eq(id)).First()
+	q := query.Use(r.db.DB(ctx)).SysDictType
+	dictType, err := q.WithContext(ctx).Where(q.ID.Eq(id)).First()
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +124,7 @@ func (r *dictTypeRepo) DictTypeById(ctx context.Context, id int64) (*model.SysDi
 
 // AddDictType implements base.DictTypeRepo
 func (r *dictTypeRepo) AddDictType(ctx context.Context, dictType *model.SysDictType) error {
-	err := r.query.SysDictType.WithContext(ctx).Create(dictType)
+	err := query.Use(r.db.DB(ctx)).SysDictType.WithContext(ctx).Create(dictType)
 	if err != nil {
 		r.log.Error("Add dict type failed", zap.Error(err))
 		return err
@@ -126,7 +134,8 @@ func (r *dictTypeRepo) AddDictType(ctx context.Context, dictType *model.SysDictT
 
 // UpdateDictType implements base.DictTypeRepo
 func (r *dictTypeRepo) UpdateDictType(ctx context.Context, dictType *model.SysDictType) error {
-	rowsAffected, err := r.query.SysDictType.WithContext(ctx).Where(r.query.SysDictType.ID.Eq(dictType.ID)).Updates(dictType)
+	q := query.Use(r.db.DB(ctx)).SysDictType
+	rowsAffected, err := q.WithContext(ctx).Where(q.ID.Eq(dictType.ID)).Updates(dictType)
 	if err != nil {
 		r.log.Error("Update dict type failed", zap.Error(err))
 		return err
@@ -139,46 +148,17 @@ func (r *dictTypeRepo) UpdateDictType(ctx context.Context, dictType *model.SysDi
 
 // DeleteDictType implements base.DictTypeRepo.
 func (r *dictTypeRepo) DeleteDictType(ctx context.Context, id int64) error {
-	// 开始事务 - 这里需要获取新的连接，因为预编译查询可能不适用于事务
-	tx := r.query.Begin()
-	if err := tx.Error; err != nil {
-		return err
-	}
-	
-	// 确保事务在函数结束时被关闭
-	defer func() {
-		if rc := recover(); rc != nil {
-			tx.Rollback()
-			panic(rc)
-		}
-	}()
-	
-	u := tx.SysDictType
-	dictType, err := u.WithContext(ctx).Where(u.ID.Eq(id)).First()
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	
-	// 先删除该字典类型下的所有字典数据
-	dictU := tx.SysDict
-	_, err = dictU.Where(dictU.DictType.Eq(dictType.DictType)).Delete()
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	
+	q := query.Use(r.db.DB(ctx))
+	u := q.SysDictType
+
 	// 删除字典类型
-	rowsAffected, err := u.Where(u.ID.Eq(id)).Delete()
+	rowsAffected, err := u.WithContext(ctx).Where(u.ID.Eq(id)).Delete()
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 	if rowsAffected.RowsAffected == 0 {
-		tx.Rollback()
 		return nil
 	}
-	
-	// 提交事务
-	return tx.Commit()
+
+	return nil
 }

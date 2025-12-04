@@ -20,12 +20,16 @@ type DictTypeRepo interface {
 }
 
 type DictTypeUseCase struct {
-	repo DictTypeRepo
+	repo     DictTypeRepo
+	dataRepo DictDataRepo
+	tm       Transaction
 }
 
-func NewDictTypeUseCase(repo DictTypeRepo) *DictTypeUseCase {
+func NewDictTypeUseCase(repo DictTypeRepo, dataRepo DictDataRepo, tm Transaction) *DictTypeUseCase {
 	return &DictTypeUseCase{
-		repo: repo,
+		repo:     repo,
+		dataRepo: dataRepo,
+		tm:       tm,
 	}
 }
 
@@ -51,5 +55,21 @@ func (uc *DictTypeUseCase) UpdateDictType(ctx context.Context, dictType *model.S
 
 // DeleteDictType 删除字典类型
 func (uc *DictTypeUseCase) DeleteDictType(ctx context.Context, id int64) error {
-	return uc.repo.DeleteDictType(ctx, id)
+	return uc.tm.InTx(ctx, func(ctx context.Context) error {
+		// 1. Get DictType to get the type code
+		dictType, err := uc.repo.DictTypeById(ctx, id)
+		if err != nil {
+			return err
+		}
+		// 2. Delete associated DictData
+		if err := uc.dataRepo.DeleteByDictType(ctx, dictType.DictType); err != nil {
+			return err
+		}
+		// 3. Delete DictType
+		err = uc.repo.DeleteDictType(ctx, id)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 }

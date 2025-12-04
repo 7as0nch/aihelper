@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
 )
 
@@ -64,8 +65,13 @@ func NewPostgresDB(conf *conf.Bootstrap, log *zap.Logger) (*gorm.DB, error) {
 	// before update 钩子，自动设置 updated_at updated_by 字段
 	db.Callback().Update().Before("gorm:update").Register("before_update", beforeUpdate)
 
-	// 禁用软删除钩子，使用标准GORM软删除
-	db.Callback().Delete().Before("gorm:delete").Register("before_delete", beforeDelete)
+	// 获取标准 Delete 回调
+	defaultDeleteCallback := db.Callback().Delete().Get("gorm:delete")
+
+	// 替换标准 Delete 回调，实现自定义软删除逻辑
+	db.Callback().Delete().Replace("gorm:delete", func(db *gorm.DB) {
+		customDelete(db, defaultDeleteCallback)
+	})
 
 	// 配置连接池参数
 	sqlDB, err := db.DB()
@@ -146,26 +152,51 @@ func beforeUpdate(db *gorm.DB) {
 	db.Statement.SetColumn("updated_by", userID)
 }
 
-func beforeDelete(db *gorm.DB) {
-	// 从context中获取当前用户ID
-	ctx := db.Statement.Context
-	var userID int64 = 0 // 默认系统操作
+func customDelete(db *gorm.DB, fallback func(*gorm.DB)) {
+	if db.Error != nil {
+		return
+	}
 
-	// 检查是否有可用的用户ID（从认证middleware或业务逻辑中获取）
-	if ctx != nil {
-		if authUserID := ctx.Value(auth.UserId); authUserID != nil {
-			if uid, ok := authUserID.(int64); ok {
-				userID = uid
-			} else if uid, ok := authUserID.(int); ok {
-				userID = int64(uid)
+	if db.Statement.Schema != nil {
+		// 检查是否存在 IsDeleted 字段，如果存在则执行自定义软删除
+		if db.Statement.Schema.LookUpField("IsDeleted") != nil {
+			// 从context中获取当前用户ID
+			ctx := db.Statement.Context
+			var userID int64 = 0 // 默认系统操作
+
+			if ctx != nil {
+				if authUserID := ctx.Value(auth.UserId); authUserID != nil {
+					if uid, ok := authUserID.(int64); ok {
+						userID = uid
+					} else if uid, ok := authUserID.(int); ok {
+						userID = int64(uid)
+					}
+				}
 			}
+
+			now := models.Now()
+
+			// 构建 UPDATE 语句
+			// 设置 is_deleted = 1
+			// 设置 deleted_at, deleted_by
+			db.Statement.AddClause(clause.Set{
+				{Column: clause.Column{Name: "is_deleted"}, Value: 1},
+				{Column: clause.Column{Name: "deleted_at"}, Value: now},
+				{Column: clause.Column{Name: "deleted_by"}, Value: userID},
+			})
+			db.Statement.AddClause(clause.Update{})
+
+			// 构建并执行 SQL
+			db.Statement.Build("UPDATE", "SET", "WHERE")
+			if _, err := db.Statement.ConnPool.ExecContext(db.Statement.Context, db.Statement.SQL.String(), db.Statement.Vars...); err != nil {
+				db.AddError(err)
+			}
+			return
 		}
 	}
 
-	// 设置更新时间和操作用户ID
-	now := models.Now()
-
-	// 直接设置字段，让GORM自动处理字段覆盖问题
-	db.Statement.SetColumn("updated_at", now)
-	db.Statement.SetColumn("updated_by", userID)
+	// 如果不是软删除模型，执行标准删除
+	if fallback != nil {
+		fallback(db)
+	}
 }
