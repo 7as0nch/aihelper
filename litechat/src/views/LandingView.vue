@@ -288,6 +288,15 @@
         </div>
       </div>
     </footer>
+    
+    <!-- Easter Egg Hint (Bottom Right) -->
+    <div v-if="showSnakeHint" :class="['fixed bottom-8 right-8 z-50 px-6 py-3 rounded-full border backdrop-blur-xl text-sm font-medium shadow-2xl transition-all duration-500 flex items-center gap-3 max-w-xs', isDark ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400' : 'bg-cyan-500/20 border-cyan-500/30 text-cyan-700']" style="animation: slideInRight 0.5s ease-out, bounce-slow 2s ease-in-out 0.5s infinite;">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+      <span>{{ t.snakeHint }}</span>
+      <button @click="showSnakeHint = false" class="ml-2 p-1 rounded-full hover:bg-white/10 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -299,6 +308,7 @@ const lang = ref<'en' | 'zh'>('zh');
 const isDark = ref(true);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const isMobileMenuOpen = ref(false);
+const showSnakeHint = ref(true);
 
 // Scroll State for Header
 const { y } = useWindowScroll();
@@ -308,17 +318,32 @@ const isScrolled = computed(() => y.value > 20);
 const mouseX = ref(0);
 const mouseY = ref(0);
 const isMouseMoving = ref(false);
+const isMouseInWindow = ref(false);
 let mouseTimeout: any;
+let hintTimeout: any;
 
 const handleMouseMove = (e: MouseEvent) => {
   mouseX.value = e.clientX;
   mouseY.value = e.clientY;
   isMouseMoving.value = true;
+  isMouseInWindow.value = true;
   
   clearTimeout(mouseTimeout);
   mouseTimeout = setTimeout(() => {
     isMouseMoving.value = false;
   }, 2000);
+  
+  // Hide hint after user interacts
+  if (showSnakeHint.value) {
+    clearTimeout(hintTimeout);
+    hintTimeout = setTimeout(() => {
+      showSnakeHint.value = false;
+    }, 5000);
+  }
+};
+
+const handleMouseLeave = () => {
+  isMouseInWindow.value = false;
 };
 
 // Carousel State
@@ -368,6 +393,7 @@ const ImageIcon = {
 
 const translations = {
   en: {
+    snakeHint: '🎮 Move your mouse to control the cyan snake!',
     brand: 'LiteChat AI',
     adminConsole: 'Admin Console',
     launchApp: 'Launch App',
@@ -404,10 +430,11 @@ const translations = {
     adminConsole: '管理控制台',
     launchApp: '启动应用',
     systemStatus: '系统运行中 v2.0',
+    snakeHint: '🎮 移动鼠标控制青色贪食蛇！',
     heroTitle1: '企业级',
     heroTitle2: 'AI 智能平台',
     heroDesc: '面向个人与企业的灵活 AI 解决方案。支持 SaaS 订阅与私有化部署，提供工作流自动化、RAG 知识库与 MCP 工具集成。',
-    getStarted: '免费试用',
+    getStarted: '在线使用',
     exploreFeatures: '了解更多',
     freeTrialTitle: '灵活部署模式',
     freeTrialDesc: '选择适合您的模式 - 纯前端、云端后台或演示样例。',
@@ -473,14 +500,22 @@ interface Snake {
     direction: { x: number; y: number };
     color: string;
     isHero: boolean;
+    circleAngle?: number;
+}
+
+interface Food {
+    x: number;
+    y: number;
 }
 
 let animationId: number;
 const cellSize = 20;
 const snakes = ref<Snake[]>([]);
+const foods = ref<Food[]>([]);
 const snakeCount = ref(1); // Configurable snake count
 let lastUpdate = 0;
 const updateInterval = 80;
+const foodCount = 3;
 
 const initSnakes = (width: number, height: number) => {
     snakes.value = [];
@@ -492,6 +527,12 @@ const initSnakes = (width: number, height: number) => {
     const colors = isDark.value ? ['#8b5cf6', '#10b981', '#ec4899', '#3b82f6'] : ['#7c3aed', '#059669', '#db2777', '#2563eb'];
     for (let i = 0; i < snakeCount.value; i++) {
         snakes.value.push(createSnake(width, height, colors[i % colors.length], false));
+    }
+    
+    // Spawn initial foods
+    foods.value = [];
+    for (let i = 0; i < foodCount; i++) {
+        spawnFood(width, height);
     }
 };
 
@@ -508,28 +549,69 @@ const createSnake = (width: number, height: number, color: string, isHero: boole
         body,
         direction: { x: 1, y: 0 },
         color,
-        isHero
+        isHero,
+        circleAngle: 0
     };
+};
+
+const spawnFood = (width: number, height: number) => {
+    const cols = Math.floor(width / cellSize);
+    const rows = Math.floor(height / cellSize);
+    foods.value.push({
+        x: Math.floor(Math.random() * cols),
+        y: Math.floor(Math.random() * rows)
+    });
 };
 
 const updateSnakes = (width: number, height: number) => {
     snakes.value.forEach(snake => {
-        if (snake.isHero && isMouseMoving.value) {
-            // Hero follows mouse
-            const head = snake.body[0];
-            const headPixelX = head.x * cellSize + cellSize / 2;
-            const headPixelY = head.y * cellSize + cellSize / 2;
-            const dx = mouseX.value - headPixelX;
-            const dy = mouseY.value - headPixelY;
-            if (Math.abs(dx) > Math.abs(dy)) {
-                const newDirX = dx > 0 ? 1 : -1;
-                if (newDirX !== -snake.direction.x) snake.direction = { x: newDirX, y: 0 };
+        if (snake.isHero && isMouseInWindow.value) {
+            if (isMouseMoving.value) {
+                // Hero follows mouse
+                const head = snake.body[0];
+                const headPixelX = head.x * cellSize + cellSize / 2;
+                const headPixelY = head.y * cellSize + cellSize / 2;
+                const dx = mouseX.value - headPixelX;
+                const dy = mouseY.value - headPixelY;
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    const newDirX = dx > 0 ? 1 : -1;
+                    if (newDirX !== -snake.direction.x) snake.direction = { x: newDirX, y: 0 };
+                } else {
+                    const newDirY = dy > 0 ? 1 : -1;
+                    if (newDirY !== -snake.direction.y) snake.direction = { x: 0, y: newDirY };
+                }
             } else {
-                const newDirY = dy > 0 ? 1 : -1;
-                if (newDirY !== -snake.direction.y) snake.direction = { x: 0, y: newDirY };
+                // Circle around mouse when idle
+                if (snake.circleAngle === undefined) snake.circleAngle = 0;
+                snake.circleAngle += 0.05;
+                
+                const radius = 8; // cells radius
+                const centerX = Math.floor(mouseX.value / cellSize);
+                const centerY = Math.floor(mouseY.value / cellSize);
+                const targetX = centerX + Math.round(Math.cos(snake.circleAngle) * radius);
+                const targetY = centerY + Math.round(Math.sin(snake.circleAngle) * radius);
+                
+                const head = snake.body[0];
+                const dx = targetX - head.x;
+                const dy = targetY - head.y;
+                
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    const newDirX = dx > 0 ? 1 : -1;
+                    if (newDirX !== -snake.direction.x) snake.direction = { x: newDirX, y: 0 };
+                } else {
+                    const newDirY = dy > 0 ? 1 : -1;
+                    if (newDirY !== -snake.direction.y) snake.direction = { x: 0, y: newDirY };
+                }
+            }
+        } else if (!snake.isHero) {
+            // Random movement for ambient snakes
+            if (Math.random() < 0.05) {
+                 const moves = [{x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1}];
+                 const validMoves = moves.filter(m => m.x !== -snake.direction.x || m.y !== -snake.direction.y);
+                 snake.direction = validMoves[Math.floor(Math.random() * validMoves.length)];
             }
         } else {
-            // Random movement
+            // Hero snake random movement when mouse not in window
             if (Math.random() < 0.05) {
                  const moves = [{x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1}];
                  const validMoves = moves.filter(m => m.x !== -snake.direction.x || m.y !== -snake.direction.y);
@@ -551,22 +633,75 @@ const updateSnakes = (width: number, height: number) => {
         if (newHead.y >= rows) newHead.y = 0;
 
         snake.body.unshift(newHead);
-        snake.body.pop();
+        
+        // Check food collision (only hero snake can eat)
+        let ate = false;
+        if (snake.isHero) {
+            foods.value = foods.value.filter(food => {
+                if (newHead.x === food.x && newHead.y === food.y) {
+                    ate = true;
+                    spawnFood(width, height);
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        if (!ate) {
+            snake.body.pop();
+        }
     });
 };
 
 const drawGame = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     ctx.clearRect(0, 0, width, height);
     
+    // Draw foods with pulsing effect
+    const time = Date.now() / 200;
+    foods.value.forEach(food => {
+        const pulse = Math.sin(time) * 0.3 + 0.7;
+        const foodSize = cellSize * 0.8;
+        const offset = (cellSize - foodSize * pulse) / 2;
+        
+        ctx.fillStyle = isDark.value ? '#fbbf24' : '#f59e0b'; // Amber/Gold
+        ctx.shadowBlur = 20 * pulse;
+        ctx.shadowColor = '#fbbf24';
+        ctx.globalAlpha = pulse;
+        
+        ctx.beginPath();
+        ctx.arc(
+            food.x * cellSize + cellSize / 2,
+            food.y * cellSize + cellSize / 2,
+            (foodSize * pulse) / 2,
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+        
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+    });
+    
+    // Draw snakes
     snakes.value.forEach(snake => {
         ctx.fillStyle = snake.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = snake.isHero ? 15 : 10;
         ctx.shadowColor = snake.color;
         
         snake.body.forEach((segment, index) => {
             const alpha = 1 - index / snake.body.length;
-            ctx.globalAlpha = Math.max(0.2, alpha * 0.8); // Slightly transparent
-            ctx.fillRect(segment.x * cellSize, segment.y * cellSize, cellSize - 2, cellSize - 2);
+            ctx.globalAlpha = Math.max(0.2, alpha * (snake.isHero ? 0.9 : 0.8));
+            
+            // Hero snake has rounded corners and bigger size
+            if (snake.isHero) {
+                const size = cellSize - 1;
+                const radius = 3;
+                ctx.beginPath();
+                ctx.roundRect(segment.x * cellSize, segment.y * cellSize, size, size, radius);
+                ctx.fill();
+            } else {
+                ctx.fillRect(segment.x * cellSize, segment.y * cellSize, cellSize - 2, cellSize - 2);
+            }
         });
         ctx.globalAlpha = 1;
         ctx.shadowBlur = 0;
@@ -605,6 +740,7 @@ onMounted(() => {
   }
   
   window.addEventListener('mousemove', handleMouseMove);
+  window.addEventListener('mouseleave', handleMouseLeave);
   window.addEventListener('resize', handleResize);
   
   startCarousel();
@@ -617,6 +753,7 @@ onMounted(() => {
 onUnmounted(() => {
   cancelAnimationFrame(animationId);
   window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseleave', handleMouseLeave);
   window.removeEventListener('resize', handleResize);
   clearInterval(carouselInterval);
   clearTimeout(mouseTimeout);
@@ -660,5 +797,25 @@ onUnmounted(() => {
 .scroll-reveal.revealed {
   opacity: 1;
   transform: translateY(0);
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 </style>
