@@ -1,206 +1,290 @@
 <template>
   <div :class="[
-    'min-h-screen overflow-hidden relative font-sans transition-colors duration-300',
-    isDark ? 'bg-black text-white selection:bg-purple-500 selection:text-white' : 'bg-gray-50 text-gray-900 selection:bg-purple-200 selection:text-purple-900'
-  ]" @mousemove="handleMouseMove">
+    'min-h-screen overflow-x-hidden relative font-sans transition-colors duration-500',
+    isDark ? 'bg-[#0a0a0a] text-white selection:bg-cyan-500/30 selection:text-cyan-100' : 'bg-gray-50 text-gray-900 selection:bg-cyan-200 selection:text-cyan-900'
+  ]">
     
-    <!-- Canvas Background for Particles -->
-    <canvas ref="canvasRef" class="absolute top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
-
-    <!-- Background Effects (Parallax) -->
-    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-      <div :class="['absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] animate-pulse-slow transition-transform duration-100 ease-out', isDark ? 'bg-purple-600/20' : 'bg-purple-300/40']" :style="{ transform: `translate(${mouseX * 0.02}px, ${mouseY * 0.02}px)` }"></div>
-      <div :class="['absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] animate-pulse-slow delay-1000 transition-transform duration-100 ease-out', isDark ? 'bg-blue-600/20' : 'bg-blue-300/40']" :style="{ transform: `translate(${mouseX * -0.02}px, ${mouseY * -0.02}px)` }"></div>
+    <!-- Tech Background (Grid + Snakes) -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <!-- Grid Overlay -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#3b82f615,transparent)]"></div>
     </div>
 
-    <!-- Grid Pattern Overlay -->
-    <div class="absolute inset-0 opacity-20 z-0" :style="{ backgroundImage: `url('data:image/svg+xml;base64,${isDark ? 'PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTTAgNDBWMGg0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utb3BhY2l0eT0iMC4wMyIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==' : 'PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTTAgNDBWMGg0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utb3BhY2l0eT0iMC4wMyIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg=='}')` }"></div>
+    <!-- Canvas Background for Multiple Snakes -->
+    <canvas ref="canvasRef" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none opacity-60"></canvas>
 
     <!-- Navbar -->
-    <nav :class="['relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto backdrop-blur-sm rounded-b-2xl border-b transition-all duration-300', isDark ? 'bg-black/20 border-white/5 hover:bg-black/40' : 'bg-white/50 border-black/5 hover:bg-white/80']">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
-          <span class="font-bold text-lg text-white">A</span>
+    <nav :class="['fixed top-0 left-0 right-0 z-50 transition-all duration-500', isScrolled ? 'bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/10 shadow-lg shadow-cyan-500/5 py-4' : 'py-6 bg-transparent']">
+      <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3 cursor-pointer" @click="$router.push('/')">
+          <div class="w-10 h-10 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+            <span class="font-bold text-xl text-cyan-400">A</span>
+          </div>
+          <span :class="['text-xl font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900']">{{ t.brand }}</span>
         </div>
-        <span :class="['text-xl font-bold tracking-tight bg-clip-text text-transparent', isDark ? 'bg-gradient-to-r from-white to-gray-400' : 'bg-gradient-to-r from-gray-900 to-gray-600']">{{ t.brand }}</span>
-      </div>
-      <div class="flex items-center gap-4 sm:gap-6">
-        <!-- Theme Toggle -->
-        <button @click="toggleTheme" :class="['p-2 rounded-full transition-colors', isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-600 hover:text-black hover:bg-black/5']">
-          <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
-          <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
 
-        <!-- Language Toggle -->
-        <button @click="toggleLang" :class="['text-sm font-medium px-3 py-1 rounded-full transition-colors', isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-600 hover:text-black hover:bg-black/5']">
-          {{ lang === 'en' ? '中文' : 'English' }}
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center gap-4">
+          <button @click="toggleTheme" :class="['p-2.5 rounded-full transition-all hover:scale-110 active:scale-90 border border-white/5', isDark ? 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10' : 'bg-black/5 text-gray-600 hover:text-black hover:bg-black/10']">
+            <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+
+          <button @click="toggleLang" :class="['text-sm font-medium px-5 py-2.5 rounded-full transition-all hover:scale-110 active:scale-90 border border-white/5', isDark ? 'bg-white/5 text-gray-300 hover:text-white hover:bg-white/10' : 'bg-black/5 text-gray-700 hover:text-black hover:bg-black/10']">
+            {{ lang === 'en' ? '中文' : 'English' }}
+          </button>
+          
+          <a href="http://81.69.160.8:5666/" target="_blank" :class="['text-sm font-medium px-5 py-2.5 rounded-full transition-all hover:scale-110 active:scale-90 border border-white/5', isDark ? 'bg-white/5 text-gray-300 hover:text-white hover:bg-white/10' : 'bg-black/5 text-gray-700 hover:text-black hover:bg-black/10']">{{ t.adminConsole }}</a>
+          
+          <router-link to="/chat" class="px-8 py-3 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white rounded-full font-bold text-sm shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-110 active:scale-90 hover:-rotate-1 transition-all duration-300">
+            {{ t.launchApp }}
+          </router-link>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button @click="isMobileMenuOpen = !isMobileMenuOpen" :class="['md:hidden p-2 rounded-xl border border-white/10', isDark ? 'bg-white/5 text-white' : 'bg-black/5 text-black']">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
-        
-        <a href="http://81.69.160.8:5666/" target="_blank" :class="['text-sm transition-colors hidden sm:block', isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black']">{{ t.adminConsole }}</a>
-        
-        <router-link to="/chat" class="group relative px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full font-medium text-sm overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/20">
-          <span class="relative z-10">{{ t.launchApp }}</span>
-          <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </router-link>
+      </div>
+
+      <!-- Mobile Menu Dropdown -->
+      <div v-show="isMobileMenuOpen" :class="['md:hidden absolute top-full left-0 right-0 border-b backdrop-blur-xl p-4 flex flex-col gap-3 shadow-2xl transition-all duration-300', isDark ? 'bg-[#0a0a0a]/95 border-white/10' : 'bg-white/95 border-black/10']">
+          <a href="http://81.69.160.8:5666/" target="_blank" :class="['p-3 rounded-2xl text-sm font-medium', isDark ? 'bg-white/5 text-white' : 'bg-black/5 text-black']">{{ t.adminConsole }}</a>
+          <div class="flex items-center gap-2">
+             <button @click="toggleTheme" :class="['flex-1 p-3 rounded-2xl flex items-center justify-center', isDark ? 'bg-white/5 text-white' : 'bg-black/5 text-black']">
+               <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+               <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+             </button>
+             <button @click="toggleLang" :class="['flex-1 p-3 rounded-2xl text-sm font-medium', isDark ? 'bg-white/5 text-white' : 'bg-black/5 text-black']">{{ lang === 'en' ? '中文' : 'English' }}</button>
+          </div>
+          <router-link to="/chat" class="w-full py-4 bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-2xl font-bold text-center shadow-lg shadow-cyan-500/30">
+            {{ t.launchApp }}
+          </router-link>
       </div>
     </nav>
 
     <!-- Hero Section -->
-    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-32">
-      <div class="flex flex-col items-center text-center mb-32">
-        <div :class="['inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs mb-8 backdrop-blur-sm animate-fade-in-up hover:scale-105 transition-transform cursor-default', isDark ? 'bg-white/5 border-white/10 text-purple-300' : 'bg-black/5 border-black/10 text-purple-700']">
-          <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-40 pb-20">
+      <div class="flex flex-col items-center text-center mb-32 relative">
+        
+        <div :class="['inline-flex items-center gap-2 px-4 py-1.5 rounded-full border backdrop-blur-md text-xs font-mono mb-8 shadow-lg transition-transform hover:scale-105 cursor-default', isDark ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400' : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-700']">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+          </span>
           {{ t.systemStatus }}
         </div>
         
-        <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8 animate-fade-in-up delay-100">
-          <span :class="['block text-transparent bg-clip-text bg-gradient-to-b transition-colors duration-500', isDark ? 'from-white via-white to-gray-500 hover:text-white' : 'from-gray-900 via-gray-900 to-gray-500 hover:text-black']">{{ t.heroTitle1 }}</span>
-          <span class="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 animate-gradient-x pb-2">{{ t.heroTitle2 }}</span>
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8 animate-fade-in-up delay-100 relative z-10 drop-shadow-2xl">
+          <span :class="['block bg-clip-text text-transparent bg-gradient-to-b', isDark ? 'from-white to-white/50' : 'from-black to-black/50']">{{ t.heroTitle1 }}</span>
+          <span class="block bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 animate-gradient-x pb-4">{{ t.heroTitle2 }}</span>
         </h1>
         
-        <p :class="['max-w-2xl text-lg mb-12 leading-relaxed animate-fade-in-up delay-200', isDark ? 'text-gray-400' : 'text-gray-600']">
+        <p :class="['max-w-2xl text-lg md:text-xl mb-12 leading-relaxed animate-fade-in-up delay-200 font-medium', isDark ? 'text-gray-400' : 'text-gray-600']">
           {{ t.heroDesc }}
         </p>
 
-        <div class="flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up delay-300">
-          <router-link to="/chat" :class="['px-8 py-4 rounded-full font-bold text-lg transition-all hover:scale-105 shadow-lg', isDark ? 'bg-white text-black hover:bg-gray-100 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]' : 'bg-black text-white hover:bg-gray-800 hover:shadow-[0_0_40px_-10px_rgba(0,0,0,0.3)]']">
+        <div class="flex flex-col sm:flex-row items-center gap-6 animate-fade-in-up delay-300 relative z-10">
+          <router-link to="/chat" style="padding-left: 2.5rem; padding-right: 2.5rem;" class="py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-110 active:scale-95 hover:-rotate-1 shadow-xl shadow-cyan-500/30 flex items-center gap-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-white hover:shadow-cyan-500/50">
             {{ t.getStarted }}
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
           </router-link>
-          <a href="#features" :class="['px-8 py-4 rounded-full border transition-all backdrop-blur-sm', isDark ? 'border-white/10 text-gray-300 hover:bg-white/5 hover:text-white' : 'border-black/10 text-gray-600 hover:bg-black/5 hover:text-black']">
+          <a href="#features" style="padding-left: 2.5rem; padding-right: 2.5rem;" :class="['py-4 rounded-full font-semibold border transition-all duration-300 backdrop-blur-md hover:scale-110 active:scale-95 hover:rotate-1', isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-black/5 border-black/10 text-gray-900 hover:bg-black/10']">
             {{ t.exploreFeatures }}
           </a>
         </div>
       </div>
 
-      <!-- Features List (Vertical) -->
-      <div id="features" class="flex flex-col gap-32">
+      <!-- Online Free Trial Section -->
+      <div class="mb-40 animate-fade-in-up delay-500">
+        <div class="text-center mb-16">
+           <h2 :class="['text-3xl md:text-4xl font-bold mb-4', isDark ? 'text-white' : 'text-gray-900']">{{ t.freeTrialTitle }}</h2>
+           <p :class="['text-lg font-medium', isDark ? 'text-gray-400' : 'text-gray-500']">{{ t.freeTrialDesc }}</p>
+        </div>
         
-        <!-- Admin & DevOps -->
-        <div class="flex flex-col md:flex-row items-center gap-12 group scroll-reveal" ref="feature1">
-          <div class="w-full md:w-1/2 order-2 md:order-1">
-            <div :class="['relative aspect-video rounded-3xl overflow-hidden border transition-all duration-500 group-hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.2)]', isDark ? 'bg-white/5 border-white/10 hover:border-purple-500/30' : 'bg-black/5 border-black/10 hover:border-purple-500/30']">
-               <!-- Carousel -->
-               <div class="absolute inset-0 flex transition-transform duration-700 ease-in-out" :style="{ transform: `translateX(-${activeSlide1 * 100}%)` }">
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900/20 to-transparent">
-                    <span class="text-purple-500/30 text-6xl font-bold">ADMIN UI 1</span>
-                 </div>
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-800/20 to-transparent">
-                    <span class="text-purple-500/30 text-6xl font-bold">LOGS VIEW</span>
-                 </div>
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-700/20 to-transparent">
-                    <span class="text-purple-500/30 text-6xl font-bold">SETTINGS</span>
-                 </div>
-               </div>
-               <!-- Carousel Controls -->
-               <div class="absolute bottom-4 left-0 w-full flex justify-center gap-2">
-                 <button v-for="i in 3" :key="i" @click="activeSlide1 = i - 1" :class="['w-2 h-2 rounded-full transition-all', activeSlide1 === i - 1 ? (isDark ? 'bg-white w-4' : 'bg-black w-4') : (isDark ? 'bg-white/30 hover:bg-white/50' : 'bg-black/30 hover:bg-black/50')]"></button>
-               </div>
-            </div>
-          </div>
-          <div class="w-full md:w-1/2 order-1 md:order-2">
-            <div class="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6 text-purple-500 group-hover:scale-110 transition-transform duration-500">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-            </div>
-            <h3 :class="['text-3xl font-bold mb-4', isDark ? 'text-white' : 'text-gray-900']">{{ t.adminTitle }}</h3>
-            <p :class="['text-lg leading-relaxed mb-6', isDark ? 'text-gray-400' : 'text-gray-600']">
-              {{ t.adminDesc }}
-            </p>
-            <ul :class="['space-y-3', isDark ? 'text-gray-500' : 'text-gray-600']">
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>{{ t.adminFeat1 }}</li>
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>{{ t.adminFeat2 }}</li>
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>{{ t.adminFeat3 }}</li>
-            </ul>
-          </div>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div v-for="(mode, index) in playModes" :key="index" :class="['group relative rounded-[32px] p-[1px] transition-all duration-500 hover:-translate-y-2', isDark ? 'bg-gradient-to-b from-white/10 to-transparent hover:from-cyan-500/50' : 'bg-gradient-to-b from-black/10 to-transparent hover:from-cyan-500/50']">
+            <div :class="['relative h-full rounded-[31px] p-8 overflow-hidden backdrop-blur-xl flex flex-col border border-white/5 shadow-2xl', isDark ? 'bg-[#0a0a0a]/80' : 'bg-white/80']">
+              
+              <!-- Background Image or Icon -->
+              <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity duration-500 transform group-hover:scale-110 grayscale group-hover:grayscale-0">
+                <img v-if="mode.image" :src="mode.image" class="w-32 h-32 object-cover rounded-2xl" alt="mode bg" />
+                <component v-else :is="mode.icon" class="w-32 h-32" />
+              </div>
+              
+              <div :class="['w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 shadow-lg border border-white/10', isDark ? 'bg-white/5 text-cyan-400 group-hover:bg-cyan-500 group-hover:text-black group-hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'bg-black/5 text-cyan-600 group-hover:bg-cyan-500 group-hover:text-white']">
+                <img v-if="mode.image" :src="mode.image" class="w-full h-full object-cover rounded-2xl" alt="mode icon" />
+                <component v-else :is="mode.icon" class="w-8 h-8" />
+              </div>
 
-        <!-- Business Intelligence -->
-        <div class="flex flex-col md:flex-row items-center gap-12 group scroll-reveal" ref="feature2">
-          <div class="w-full md:w-1/2 order-1">
-            <div class="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6 text-blue-500 group-hover:scale-110 transition-transform duration-500">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-            </div>
-            <h3 :class="['text-3xl font-bold mb-4', isDark ? 'text-white' : 'text-gray-900']">{{ t.businessTitle }}</h3>
-            <p :class="['text-lg leading-relaxed mb-6', isDark ? 'text-gray-400' : 'text-gray-600']">
-              {{ t.businessDesc }}
-            </p>
-            <ul :class="['space-y-3', isDark ? 'text-gray-500' : 'text-gray-600']">
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>{{ t.businessFeat1 }}</li>
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>{{ t.businessFeat2 }}</li>
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>{{ t.businessFeat3 }}</li>
-            </ul>
-          </div>
-          <div class="w-full md:w-1/2 order-2">
-            <div :class="['relative aspect-video rounded-3xl overflow-hidden border transition-all duration-500 group-hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.2)]', isDark ? 'bg-white/5 border-white/10 hover:border-blue-500/30' : 'bg-black/5 border-black/10 hover:border-blue-500/30']">
-               <!-- Carousel -->
-               <div class="absolute inset-0 flex transition-transform duration-700 ease-in-out" :style="{ transform: `translateX(-${activeSlide2 * 100}%)` }">
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-bl from-blue-900/20 to-transparent">
-                    <span class="text-blue-500/30 text-6xl font-bold">DATA UI 1</span>
-                 </div>
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-bl from-blue-800/20 to-transparent">
-                    <span class="text-blue-500/30 text-6xl font-bold">CHARTS</span>
-                 </div>
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-bl from-blue-700/20 to-transparent">
-                    <span class="text-blue-500/30 text-6xl font-bold">REPORTS</span>
-                 </div>
-               </div>
-               <!-- Carousel Controls -->
-               <div class="absolute bottom-4 left-0 w-full flex justify-center gap-2">
-                 <button v-for="i in 3" :key="i" @click="activeSlide2 = i - 1" :class="['w-2 h-2 rounded-full transition-all', activeSlide2 === i - 1 ? (isDark ? 'bg-white w-4' : 'bg-black w-4') : (isDark ? 'bg-white/30 hover:bg-white/50' : 'bg-black/30 hover:bg-black/50')]"></button>
-               </div>
+              <h3 :class="['text-2xl font-bold mb-3', isDark ? 'text-white' : 'text-gray-900']">{{ mode.title }}</h3>
+              <p :class="['text-sm mb-8 flex-grow leading-relaxed font-medium', isDark ? 'text-gray-400' : 'text-gray-600']">{{ mode.desc }}</p>
+              
+              <button :class="['w-full py-4 rounded-full font-bold transition-all duration-300 flex items-center justify-center gap-2 backdrop-blur-md shadow-lg hover:scale-105 active:scale-95', isDark ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-400 hover:to-blue-500 text-white hover:shadow-cyan-500/40 border border-white/10' : 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-cyan-400 hover:to-blue-500 text-gray-900 hover:text-white hover:shadow-cyan-500/30 border border-black/5']">
+                {{ t.tryNow }}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+              </button>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Client Services -->
-        <div class="flex flex-col md:flex-row items-center gap-12 group scroll-reveal" ref="feature3">
-          <div class="w-full md:w-1/2 order-2 md:order-1">
-            <div :class="['relative aspect-video rounded-3xl overflow-hidden border transition-all duration-500 group-hover:shadow-[0_0_30px_-5px_rgba(34,197,94,0.2)]', isDark ? 'bg-white/5 border-white/10 hover:border-green-500/30' : 'bg-black/5 border-black/10 hover:border-green-500/30']">
-               <!-- Carousel -->
-               <div class="absolute inset-0 flex transition-transform duration-700 ease-in-out" :style="{ transform: `translateX(-${activeSlide3 * 100}%)` }">
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-br from-green-900/20 to-transparent">
-                    <span class="text-green-500/30 text-6xl font-bold">CLIENT UI 1</span>
-                 </div>
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-br from-green-800/20 to-transparent">
-                    <span class="text-green-500/30 text-6xl font-bold">CHATBOT</span>
-                 </div>
-                 <div class="min-w-full h-full flex items-center justify-center bg-gradient-to-br from-green-700/20 to-transparent">
-                    <span class="text-green-500/30 text-6xl font-bold">SUPPORT</span>
-                 </div>
-               </div>
-               <!-- Carousel Controls -->
-               <div class="absolute bottom-4 left-0 w-full flex justify-center gap-2">
-                 <button v-for="i in 3" :key="i" @click="activeSlide3 = i - 1" :class="['w-2 h-2 rounded-full transition-all', activeSlide3 === i - 1 ? (isDark ? 'bg-white w-4' : 'bg-black w-4') : (isDark ? 'bg-white/30 hover:bg-white/50' : 'bg-black/30 hover:bg-black/50')]"></button>
+      <!-- Features Timeline Section -->
+      <div id="features" class="relative">
+        <!-- Vertical Timeline Line -->
+        <div class="absolute left-1/2 transform -translate-x-1/2 h-full w-px bg-gradient-to-b from-transparent via-cyan-500/50 to-transparent hidden md:block"></div>
+        
+        <div class="flex flex-col gap-40">
+          
+          <!-- Feature 1: Admin -->
+          <div class="relative flex flex-col md:flex-row items-center gap-16 group scroll-reveal" ref="feature1">
+            <!-- Timeline Dot -->
+            <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.8)] hidden md:block z-20 ring-4 ring-[#0a0a0a]"></div>
+
+            <!-- Content Left -->
+            <div class="w-full md:w-1/2 flex justify-end md:pr-20">
+               <div :class="['w-full max-w-lg relative aspect-video rounded-3xl overflow-hidden border transition-all duration-700 group-hover:scale-105 shadow-2xl', isDark ? 'bg-white/5 border-white/10 shadow-cyan-500/10' : 'bg-black/5 border-black/10 shadow-cyan-500/10']">
+                  <div class="absolute inset-0 backdrop-blur-sm"></div>
+                  <!-- Carousel -->
+                  <div class="absolute inset-0 flex transition-transform duration-700 ease-in-out" :style="{ transform: `translateX(-${activeSlide1 * 100}%)` }">
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-cyan-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">ADMIN</span>
+                    </div>
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-cyan-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">LOGS</span>
+                    </div>
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-cyan-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">CONFIG</span>
+                    </div>
+                  </div>
+                  <!-- Controls -->
+                  <div class="absolute bottom-6 left-0 w-full flex justify-center gap-3">
+                    <button v-for="i in 3" :key="i" @click="activeSlide1 = i - 1" :class="['h-1.5 rounded-full transition-all duration-300', activeSlide1 === i - 1 ? 'w-8 bg-cyan-500' : 'w-2 bg-cyan-500/30 hover:bg-cyan-500/60']"></button>
+                  </div>
                </div>
             </div>
-          </div>
-          <div class="w-full md:w-1/2 order-1 md:order-2">
-            <div class="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6 text-green-500 group-hover:scale-110 transition-transform duration-500">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+
+            <!-- Text Right -->
+            <div class="w-full md:w-1/2 md:pl-20 text-left">
+              <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center mb-6 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.2)] border border-cyan-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <h3 :class="['text-3xl font-bold mb-4', isDark ? 'text-white' : 'text-gray-900']">{{ t.adminTitle }}</h3>
+              <p :class="['text-lg leading-relaxed mb-6 font-medium', isDark ? 'text-gray-400' : 'text-gray-600']">
+                {{ t.adminDesc }}
+              </p>
+              <ul :class="['space-y-3', isDark ? 'text-gray-300' : 'text-gray-700']">
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)]"></span>{{ t.adminFeat1 }}</li>
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)]"></span>{{ t.adminFeat2 }}</li>
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)]"></span>{{ t.adminFeat3 }}</li>
+              </ul>
             </div>
-            <h3 :class="['text-3xl font-bold mb-4', isDark ? 'text-white' : 'text-gray-900']">{{ t.clientTitle }}</h3>
-            <p :class="['text-lg leading-relaxed mb-6', isDark ? 'text-gray-400' : 'text-gray-600']">
-              {{ t.clientDesc }}
-            </p>
-            <ul :class="['space-y-3', isDark ? 'text-gray-500' : 'text-gray-600']">
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>{{ t.clientFeat1 }}</li>
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>{{ t.clientFeat2 }}</li>
-              <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>{{ t.clientFeat3 }}</li>
-            </ul>
           </div>
+
+          <!-- Feature 2: Business (Reversed) -->
+          <div class="relative flex flex-col md:flex-row-reverse items-center gap-16 group scroll-reveal" ref="feature2">
+            <!-- Timeline Dot -->
+            <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)] hidden md:block z-20 ring-4 ring-[#0a0a0a]"></div>
+
+            <!-- Content Right (Image) -->
+            <div class="w-full md:w-1/2 flex justify-start md:pl-20">
+               <div :class="['w-full max-w-lg relative aspect-video rounded-3xl overflow-hidden border transition-all duration-700 group-hover:scale-105 shadow-2xl', isDark ? 'bg-white/5 border-white/10 shadow-blue-500/10' : 'bg-black/5 border-black/10 shadow-blue-500/10']">
+                  <div class="absolute inset-0 backdrop-blur-sm"></div>
+                  <!-- Carousel -->
+                  <div class="absolute inset-0 flex transition-transform duration-700 ease-in-out" :style="{ transform: `translateX(-${activeSlide2 * 100}%)` }">
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-blue-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">DATA</span>
+                    </div>
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-blue-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">CHARTS</span>
+                    </div>
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-blue-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">REPORTS</span>
+                    </div>
+                  </div>
+                  <!-- Controls -->
+                  <div class="absolute bottom-6 left-0 w-full flex justify-center gap-3">
+                    <button v-for="i in 3" :key="i" @click="activeSlide2 = i - 1" :class="['h-1.5 rounded-full transition-all duration-300', activeSlide2 === i - 1 ? 'w-8 bg-blue-500' : 'w-2 bg-blue-500/30 hover:bg-blue-500/60']"></button>
+                  </div>
+               </div>
+            </div>
+
+            <!-- Text Left -->
+            <div class="w-full md:w-1/2 md:pr-20 text-left md:text-right">
+              <div class="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6 text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)] border border-blue-500/20 md:ml-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              </div>
+              <h3 :class="['text-3xl font-bold mb-4', isDark ? 'text-white' : 'text-gray-900']">{{ t.businessTitle }}</h3>
+              <p :class="['text-lg leading-relaxed mb-6 font-medium', isDark ? 'text-gray-400' : 'text-gray-600']">
+                {{ t.businessDesc }}
+              </p>
+              <ul :class="['space-y-3 flex flex-col md:items-end', isDark ? 'text-gray-300' : 'text-gray-700']">
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>{{ t.businessFeat1 }}</li>
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>{{ t.businessFeat2 }}</li>
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>{{ t.businessFeat3 }}</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Feature 3: Client -->
+          <div class="relative flex flex-col md:flex-row items-center gap-16 group scroll-reveal" ref="feature3">
+            <!-- Timeline Dot -->
+            <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.8)] hidden md:block z-20 ring-4 ring-[#0a0a0a]"></div>
+
+            <!-- Content Left -->
+            <div class="w-full md:w-1/2 flex justify-end md:pr-20">
+               <div :class="['w-full max-w-lg relative aspect-video rounded-3xl overflow-hidden border transition-all duration-700 group-hover:scale-105 shadow-2xl', isDark ? 'bg-white/5 border-white/10 shadow-purple-500/10' : 'bg-black/5 border-black/10 shadow-purple-500/10']">
+                  <div class="absolute inset-0 backdrop-blur-sm"></div>
+                  <!-- Carousel -->
+                  <div class="absolute inset-0 flex transition-transform duration-700 ease-in-out" :style="{ transform: `translateX(-${activeSlide3 * 100}%)` }">
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-purple-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">CLIENT</span>
+                    </div>
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-purple-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">CHATBOT</span>
+                    </div>
+                    <div class="min-w-full h-full flex items-center justify-center bg-black/20">
+                       <span class="text-purple-500/20 text-5xl md:text-6xl font-bold tracking-widest font-mono">SUPPORT</span>
+                    </div>
+                  </div>
+                  <!-- Controls -->
+                  <div class="absolute bottom-6 left-0 w-full flex justify-center gap-3">
+                    <button v-for="i in 3" :key="i" @click="activeSlide3 = i - 1" :class="['h-1.5 rounded-full transition-all duration-300', activeSlide3 === i - 1 ? 'w-8 bg-purple-500' : 'w-2 bg-purple-500/30 hover:bg-purple-500/60']"></button>
+                  </div>
+               </div>
+            </div>
+
+            <!-- Text Right -->
+            <div class="w-full md:w-1/2 md:pl-20 text-left">
+              <div class="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 text-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)] border border-purple-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h3 :class="['text-3xl font-bold mb-4', isDark ? 'text-white' : 'text-gray-900']">{{ t.clientTitle }}</h3>
+              <p :class="['text-lg leading-relaxed mb-6 font-medium', isDark ? 'text-gray-400' : 'text-gray-600']">
+                {{ t.clientDesc }}
+              </p>
+              <ul :class="['space-y-3', isDark ? 'text-gray-300' : 'text-gray-700']">
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-purple-500 rounded-full shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>{{ t.clientFeat1 }}</li>
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-purple-500 rounded-full shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>{{ t.clientFeat2 }}</li>
+                <li class="flex items-center gap-3"><span class="w-2 h-2 bg-purple-500 rounded-full shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>{{ t.clientFeat3 }}</li>
+              </ul>
+            </div>
+          </div>
+
         </div>
-
       </div>
     </main>
 
     <!-- Footer -->
-    <footer :class="['relative z-10 border-t py-12 mt-32 backdrop-blur-md', isDark ? 'bg-black/50 border-white/5' : 'bg-white/50 border-black/5']">
+    <footer :class="['relative z-10 border-t py-12 mt-40 backdrop-blur-xl', isDark ? 'bg-black/30 border-white/5' : 'bg-white/30 border-black/5']">
       <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-        <div :class="['text-sm', isDark ? 'text-gray-500' : 'text-gray-600']">
+        <div :class="['text-sm font-medium', isDark ? 'text-gray-500' : 'text-gray-500']">
           {{ t.copyright }}
         </div>
-        <div class="flex gap-6">
-          <a href="#" :class="['text-sm transition-colors', isDark ? 'text-gray-500 hover:text-white' : 'text-gray-600 hover:text-black']">{{ t.privacy }}</a>
-          <a href="#" :class="['text-sm transition-colors', isDark ? 'text-gray-500 hover:text-white' : 'text-gray-600 hover:text-black']">{{ t.terms }}</a>
+        <div class="flex gap-8">
+          <a href="#" :class="['text-sm font-medium transition-colors', isDark ? 'text-gray-500 hover:text-white' : 'text-gray-500 hover:text-black']">{{ t.privacy }}</a>
+          <a href="#" :class="['text-sm font-medium transition-colors', isDark ? 'text-gray-500 hover:text-white' : 'text-gray-500 hover:text-black']">{{ t.terms }}</a>
         </div>
       </div>
     </footer>
@@ -208,19 +292,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useIntersectionObserver } from '@vueuse/core';
+import { ref, computed, onMounted, onUnmounted, h } from 'vue';
+import { useIntersectionObserver, useWindowScroll } from '@vueuse/core';
 
 const lang = ref<'en' | 'zh'>('zh');
-const isDark = ref(false); // Default to light mode
+const isDark = ref(true);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+const isMobileMenuOpen = ref(false);
 
-// Mouse Parallax
+// Scroll State for Header
+const { y } = useWindowScroll();
+const isScrolled = computed(() => y.value > 20);
+
+// Mouse Position for Hero Snake
 const mouseX = ref(0);
 const mouseY = ref(0);
+const isMouseMoving = ref(false);
+let mouseTimeout: any;
+
 const handleMouseMove = (e: MouseEvent) => {
-  mouseX.value = e.clientX - window.innerWidth / 2;
-  mouseY.value = e.clientY - window.innerHeight / 2;
+  mouseX.value = e.clientX;
+  mouseY.value = e.clientY;
+  isMouseMoving.value = true;
+  
+  clearTimeout(mouseTimeout);
+  mouseTimeout = setTimeout(() => {
+    isMouseMoving.value = false;
+  }, 2000);
 };
 
 // Carousel State
@@ -248,65 +346,88 @@ const setupScrollReveal = (target: any) => {
     if (entry.isIntersecting) {
       entry.target.classList.add('revealed');
     }
-  }, { threshold: 0.2 });
+  }, { threshold: 0.15 });
+};
+
+// Icons for Play Modes
+const UserIcon = {
+  render: () => h('svg', { xmlns: 'http://www.w3.org/2000/svg', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': 2 }, [
+    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' })
+  ])
+};
+const MicIcon = {
+  render: () => h('svg', { xmlns: 'http://www.w3.org/2000/svg', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': 2 }, [
+    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z' })
+  ])
+};
+const ImageIcon = {
+  render: () => h('svg', { xmlns: 'http://www.w3.org/2000/svg', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': 2 }, [
+    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' })
+  ])
 };
 
 const translations = {
   en: {
-    brand: 'AI Assistant',
+    brand: 'LiteChat AI',
     adminConsole: 'Admin Console',
     launchApp: 'Launch App',
-    systemStatus: 'System Operational v2.0',
-    heroTitle1: 'Intelligent Agent',
-    heroTitle2: 'Orchestration',
-    heroDesc: 'Empower your workflow with advanced AI agents. From automated reporting to intelligent customer service, experience the future of business automation.',
-    getStarted: 'Get Started',
-    exploreFeatures: 'Explore Features',
-    adminTitle: 'Admin & DevOps',
-    adminDesc: 'Comprehensive monitoring and code auditing. Ensure your system runs smoothly with AI-powered insights.',
-    adminFeat1: 'Log Monitoring & Analysis',
-    adminFeat2: 'Code Audit & Security',
-    adminFeat3: 'Knowledge Base Generation',
-    businessTitle: 'Business Intelligence',
-    businessDesc: 'Data-driven insights and automated reporting. Transform raw data into actionable strategies effortlessly.',
-    businessFeat1: 'Automated Excel Reports',
-    businessFeat2: 'Data Analysis & Stats',
-    businessFeat3: 'Business Flow Management',
-    clientTitle: 'Client Services',
-    clientDesc: 'Seamless onboarding and smart support. Guide your users with intelligent, rule-based assistance.',
-    clientFeat1: 'Smart Customer Support',
-    clientFeat2: 'System Onboarding',
-    clientFeat3: 'Rule-based Guidance',
-    copyright: '© 2024 AI Assistant. All rights reserved.',
+    systemStatus: 'System Online v2.0',
+    heroTitle1: 'Enterprise-Grade',
+    heroTitle2: 'AI Platform',
+    heroDesc: 'Flexible AI solution for individuals and enterprises. Support SaaS subscription and private deployment with workflow automation, RAG, and MCP integration.',
+    getStarted: 'Try Free',
+    exploreFeatures: 'Learn More',
+    freeTrialTitle: 'Flexible Deployment',
+    freeTrialDesc: 'Choose the mode that fits your needs - standalone, cloud-based, or demo.',
+    tryNow: 'Try Now',
+    adminTitle: 'Workflow & Automation',
+    adminDesc: 'Visual workflow designer with drag-and-drop interface. Configure agents, prompts, and integrate MCP tools seamlessly.',
+    adminFeat1: 'Visual Workflow Designer',
+    adminFeat2: 'Agent & Prompt Management',
+    adminFeat3: 'MCP Tool Integration',
+    businessTitle: 'Enterprise Management',
+    businessDesc: 'Comprehensive admin panel for enterprises. Customize client UI, monitor logs with AI analysis, and manage knowledge bases.',
+    businessFeat1: 'Visual UI Customization',
+    businessFeat2: 'AI-Powered Log Analysis',
+    businessFeat3: 'RAG Knowledge Base',
+    clientTitle: 'Smart Client',
+    clientDesc: 'Rich features including voice-to-text, web search, long-term memory, meeting summaries, and multi-modal interactions.',
+    clientFeat1: 'Voice & Meeting Summaries',
+    clientFeat2: 'Long-term Memory (RAG)',
+    clientFeat3: 'Multi-modal Input Support',
+    copyright: '© 2024 LiteChat AI. All rights reserved.',
     privacy: 'Privacy Policy',
     terms: 'Terms of Service',
   },
   zh: {
-    brand: 'AI 智能助手',
+    brand: 'LiteChat AI',
     adminConsole: '管理控制台',
     launchApp: '启动应用',
     systemStatus: '系统运行中 v2.0',
-    heroTitle1: '智能体',
-    heroTitle2: '编排与服务',
-    heroDesc: '利用先进的 AI 智能体赋能您的工作流程。从自动化报表到智能客户服务，体验业务自动化的未来。',
-    getStarted: '立即开始',
-    exploreFeatures: '探索功能',
-    adminTitle: '管理与运维',
-    adminDesc: '全面的监控与代码审计功能。通过 AI 驱动的洞察力确保您的系统平稳运行。',
-    adminFeat1: '日志监控与分析',
-    adminFeat2: '代码审计与安全',
-    adminFeat3: '知识库生成',
-    businessTitle: '商业智能',
-    businessDesc: '数据驱动的洞察与自动化报表。轻松将原始数据转化为可执行的策略。',
-    businessFeat1: '自动化 Excel 报表',
-    businessFeat2: '数据分析与统计',
-    businessFeat3: '业务流程管理',
-    clientTitle: '客户服务',
-    clientDesc: '无缝入驻与智能支持。通过智能、基于规则的协助引导您的用户。',
-    clientFeat1: '智能客户支持',
-    clientFeat2: '系统入驻引导',
-    clientFeat3: '规则导向指引',
-    copyright: '© 2024 AI 智能助手. 保留所有权利.',
+    heroTitle1: '企业级',
+    heroTitle2: 'AI 智能平台',
+    heroDesc: '面向个人与企业的灵活 AI 解决方案。支持 SaaS 订阅与私有化部署，提供工作流自动化、RAG 知识库与 MCP 工具集成。',
+    getStarted: '免费试用',
+    exploreFeatures: '了解更多',
+    freeTrialTitle: '灵活部署模式',
+    freeTrialDesc: '选择适合您的模式 - 纯前端、云端后台或演示样例。',
+    tryNow: '立即试用',
+    adminTitle: '工作流与自动化',
+    adminDesc: '可视化工作流设计器，拖拽式配置。轻松管理智能体、提示词模板，并集成 MCP 工具。',
+    adminFeat1: '可视化工作流设计',
+    adminFeat2: '智能体与提示词管理',
+    adminFeat3: 'MCP 工具集成',
+    businessTitle: '企业管理平台',
+    businessDesc: '企业级管理后台。支持客户端 UI 可视化定制、AI 日志分析与知识库管理。',
+    businessFeat1: '客户端 UI 可视化定制',
+    businessFeat2: 'AI 驱动的日志分析',
+    businessFeat3: 'RAG 知识库对接',
+    clientTitle: '智能客户端',
+    clientDesc: '丰富的功能特性：语音转文字、联网搜索、长期记忆、会议总结、多模态交互。',
+    clientFeat1: '语音与会议总结',
+    clientFeat2: '长期记忆（RAG）',
+    clientFeat3: '多模态输入支持',
+    copyright: '© 2024 LiteChat AI. 保留所有权利.',
     privacy: '隐私政策',
     terms: '服务条款',
   }
@@ -314,87 +435,178 @@ const translations = {
 
 const t = computed(() => translations[lang.value]);
 
+const playModes = computed(() => {
+    const isZh = lang.value === 'zh';
+    return [
+        {
+            title: isZh ? '纯前端模式' : 'Backend Mode',
+            desc: isZh ? '无需登录，仅需 API Key 即可使用，数据本地存储。适合个人快速体验。' : 'No login required, just need API Key. Data stored locally. Perfect for personal use.',
+            icon: UserIcon,
+            image: '' // Reserved for backend image URL
+        },
+        {
+            title: isZh ? '云端后台模式' : 'Frontend Mode',
+            desc: isZh ? '需登录，对接完整管理后台。支持单点登录与企业级功能。' : 'Login required, full admin panel integration. Supports SSO and enterprise features.',
+            icon: MicIcon,
+            image: '' // Reserved for backend image URL
+        },
+        {
+            title: isZh ? '演示样例模式' : 'Demo Mode',
+            desc: isZh ? '包含各类 Demo 示例，使用 Mock 数据。快速了解系统功能。' : 'Contains various demo examples with mock data. Quick system overview.',
+            icon: ImageIcon,
+            image: '' // Reserved for backend image URL
+        }
+    ];
+});
+
 const toggleLang = () => {
   lang.value = lang.value === 'en' ? 'zh' : 'en';
 };
 
 const toggleTheme = () => {
   isDark.value = !isDark.value;
-  // Re-init particles to change color
-  initParticles();
 };
 
-// Particle System
-let animationId: number;
-interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  speedX: number;
-  speedY: number;
-  opacity: number;
+// Multiple Snakes Logic
+interface Snake {
+    body: { x: number; y: number }[];
+    direction: { x: number; y: number };
+    color: string;
+    isHero: boolean;
 }
 
-const initParticles = () => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
+let animationId: number;
+const cellSize = 20;
+const snakes = ref<Snake[]>([]);
+const snakeCount = ref(1); // Configurable snake count
+let lastUpdate = 0;
+const updateInterval = 80;
 
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const particles: Particle[] = [];
-  const particleCount = 50; // Number of particles
-  const particleColor = '34, 197, 94'; // Green-500
-
-  for (let i = 0; i < particleCount; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 4 + 2, // Slightly larger squares
-      speedX: (Math.random() - 0.5) * 0.5,
-      speedY: (Math.random() - 0.5) * 0.5,
-      opacity: Math.random() * 0.5 + 0.1
-    });
-  }
-
-  const animate = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+const initSnakes = (width: number, height: number) => {
+    snakes.value = [];
     
-    particles.forEach(p => {
-      p.x += p.speedX;
-      p.y += p.speedY;
+    // Hero Snake (Cyan, follows mouse)
+    snakes.value.push(createSnake(width, height, isDark.value ? '#06b6d4' : '#0891b2', true)); // Cyan
+    
+    // Ambient Snakes
+    const colors = isDark.value ? ['#8b5cf6', '#10b981', '#ec4899', '#3b82f6'] : ['#7c3aed', '#059669', '#db2777', '#2563eb'];
+    for (let i = 0; i < snakeCount.value; i++) {
+        snakes.value.push(createSnake(width, height, colors[i % colors.length], false));
+    }
+};
 
-      // Wrap around screen
-      if (p.x < 0) p.x = canvas.width;
-      if (p.x > canvas.width) p.x = 0;
-      if (p.y < 0) p.y = canvas.height;
-      if (p.y > canvas.height) p.y = 0;
+const createSnake = (width: number, height: number, color: string, isHero: boolean): Snake => {
+    const cols = Math.floor(width / cellSize);
+    const rows = Math.floor(height / cellSize);
+    const startX = Math.floor(Math.random() * cols);
+    const startY = Math.floor(Math.random() * rows);
+    const body = [];
+    for (let i = 0; i < 5; i++) {
+        body.push({ x: startX, y: startY });
+    }
+    return {
+        body,
+        direction: { x: 1, y: 0 },
+        color,
+        isHero
+    };
+};
 
-      ctx.fillStyle = `rgba(${particleColor}, ${p.opacity})`;
-      ctx.fillRect(p.x, p.y, p.size, p.size);
+const updateSnakes = (width: number, height: number) => {
+    snakes.value.forEach(snake => {
+        if (snake.isHero && isMouseMoving.value) {
+            // Hero follows mouse
+            const head = snake.body[0];
+            const headPixelX = head.x * cellSize + cellSize / 2;
+            const headPixelY = head.y * cellSize + cellSize / 2;
+            const dx = mouseX.value - headPixelX;
+            const dy = mouseY.value - headPixelY;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                const newDirX = dx > 0 ? 1 : -1;
+                if (newDirX !== -snake.direction.x) snake.direction = { x: newDirX, y: 0 };
+            } else {
+                const newDirY = dy > 0 ? 1 : -1;
+                if (newDirY !== -snake.direction.y) snake.direction = { x: 0, y: newDirY };
+            }
+        } else {
+            // Random movement
+            if (Math.random() < 0.05) {
+                 const moves = [{x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1}];
+                 const validMoves = moves.filter(m => m.x !== -snake.direction.x || m.y !== -snake.direction.y);
+                 snake.direction = validMoves[Math.floor(Math.random() * validMoves.length)];
+            }
+        }
+
+        const newHead = {
+            x: snake.body[0].x + snake.direction.x,
+            y: snake.body[0].y + snake.direction.y
+        };
+
+        // Wrap around logic
+        const cols = Math.floor(width / cellSize);
+        const rows = Math.floor(height / cellSize);
+        if (newHead.x < 0) newHead.x = cols - 1;
+        if (newHead.x >= cols) newHead.x = 0;
+        if (newHead.y < 0) newHead.y = rows - 1;
+        if (newHead.y >= rows) newHead.y = 0;
+
+        snake.body.unshift(newHead);
+        snake.body.pop();
     });
+};
 
-    animationId = requestAnimationFrame(animate);
-  };
+const drawGame = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    ctx.clearRect(0, 0, width, height);
+    
+    snakes.value.forEach(snake => {
+        ctx.fillStyle = snake.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = snake.color;
+        
+        snake.body.forEach((segment, index) => {
+            const alpha = 1 - index / snake.body.length;
+            ctx.globalAlpha = Math.max(0.2, alpha * 0.8); // Slightly transparent
+            ctx.fillRect(segment.x * cellSize, segment.y * cellSize, cellSize - 2, cellSize - 2);
+        });
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+    });
+};
 
-  if (animationId) cancelAnimationFrame(animationId);
-  animate();
+const gameLoop = (timestamp: number) => {
+    if (!canvasRef.value) return;
+    const canvas = canvasRef.value;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (timestamp - lastUpdate > updateInterval) {
+        updateSnakes(canvas.width, canvas.height);
+        lastUpdate = timestamp;
+    }
+    
+    drawGame(ctx, canvas.width, canvas.height);
+    animationId = requestAnimationFrame(gameLoop);
 };
 
 const handleResize = () => {
   if (canvasRef.value) {
     canvasRef.value.width = window.innerWidth;
     canvasRef.value.height = window.innerHeight;
-    initParticles(); // Re-init to handle resize properly
+    initSnakes(canvasRef.value.width, canvasRef.value.height);
   }
 };
 
 onMounted(() => {
-  initParticles();
+  if (canvasRef.value) {
+      canvasRef.value.width = window.innerWidth;
+      canvasRef.value.height = window.innerHeight;
+      initSnakes(canvasRef.value.width, canvasRef.value.height);
+      animationId = requestAnimationFrame(gameLoop);
+  }
+  
+  window.addEventListener('mousemove', handleMouseMove);
   window.addEventListener('resize', handleResize);
+  
   startCarousel();
   
   setupScrollReveal(feature1);
@@ -404,24 +616,16 @@ onMounted(() => {
 
 onUnmounted(() => {
   cancelAnimationFrame(animationId);
+  window.removeEventListener('mousemove', handleMouseMove);
   window.removeEventListener('resize', handleResize);
   clearInterval(carouselInterval);
+  clearTimeout(mouseTimeout);
 });
 </script>
 
 <style scoped>
-@keyframes pulse-slow {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.1); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-}
-
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -431,35 +635,26 @@ onUnmounted(() => {
   100% { background-position: 0% 50%; }
 }
 
-.animate-pulse-slow {
-  animation: pulse-slow 8s infinite ease-in-out;
-}
-
-.animate-float {
-  animation: float 6s infinite ease-in-out;
-}
-
 .animate-fade-in-up {
-  animation: fade-in-up 0.8s ease-out forwards;
-  opacity: 0; /* Start hidden */
+  animation: fade-in-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
 }
 
 .animate-gradient-x {
   background-size: 200% 200%;
-  animation: gradient-x 3s ease infinite;
+  animation: gradient-x 5s ease infinite;
 }
 
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
 .delay-500 { animation-delay: 500ms; }
-.delay-1000 { animation-delay: 1000ms; }
 
 /* Scroll Reveal Styles */
 .scroll-reveal {
   opacity: 0;
-  transform: translateY(50px);
-  transition: all 1s ease-out;
+  transform: translateY(60px);
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scroll-reveal.revealed {
