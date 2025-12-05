@@ -1,68 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, nextTick, watch, ref } from 'vue';
-import MarkdownIt from 'markdown-it';
-import hljs from 'highlight.js/lib/core';
-import javascript from 'highlight.js/lib/languages/javascript';
-import typescript from 'highlight.js/lib/languages/typescript';
-import python from 'highlight.js/lib/languages/python';
-import java from 'highlight.js/lib/languages/java';
-import go from 'highlight.js/lib/languages/go';
-import xml from 'highlight.js/lib/languages/xml';
-import css from 'highlight.js/lib/languages/css';
-import json from 'highlight.js/lib/languages/json';
-import bash from 'highlight.js/lib/languages/bash';
-import sql from 'highlight.js/lib/languages/sql';
-import markdown from 'highlight.js/lib/languages/markdown';
-import yaml from 'highlight.js/lib/languages/yaml';
-import shell from 'highlight.js/lib/languages/shell';
-import c from 'highlight.js/lib/languages/c';
-import cpp from 'highlight.js/lib/languages/cpp';
-import csharp from 'highlight.js/lib/languages/csharp';
-import rust from 'highlight.js/lib/languages/rust';
-import php from 'highlight.js/lib/languages/php';
-import ruby from 'highlight.js/lib/languages/ruby';
-import swift from 'highlight.js/lib/languages/swift';
-import kotlin from 'highlight.js/lib/languages/kotlin';
-import diff from 'highlight.js/lib/languages/diff';
-import ini from 'highlight.js/lib/languages/ini';
-import dockerfile from 'highlight.js/lib/languages/dockerfile';
-import graphql from 'highlight.js/lib/languages/graphql';
-
-hljs.registerLanguage('javascript', javascript);
-hljs.registerLanguage('typescript', typescript);
-hljs.registerLanguage('python', python);
-hljs.registerLanguage('java', java);
-hljs.registerLanguage('go', go);
-hljs.registerLanguage('xml', xml);
-hljs.registerLanguage('html', xml);
-hljs.registerLanguage('css', css);
-hljs.registerLanguage('json', json);
-hljs.registerLanguage('bash', bash);
-hljs.registerLanguage('sql', sql);
-hljs.registerLanguage('markdown', markdown);
-hljs.registerLanguage('yaml', yaml);
-hljs.registerLanguage('shell', shell);
-hljs.registerLanguage('c', c);
-hljs.registerLanguage('cpp', cpp);
-hljs.registerLanguage('csharp', csharp);
-hljs.registerLanguage('rust', rust);
-hljs.registerLanguage('php', php);
-hljs.registerLanguage('ruby', ruby);
-hljs.registerLanguage('swift', swift);
-hljs.registerLanguage('kotlin', kotlin);
-hljs.registerLanguage('diff', diff);
-hljs.registerLanguage('ini', ini);
-hljs.registerLanguage('dockerfile', dockerfile);
-hljs.registerLanguage('graphql', graphql);
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import type { Message, Attachment } from '../../stores/chat';
 import { useChatStore } from '../../stores/chat';
-import { User, Bot, Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight } from 'lucide-vue-next';
-import MessageActions from './MessageActions.vue';
+import { User, Bot, Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight, Copy } from 'lucide-vue-next';
 import { formatMessageTime } from '../../utils/time';
+import MarkdownRenderer from '../common/MarkdownRenderer.vue';
+import MessageActions from './MessageActions.vue';
 
 const props = defineProps<{
   message: Message;
-  isLastMessage?: boolean;
+  isLastMessage: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: 'quote', id: string, content: string): void;
+  (e: 'regenerate', id: string): void;
+  (e: 'image-click', url: string): void;
+  (e: 'file-click', file: Attachment): void;
 }>();
 
 const chatStore = useChatStore();
@@ -79,238 +33,8 @@ if (!chatStore.isLoading) {
   isReasoningCollapsed.value = true;
 }
 
-const emit = defineEmits<{
-  (e: 'quote', messageId: string, content: string): void;
-  (e: 'regenerate', messageId: string): void;
-  (e: 'previewImage', url: string): void;
-}>();
-
-// Lazy load and initialize Mermaid only when needed
-let mermaidInstance: any = null;
-
-const initMermaid = async () => {
-  if (!mermaidInstance) {
-    const mermaidModule = await import('mermaid');
-    mermaidInstance = mermaidModule.default;
-    
-    // Initialize mermaid
-    mermaidInstance.initialize({
-      startOnLoad: false,
-      theme: 'default',
-      securityLevel: 'loose',
-      suppressErrorRendering: true, // Suppress default error rendering
-    });
-    
-    // Override parseError to prevent console spam
-    mermaidInstance.parseError = () => {};
-  }
-  
-  return mermaidInstance;
-};
-
-const md: MarkdownIt = new MarkdownIt({
-  html: false,
-  linkify: true,
-  typographer: true,
-  highlight: function (str, lang): string {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(str, { language: lang, ignoreIllegals: true }).value;
-      } catch (__) {}
-    }
-    return md.utils.escapeHtml(str);
-  }
-});
-
-// Custom fence rule for mermaid and code blocks
-md.renderer.rules.fence = (tokens: any[], idx: number, options: any, _env: any, _self: any) => {
-  const token = tokens[idx];
-  const info = token.info.trim();
-  
-  if (info === 'mermaid') {
-    const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const encodedCode = encodeURIComponent(token.content);
-    return `
-      <div class="mermaid-view my-4" id="${id}" data-code="${encodedCode}">
-        <div class="flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-gray-500 text-sm animate-pulse border border-gray-100 dark:border-gray-700">
-           <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-           </svg>
-           流程图生成中...
-        </div>
-      </div>
-    `;
-  }
-  
-  const lang = info ? info.split(/\s+/)[0] : '';
-  const languageLabel = lang ? lang.toUpperCase() : 'TEXT';
-  const code = options.highlight ? options.highlight(token.content, lang) : md.utils.escapeHtml(token.content);
-  
-  return `
-    <div class="chat-code-block">
-      <div class="chat-code-header">
-        <span class="chat-code-lang">${languageLabel}</span>
-        <button class="copy-btn" data-code="${encodeURIComponent(token.content)}">
-          <span class="copy-icon">📋</span>
-          <span class="copy-text">复制</span>
-        </button>
-      </div>
-      <div class="chat-code-content">
-        <pre><code class="hljs language-${lang}">${code}</code></pre>
-      </div>
-    </div>
-  `;
-};
-
-// Custom table rules for horizontal scrolling and export button
-md.renderer.rules.table_open = () => '<div class="table-wrapper overflow-x-auto my-4 w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"><table class="w-full text-left text-sm">';
-md.renderer.rules.table_close = () => `
-  </table>
-  <div class="flex justify-end p-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-    <button class="export-table-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
-      Export to Sheets
-    </button>
-  </div>
-</div>`;
-
-const renderedContent = computed(() => {
-  try {
-    return md.render(props.message.content);
-  } catch (e) {
-    console.error('Markdown render error:', e);
-    return '<div class="text-gray-500 italic p-2">当前内容暂不支持渲染</div>';
-  }
-});
-
-const renderMermaid = async () => {
-  await nextTick();
-  const mermaidDivs = document.querySelectorAll('.mermaid-view');
-  
-  // Only load mermaid if there are mermaid diagrams to render
-  if (mermaidDivs.length === 0) return;
-  
-  // Dynamically load mermaid when needed
-  const mermaid = await initMermaid();
-  
-  mermaidDivs.forEach(async (div) => {
-    const id = div.id;
-    const content = decodeURIComponent(div.getAttribute('data-code') || '');
-    if (div.getAttribute('data-processed')) return;
-    
-    const sanitizeMermaid = (code: string) => {
-      let sanitized = code;
-      
-      // Fix unquoted brackets in node labels: id[label with [brackets]]
-      // Exclude shapes starting with [[ or [{
-      sanitized = sanitized.replace(/([A-Za-z0-9_]+)\s*\[(?!\[|\{)(.*?)\]/g, (match, id, content) => {
-        if (content.includes('[') && !content.startsWith('"')) {
-          return `${id}["${content}"]`;
-        }
-        return match;
-      });
-      
-      // Fix unquoted parentheses in node labels: id(label with (parens))
-      // Exclude shapes starting with ((
-      sanitized = sanitized.replace(/([A-Za-z0-9_]+)\s*\((?!\()(.*?)\)/g, (match, id, content) => {
-        if (content.includes('(') && !content.startsWith('"')) {
-          return `${id}("${content}")`;
-        }
-        return match;
-      });
-    
-      return sanitized;
-    };
-
-    try {
-      const sanitizedContent = sanitizeMermaid(content);
-      
-      // Validate content before rendering
-      if (await mermaid.parse(sanitizedContent)) {
-        const { svg } = await mermaid.render(id + '-svg', sanitizedContent);
-        div.innerHTML = svg;
-        div.setAttribute('data-processed', 'true');
-      }
-    } catch (error) {
-      // If streaming, suppress error as it might be incomplete code
-      if (props.isLastMessage && chatStore.isLoading) {
-        // Keep the loading state
-        return;
-      }
-      console.error('Mermaid render error:', error);
-      div.innerHTML = `<div class="text-red-500 bg-red-50 p-2 rounded text-sm">流程图生成失败</div>`;
-    }
-  });
-};
-
-// Handle click delegation
-const handleMessageClick = async (event: MouseEvent) => {
-  const target = event.target as HTMLElement;
-  
-  // Handle Copy Code
-  const copyBtn = target.closest('.copy-btn');
-  if (copyBtn) {
-    const btn = copyBtn as HTMLElement;
-    const code = decodeURIComponent(btn.getAttribute('data-code') || '');
-    if (code) {
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(code);
-        } else {
-          const textArea = document.createElement('textarea');
-          textArea.value = code;
-          textArea.style.position = 'fixed';
-          textArea.style.left = '-9999px';
-          textArea.style.top = '0';
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          document.execCommand('copy');
-          document.body.removeChild(textArea);
-        }
-        
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="text-green-500">✓</span><span class="text-green-500">已复制</span>';
-        setTimeout(() => {
-          btn.innerHTML = originalHtml;
-        }, 2000);
-      } catch (err) {
-        console.error('Failed to copy:', err);
-      }
-    }
-    return;
-  }
-
-  // Handle Table Export
-  const exportBtn = target.closest('.export-table-btn');
-  if (exportBtn) {
-    const wrapper = exportBtn.closest('.table-wrapper');
-    const table = wrapper?.querySelector('table');
-    if (table) {
-      try {
-        const XLSX = await import('xlsx');
-        const wb = XLSX.utils.table_to_book(table);
-        XLSX.writeFile(wb, `table-export-${Date.now()}.xlsx`);
-      } catch (err) {
-        console.error('Failed to export table:', err);
-        alert('导出表格失败');
-      }
-    }
-  }
-};
-
-// Watch for content changes to re-render mermaid
-watch(() => props.message.content, () => {
-  renderMermaid();
-});
-
-onMounted(() => {
-  renderMermaid();
-});
-
-const handleQuote = (messageId: string, content: string) => {
-  emit('quote', messageId, content);
+const handleQuote = (id: string, content: string) => {
+  emit('quote', id, content);
 };
 
 const handleRegenerate = (id: string) => {
@@ -318,41 +42,85 @@ const handleRegenerate = (id: string) => {
 };
 
 const handleImageClick = (url: string) => {
-  emit('previewImage', url);
+  emit('image-click', url);
 };
 
 const handleFileClick = (file: Attachment) => {
-  // Create a temporary anchor element to trigger download
-  const a = document.createElement('a');
-  a.href = file.url || '#';
-  console.log(file, a);
-  // Ensure filename has extension and timestamp
-  let filename = file.name;
-  const timestamp = new Date().getTime();
-  
-  if (file.type && !filename.includes('.')) {
-    const ext = file.type.split('/')[1];
-    if (ext) {
-      filename = `${filename}-${timestamp}.${ext}`;
+  emit('file-click', file);
+};
+
+const copyToClipboard = async (text: string) => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
     } else {
-      filename = `${filename}-${timestamp}`;
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
     }
-  } else {
-    // Insert timestamp before extension
-    const parts = filename.split('.');
-    if (parts.length > 1) {
-      const ext = parts.pop();
-      filename = `${parts.join('.')}-${timestamp}.${ext}`;
-    } else {
-      filename = `${filename}-${timestamp}`;
-    }
+    // Optional: Show a toast or feedback
+  } catch (err) {
+    console.error('Failed to copy:', err);
+  }
+};
+
+// Partial Quote Logic
+const showQuoteBtn = ref(false);
+const quoteBtnPosition = ref({ top: 0, left: 0 });
+const selectedText = ref('');
+
+const handleSelection = () => {
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed) {
+    showQuoteBtn.value = false;
+    return;
+  }
+
+  const text = selection.toString().trim();
+  if (!text) {
+    showQuoteBtn.value = false;
+    return;
   }
   
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const range = selection.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  
+  selectedText.value = text;
+  quoteBtnPosition.value = {
+    top: rect.top - 40, // Position above selection
+    left: rect.left + (rect.width / 2) - 30 // Center horizontally
+  };
+  showQuoteBtn.value = true;
 };
+
+const handleQuoteSelection = () => {
+  if (selectedText.value) {
+    emit('quote', props.message.id, selectedText.value);
+    showQuoteBtn.value = false;
+    window.getSelection()?.removeAllRanges();
+  }
+};
+
+// Close quote button on click outside
+const handleClickOutside = (e: MouseEvent) => {
+  if (showQuoteBtn.value && !(e.target as HTMLElement).closest('button')) {
+    showQuoteBtn.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside);
+});
 </script>
 
 <template>
@@ -386,6 +154,7 @@ const handleFileClick = (file: Attachment) => {
             : 'block w-full prose dark:prose-invert max-w-none'
         ]"
         :style="message.role === 'user' ? { backgroundColor: '#3b82f6', color: '#ffffff' } : {}"
+        @mouseup="message.role === 'assistant' ? handleSelection() : null"
       >
         <!-- Reasoning Content -->
         <div v-if="message.reasoningContent" class="mb-4">
@@ -413,15 +182,25 @@ const handleFileClick = (file: Attachment) => {
           </div>
         </div>
 
-        <div v-if="message.role === 'user'">
-          {{ message.content }}
+        <div v-if="message.role === 'user'" class="relative group/user-msg">
+          <div class="pr-6">
+            {{ message.content }}
+          </div>
+          <button 
+            @click="copyToClipboard(message.content)"
+            class="absolute top-0 right-0 p-1 text-white/50 hover:text-white opacity-0 group-hover/user-msg:opacity-100 transition-all"
+            title="复制"
+          >
+            <Copy class="w-3.5 h-3.5" />
+          </button>
         </div>
-        <div 
+        
+        <!-- Markdown Renderer for Assistant -->
+        <MarkdownRenderer 
           v-else 
-          v-html="renderedContent"
-          class="markdown-body max-w-full break-words"
-          @click="handleMessageClick"
-        ></div>
+          :content="message.content" 
+          :loading="isLastMessage && chatStore.isLoading"
+        />
 
         <!-- Quote Display (for user messages with quotes) -->
         <div v-if="message.role === 'user' && message.quoteContent" class="mt-2 pt-2 border-t border-white/20">
@@ -532,161 +311,21 @@ const handleFileClick = (file: Attachment) => {
         @quote="handleQuote"
         @regenerate="handleRegenerate"
       />
+
+      <!-- Floating Quote Button -->
+      <div 
+        v-if="showQuoteBtn"
+        class="fixed z-50 animate-fade-in"
+        :style="{ top: quoteBtnPosition.top + 'px', left: quoteBtnPosition.left + 'px' }"
+      >
+        <button 
+          @click="handleQuoteSelection"
+          class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded shadow-lg hover:bg-gray-800 transition-colors"
+        >
+          <Quote class="w-3 h-3" />
+          引用
+        </button>
+      </div>
     </div>
   </div>
 </template>
-
-<style>
-/* Basic Markdown Styles for AI response */
-.markdown-body {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.markdown-body p {
-  margin-bottom: 0.75em;
-  white-space: pre-wrap;
-}
-
-.markdown-body ul {
-  list-style-type: disc;
-  padding-left: 1.5em;
-  margin-bottom: 1em;
-}
-
-.markdown-body ol {
-  list-style-type: decimal;
-  padding-left: 1.5em;
-  margin-bottom: 1em;
-}
-
-.markdown-body li {
-  margin-bottom: 0.25em;
-}
-
-/* Code block styles are now handled by utility classes in the render function */
-/* But we keep some resets */
-.markdown-body pre code {
-  word-break: normal;
-  white-space: pre;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.875em;
-}
-
-/* Table styles */
-.markdown-body table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.markdown-body th,
-.markdown-body td {
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-}
-
-.dark .markdown-body th,
-.dark .markdown-body td {
-  border-color: #374151;
-}
-
-.markdown-body th {
-  background-color: #f9fafb;
-  font-weight: 600;
-}
-
-.dark .markdown-body th {
-  background-color: #1f2937;
-}
-
-/* Mermaid styles */
-.mermaid {
-  background: white;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-  overflow-x: auto;
-  display: flex;
-  justify-content: center;
-}
-
-.dark .mermaid {
-  background: #1f2937;
-}
-
-/* Custom Code Block Styles */
-.chat-code-block {
-  margin: 1rem 0;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  background-color: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  max-width: 100%;
-}
-
-.dark .chat-code-block {
-  background-color: #1f2937;
-  border-color: #374151;
-}
-
-.chat-code-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 1rem;
-  background-color: #f3f4f6; /* Match block bg for seamless look or slightly darker */
-  border-bottom: 1px solid #e5e7eb;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.dark .chat-code-header {
-  background-color: #1f2937;
-  border-color: #374151;
-}
-
-.chat-code-lang {
-  font-size: 0.75rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-weight: 500;
-  color: #6b7280;
-}
-
-.dark .chat-code-lang {
-  color: #9ca3af;
-}
-
-.copy-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-  transition: color 0.2s;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.dark .copy-btn {
-  color: #9ca3af;
-}
-
-.copy-btn:hover {
-  color: #3b82f6; /* Primary color */
-}
-
-.chat-code-content {
-  overflow-x: auto;
-}
-
-.chat-code-content pre {
-  margin: 0 !important;
-  padding: 1rem !important;
-  background-color: transparent !important;
-  border: 0 !important;
-}
-</style>

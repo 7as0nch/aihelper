@@ -48,7 +48,7 @@ export const getQuestionList = async (): Promise<QuestionItem[]> => {
 export const getRecommendationConfig = async (): Promise<RecommendationConfig> => {
     await new Promise(resolve => setTimeout(resolve, 300));
     return {
-        showKnowledgeBase: true,
+        showKnowledgeBase: false,
         showQuestions: true,
     };
 };

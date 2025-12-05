@@ -13,6 +13,7 @@ export const useChatStore = defineStore('chat', () => {
     const isLoading = ref(false);
     const isThinking = ref(false);
     const thinkingMode = useStorage<'smart' | 'deep' | 'quick'>('litechat_thinking_mode', 'smart');
+    const searchByWeb = useStorage<boolean>('litechat_search_by_web', false);
 
     const currentChatId = ref<string | null>(null);
 
@@ -34,7 +35,7 @@ export const useChatStore = defineStore('chat', () => {
         messages.value.push(message);
     };
 
-    const updateLastMessage = (data: { content?: string; reasoningContent?: string }) => {
+    const updateLastMessage = (data: Partial<Message>) => {
         const lastMsg = messages.value[messages.value.length - 1];
         if (lastMsg && lastMsg.role === 'assistant') {
             if (data.content) {
@@ -43,6 +44,18 @@ export const useChatStore = defineStore('chat', () => {
             if (data.reasoningContent) {
                 lastMsg.reasoningContent = (lastMsg.reasoningContent || '') + data.reasoningContent;
             }
+            // Merge other fields if present
+            if (data.attachments) {
+                lastMsg.attachments = [...(lastMsg.attachments || []), ...data.attachments];
+            }
+            if (data.tokenUsage) {
+                lastMsg.tokenUsage = data.tokenUsage;
+            }
+            if (data.quoteId) lastMsg.quoteId = data.quoteId;
+            if (data.quoteContent) lastMsg.quoteContent = data.quoteContent;
+            if (data.quoteSearchLinks) lastMsg.quoteSearchLinks = data.quoteSearchLinks;
+            if (data.callingTools) lastMsg.callingTools = data.callingTools;
+            if (data.aiModel) lastMsg.aiModel = { ...lastMsg.aiModel, ...data.aiModel };
 
             // Persist to LocalStorage in frontend mode
             if (currentChatId.value && getConfig('VITE_AI_TYPE') === 'frontend') {
@@ -104,6 +117,14 @@ export const useChatStore = defineStore('chat', () => {
             const lastMsg = messages.value[messages.value.length - 1];
             if (lastMsg && lastMsg.role === 'assistant') {
                 lastMsg.content += ' [已停止生成]';
+
+                // Persist to LocalStorage/Backend immediately
+                if (currentChatId.value && getConfig('VITE_AI_TYPE') === 'frontend') {
+                    const currentHistoryItem = historyItems.value.find(h => h.id === currentChatId.value);
+                    if (currentHistoryItem) {
+                        (chatApi as any).saveChat(currentChatId.value, currentHistoryItem.title, messages.value);
+                    }
+                }
             }
         }
     };
@@ -122,6 +143,7 @@ export const useChatStore = defineStore('chat', () => {
                 id: 'deepseek', // Default mock model
                 modelName: 'deepseek',
                 thinkingMode: thinkingMode.value,
+                searchByWeb: searchByWeb.value,
             }
         };
         // Auto-create session if not exists
@@ -231,6 +253,7 @@ export const useChatStore = defineStore('chat', () => {
         isLoading,
         isThinking,
         thinkingMode,
+        searchByWeb,
         sendMessage,
         loadChatHistory,
         clearMessages,

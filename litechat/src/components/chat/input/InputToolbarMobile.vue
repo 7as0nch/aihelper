@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ChevronDown, Globe, Scissors, Paperclip, Check } from 'lucide-vue-next';
+import { ChevronDown, Globe, Scissors, Paperclip, Check, Sparkles, Image as ImageIcon } from 'lucide-vue-next';
 
 defineProps<{
   currentMode: string;
@@ -8,6 +8,8 @@ defineProps<{
   activeButton: string | null;
   currentModeLabel: string;
   currentModeIcon: any;
+  extButtons?: Array<{ id: string; name: string; api: string; desc: string; icon?: any }>;
+  searchByWeb?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -16,12 +18,16 @@ const emit = defineEmits<{
   (e: 'toggle-dropdown'): void;
   (e: 'screenshot'): void;
   (e: 'upload'): void;
+  (e: 'ext-action', btn: any): void;
+  (e: 'toggle-web-search'): void;
 }>();
 
 const isDropdownOpen = ref(false);
+const dropdownRef = ref<HTMLElement | null>(null);
 
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value;
+  emit('toggle-dropdown');
 };
 
 const selectMode = (mode: string) => {
@@ -33,16 +39,26 @@ const closeDropdown = () => {
   isDropdownOpen.value = false;
 };
 
+// Icon mapping for external buttons
+const iconMap: Record<string, any> = {
+  'Sparkles': Sparkles,
+  'Image': ImageIcon
+};
+
+const getIcon = (iconName: string) => {
+  return iconMap[iconName] || Sparkles;
+};
+
 defineExpose({
   closeDropdown
 });
 </script>
 
 <template>
-  <div class="md:hidden mb-2 no-scrollbar">
+  <div class="md:hidden mb-2 overflow-x-auto no-scrollbar touch-pan-x">
     <div class="flex items-center gap-2 w-max px-1">
       <!-- Model Selection -->
-      <div class="relative" ref="dropdownRef">
+      <div class="relative shrink-0" ref="dropdownRef">
         <button 
           @click.stop="toggleDropdown"
           v-tracker="{ type: 'click', name: '模型选择' }"
@@ -80,12 +96,17 @@ defineExpose({
 
       <!-- Web Search Toggle -->
       <button 
-        @click="emit('trigger-bounce', 'search')"
+        @click="emit('toggle-web-search'); emit('trigger-bounce', 'search')"
         v-tracker="{ type: 'click', name: '搜索' }"
-        class="flex items-center justify-center h-9 p-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333]"
-        :class="{ 'animate-jump': activeButton === 'search' }"
+        class="flex items-center justify-center h-9 px-3 py-2 backdrop-blur-xl rounded-full shadow-sm border transition-all shrink-0 gap-1.5 text-sm font-medium"
+        :class="[
+          searchByWeb 
+            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800' 
+            : 'bg-white/80 dark:bg-[#2a2a2a]/80 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400',
+          { 'animate-jump': activeButton === 'search' }
+        ]"
       >
-        <Globe class="w-4 h-4 text-gray-500" />
+        <Globe class="w-4 h-4" :class="searchByWeb ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 group-hover:text-blue-500'" />
         搜索
       </button>
 
@@ -93,10 +114,10 @@ defineExpose({
       <button 
         @click="emit('screenshot'); emit('trigger-bounce', 'screenshot')"
         v-tracker="{ type: 'click', name: '截屏'}"
-        class="flex items-center justify-center h-9 p-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333]"
+        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
         :class="{ 'animate-jump': activeButton === 'screenshot' }"
       >
-        <Scissors class="w-4 h-4 text-gray-500" />
+        <Scissors class="w-4 h-4 text-gray-500 group-hover:text-blue-500" />
         截屏
       </button>
 
@@ -104,11 +125,22 @@ defineExpose({
       <button 
         v-tracker="{ type: 'click', name: '上传' }"
         @click="emit('upload'); emit('trigger-bounce', 'upload')"
-        class="flex items-center justify-center h-9 p-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333]"
+        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
         :class="{ 'animate-jump': activeButton === 'upload' }"
       >
-        <Paperclip class="w-4 h-4 text-gray-500" />
+        <Paperclip class="w-4 h-4 text-gray-500 group-hover:text-blue-500" />
         上传
+      </button>
+
+      <!-- External Buttons -->
+      <button 
+        v-for="btn in extButtons"
+        :key="btn.id"
+        @click="emit('ext-action', btn)"
+        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
+      >
+        <component :is="getIcon(btn.icon)" class="w-4 h-4" />
+        {{ btn.name }}
       </button>
     </div>
   </div>

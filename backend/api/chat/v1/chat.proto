@@ -126,6 +126,7 @@ message AIModel {
     string id = 1;
     string modelName = 2;
     string thinkingMode = 3; // 'smart' | 'deep' | 'quick'
+    bool searchByWeb = 4;
 }
 
 // export interface CallingTool {

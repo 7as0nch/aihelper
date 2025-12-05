@@ -89,7 +89,7 @@ const generateScreenshot = async () => {
         el.style.height = 'auto';
         el.style.overflow = 'visible';
         
-    // Fix User Message Bubble
+        // Fix User Message Bubble
         if (el.classList.contains('user-message-bubble')) {
              el.style.whiteSpace = 'pre-wrap';
              el.style.color = '#ffffff'; // Force white color
@@ -127,6 +127,29 @@ const generateScreenshot = async () => {
             el.style.maxWidth = '100%';
             el.style.height = 'auto';
             el.style.overflow = 'hidden'; // Fix warning
+        }
+
+        // Fix Markdown Content (Assistant)
+        if (el.classList.contains('prose') || el.closest('.prose')) {
+           el.style.color = document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151';
+           
+           // Fix Code Blocks
+           if (el.tagName === 'PRE') {
+             el.style.backgroundColor = '#1e1e1e'; // Dark background for code blocks
+             el.style.color = '#d4d4d4';
+             el.style.padding = '1rem';
+             el.style.borderRadius = '0.5rem';
+             el.style.overflowX = 'hidden'; // Avoid scrollbars in screenshot
+             el.style.whiteSpace = 'pre-wrap'; // Wrap code lines
+           }
+           
+           // Fix Mermaid Diagrams
+           if (el.classList.contains('mermaid')) {
+             el.style.backgroundColor = 'white'; // Ensure background for visibility
+             if (document.documentElement.classList.contains('dark')) {
+                el.style.backgroundColor = '#1e1e1e';
+             }
+           }
         }
       });
 

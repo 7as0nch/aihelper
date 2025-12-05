@@ -122,8 +122,19 @@ const handleClickOutside = (event: MouseEvent) => {
   desktopToolbarRef.value?.closeDropdown();
 };
 
-onMounted(() => {
+import { chatApi } from '../../api/chat';
+
+// ...
+
+const extButtons = ref<{ id: string; name: string; api: string; desc: string; icon: string }[]>([]);
+
+onMounted(async () => {
   document.addEventListener('click', handleClickOutside);
+  try {
+    extButtons.value = await chatApi.getExtButtons();
+  } catch (error) {
+    console.error('Failed to fetch external buttons:', error);
+  }
 });
 
 onUnmounted(() => {
@@ -351,6 +362,14 @@ const handleKeydown = (e: KeyboardEvent) => {
 const handleScreenshot = () => {
   emit('toggleScreenshot');
 };
+
+
+
+const handleExtAction = (btn: any) => {
+  console.log('External action triggered:', btn);
+  // Here you would typically call the API or handle the action
+  triggerBounce(btn.id);
+};
 </script>
 
 <template>
@@ -363,10 +382,14 @@ const handleScreenshot = () => {
       :active-button="activeButton"
       :current-mode-label="currentModeLabel"
       :current-mode-icon="currentModeIcon"
+      :ext-buttons="extButtons"
+      :search-by-web="store.searchByWeb"
       @select-mode="selectMode"
       @trigger-bounce="triggerBounce"
       @screenshot="handleScreenshot"
       @upload="desktopToolbarRef?.triggerFileUpload" 
+      @ext-action="handleExtAction"
+      @toggle-web-search="store.searchByWeb = !store.searchByWeb"
     />
     <!-- Note: upload on mobile might need a separate hidden input or reuse desktop's if visible/accessible, 
          but desktop toolbar is hidden on mobile. 
@@ -438,12 +461,16 @@ const handleScreenshot = () => {
         :is-loading="store.isLoading"
         :has-attachments="pendingAttachments.length > 0"
         :is-recording="isRecording"
+        :ext-buttons="extButtons"
+        :search-by-web="store.searchByWeb"
         @select-mode="selectMode"
         @screenshot="handleScreenshot"
         @voice-input="handleVoiceInput"
         @send="handleSend"
         @stop="store.stopGeneration()"
         @file-change="handleFileChange"
+        @ext-action="handleExtAction"
+        @toggle-web-search="store.searchByWeb = !store.searchByWeb"
       />
     </div>
   </div>

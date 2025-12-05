@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ChevronDown, Globe, Camera, Paperclip, Mic, ArrowUp, Square, Check } from 'lucide-vue-next';
+import { ChevronDown, Globe, Camera, Paperclip, Mic, ArrowUp, Square, Check, MoreHorizontal, Sparkles, Image as ImageIcon } from 'lucide-vue-next';
 
 defineProps<{
   currentMode: string;
@@ -11,6 +11,8 @@ defineProps<{
   isLoading: boolean;
   hasAttachments: boolean;
   isRecording: boolean;
+  extButtons?: Array<{ id: string; name: string; api: string; desc: string; icon?: any }>;
+  searchByWeb?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -21,9 +23,12 @@ const emit = defineEmits<{
   (e: 'send'): void;
   (e: 'stop'): void;
   (e: 'file-change', event: Event, type: 'file' | 'image'): void;
+  (e: 'ext-action', btn: any): void;
+  (e: 'toggle-web-search'): void;
 }>();
 
 const isDropdownOpen = ref(false);
+const isMoreDropdownOpen = ref(false);
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const imageInput = ref<HTMLInputElement | null>(null);
@@ -34,6 +39,17 @@ const triggerFileUpload = () => {
 
 const closeDropdown = () => {
   isDropdownOpen.value = false;
+  isMoreDropdownOpen.value = false;
+};
+
+// Icon mapping for external buttons
+const iconMap: Record<string, any> = {
+  'Sparkles': Sparkles,
+  'Image': ImageIcon
+};
+
+const getIcon = (iconName: string) => {
+  return iconMap[iconName] || Sparkles;
 };
 
 defineExpose({
@@ -48,7 +64,7 @@ defineExpose({
       <!-- Smart Thinking Dropdown -->
       <div class="relative">
         <button 
-          @click.stop="isDropdownOpen = !isDropdownOpen"
+          @click.stop="isDropdownOpen = !isDropdownOpen; isMoreDropdownOpen = false"
           class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
           <component :is="currentModeIcon" class="w-4 h-4 text-primary" />
@@ -59,7 +75,7 @@ defineExpose({
         <!-- Dropdown Menu -->
         <div 
           v-if="isDropdownOpen"
-          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
+          class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
         >
           <button 
             v-for="mode in modes" 
@@ -82,12 +98,6 @@ defineExpose({
       
       <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
 
-      <button class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm">
-        <Globe class="w-4 h-4" />
-        <!-- 是否启用联网搜索的MCP Tool -->
-        <span class="hidden md:inline">联网搜索</span>
-      </button>
-
       <button 
         @click="emit('screenshot')"
         class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
@@ -96,6 +106,57 @@ defineExpose({
         <Camera class="w-4 h-4" />
         <span class="hidden md:inline">截屏</span>
       </button>
+
+      <!-- More Dropdown -->
+      <div class="relative">
+        <button 
+          @click.stop="isMoreDropdownOpen = !isMoreDropdownOpen; isDropdownOpen = false"
+          class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
+          title="更多选项"
+        >
+          <MoreHorizontal class="w-4 h-4" />
+        </button>
+
+        <!-- More Menu -->
+        <div 
+          v-if="isMoreDropdownOpen"
+          class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
+        >
+          <!-- Web Search Toggle -->
+          <button 
+            @click="emit('toggle-web-search')"
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+            :class="{ 'bg-blue-50 dark:bg-blue-900/20': searchByWeb }"
+          >
+            <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
+              <Globe class="w-4 h-4" :class="searchByWeb ? 'text-blue-500' : 'text-gray-500'" />
+            </div>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">联网搜索</span>
+              <span class="text-xs text-gray-500">启用实时网络搜索</span>
+            </div>
+            <Check v-if="searchByWeb" class="w-4 h-4 text-primary ml-auto" />
+          </button>
+          
+          <div v-if="extButtons && extButtons.length > 0" class="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
+
+          <!-- External Buttons -->
+          <button 
+            v-for="btn in extButtons"
+            :key="btn.id"
+            @click="emit('ext-action', btn); isMoreDropdownOpen = false"
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+          >
+            <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
+              <component :is="getIcon(btn.icon)" class="w-4 h-4 text-gray-500" />
+            </div>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ btn.name }}</span>
+              <span class="text-xs text-gray-500">{{ btn.desc }}</span>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="flex items-center gap-1">

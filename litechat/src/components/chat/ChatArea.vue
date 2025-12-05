@@ -4,7 +4,9 @@ import { ref, onMounted, computed } from 'vue';
 import MessageList from './MessageList.vue';
 import InputArea from './InputArea.vue';
 import ScreenshotManager from './ScreenshotManager.vue';
-import { Menu, X, BookOpen, MessageCircle, Star, Share2, Plus, ChevronLeft } from 'lucide-vue-next';
+import WelcomeMobile from './welcome/WelcomeMobile.vue';
+import WelcomeDesktop from './welcome/WelcomeDesktop.vue';
+import { Menu, X, MessageCircle, Star, Share2, Plus, ChevronLeft } from 'lucide-vue-next';
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
 import { useRecommendationStore } from '../../stores/recommendation';
@@ -69,25 +71,9 @@ const toggleScreenshotMode = () => {
   // Clearing selection is handled by the parent or ScreenshotManager when mode changes
 };
 
-
-
-// Recommendations
-onMounted(() => {
-  recommendationStore.fetchRecommendations();
-});
-
-const randomQuestions = computed(() => {
-  return recommendationStore.getRandomItems(recommendationStore.questionList, 3);
-});
-
-const randomKnowledgeBase = computed(() => {
-  const items = recommendationStore.getRandomItems(recommendationStore.knowledgeBaseList, 1);
-  return items.length > 0 ? items[0] : null;
-});
-
 const handleQuestionClick = (content: string) => {
-    if (!authStore.checkAuth()) return;
-    store.sendMessage(content);
+  if (!authStore.checkAuth()) return;
+  store.sendMessage(content);
 };
 
 // Announcement Logic
@@ -156,57 +142,19 @@ onMounted(async () => {
     </div>
 
     <!-- Welcome State (Centered) -->
-    <div v-if="store.messages.length === 0" class="flex-1 flex flex-col items-center justify-end md:justify-center p-4 overflow-y-auto pb-10 md:pb-4">
-      <div class="w-full max-w-3xl flex flex-col space-y-6 md:space-y-10 md:-mt-20">
-        <h1 class="order-1 text-3xl md:text-4xl font-bold text-center text-gray-800 dark:text-gray-100 tracking-wide mb-4 md:mb-0">
-        你的 <span class="text-primary">智慧</span> 帮手
-        </h1>
-        
-        <div class="order-2 md:order-3 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-          <!-- Random Question -->
-          <!-- Random Questions -->
-          <div v-if="recommendationStore.showQuestions && randomQuestions.length > 0" class="flex flex-col gap-4">
-            <h3 class="font-medium text-lg text-gray-900 dark:text-gray-100 mb-2">想了解点什么？</h3>
-            <div class="flex flex-col gap-3 items-start">
-              <button
-                v-for="(question, index) in randomQuestions"
-                v-tracker="{ type: 'click', name: 'randomQuestion', data: { question: question.content } }"
-                :key="question.id"
-                @click="handleQuestionClick(question.content)"
-                class="px-5 py-3 bg-white dark:bg-[#2a2a2a] rounded-full border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all shadow-sm hover:shadow-md text-left text-sm text-gray-600 dark:text-gray-300 animate-float"
-                :style="{ animationDelay: `${index * 0.1}s` }"
-              >
-                {{ question.content }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Random Knowledge Base -->
-          <div 
-            v-if="recommendationStore.showKnowledgeBase && randomKnowledgeBase"
-            class="p-4 bg-white dark:bg-[#2a2a2a] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer text-left group"
-          >
-             <div class="flex items-center gap-2 mb-2">
-                <BookOpen class="w-4 h-4 text-primary" />
-                <h3 class="font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">推荐知识库</h3>
-            </div>
-            <p class="text-sm text-gray-500 line-clamp-2">{{ randomKnowledgeBase.title }}</p>
-          </div>
-        </div>
-
-        <div class="order-3 md:order-2 w-full">
-          <InputArea 
-            ref="inputAreaRef" 
-            :quoted-content="quotedContent" 
-            @clear-quote="quotedContent = null" 
-            @toggle-screenshot="toggleScreenshotMode"
-          />
-        </div>
-      </div>
-      
-      <div class="fixed bottom-4 text-xs text-gray-400">
-        AI 生成的内容可能不准确，请谨慎参考
-      </div>
+    <div v-if="store.messages.length === 0" class="flex-1 h-full relative">
+      <WelcomeMobile 
+        class="md:hidden"
+        :quoted-content="quotedContent"
+        @clear-quote="quotedContent = null"
+        @toggle-screenshot="toggleScreenshotMode"
+      />
+      <WelcomeDesktop
+        class="hidden md:flex"
+        :quoted-content="quotedContent"
+        @clear-quote="quotedContent = null"
+        @toggle-screenshot="toggleScreenshotMode"
+      />
     </div>
 
     <!-- Standard Chat Layout -->
@@ -286,7 +234,7 @@ onMounted(async () => {
         <!-- Persistent Suggestions -->
         <div 
           v-if="recommendationStore.showQuestions" 
-          class="absolute bottom-full left-0 right-0 pb-2 px-4 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-[#242424]/90 dark:via-[#242424]/50 pt-12 pointer-events-none hidden md:block"
+          class="absolute bottom-full left-0 right-0 pb-2 px-2 md:px-4 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-[#242424]/90 dark:via-[#242424]/50 pt-8 md:pt-12 pointer-events-none"
         >
           <div class="overflow-x-auto no-scrollbar pointer-events-auto touch-pan-x" style="-webkit-overflow-scrolling: touch;">
             <div class="flex gap-2 w-max px-1">
@@ -295,7 +243,7 @@ onMounted(async () => {
                 v-tracker="{ type: 'click', name: 'randomQuestion', data: { question: question.content } }"
                 :key="question.id"
                 @click="handleQuestionClick(question.content)"
-                class="px-4 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a] hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all whitespace-nowrap shadow-sm"
+                class="px-3 py-1.5 md:px-4 md:py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-full text-xs md:text-sm text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a] hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all whitespace-nowrap shadow-sm active:scale-95"
               >
                 {{ question.content }}
               </button>
@@ -347,16 +295,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-  100% { transform: translateY(0px); }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
