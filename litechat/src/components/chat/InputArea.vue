@@ -296,22 +296,24 @@ const removeAttachment = (id: string) => {
   pendingAttachments.value = pendingAttachments.value.filter(a => a.id !== id);
 };
 
-const handleVoiceInput = () => {
-  if (!('webkitSpeechRecognition' in window)) {
-    alert('您的浏览器不支持语音输入');
-    return;
-  }
-  
-  if (isRecording.value) {
-    isRecording.value = false;
-    return;
-  }
+// Voice input handlers
+// Store the base text when recording starts to show interim results
+const baseTextBeforeRecording = ref('');
 
+const handleVoiceStart = () => {
   isRecording.value = true;
-  // Mock voice input for now as we can't easily test real speech api in this env
-  setTimeout(() => {
-    input.value += ' (语音转文字测试内容) ';
-    isRecording.value = false;
+  baseTextBeforeRecording.value = input.value;
+};
+
+const handleVoiceStop = () => {
+  isRecording.value = false;
+};
+
+const handleVoiceResult = (text: string) => {
+  if (text) {
+    // When we get a final result, add it to the base text
+    baseTextBeforeRecording.value += text;
+    input.value = baseTextBeforeRecording.value;
     // Trigger resize
     setTimeout(() => {
       const textarea = textareaComponentRef.value?.textarea;
@@ -320,7 +322,27 @@ const handleVoiceInput = () => {
         textarea.style.height = textarea.scrollHeight + 'px';
       }
     }, 0);
-  }, 2000);
+  }
+};
+
+const handleVoiceInterim = (text: string) => {
+  if (isRecording.value) {
+    // Show base text + interim result in gray (or just show it for now)
+    input.value = baseTextBeforeRecording.value + text;
+    // Trigger resize
+    setTimeout(() => {
+      const textarea = textareaComponentRef.value?.textarea;
+      if (textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      }
+    }, 0);
+  }
+};
+
+const handleVoiceError = (message: string) => {
+  isRecording.value = false;
+  alert(message);
 };
 
 const handleFocus = (e: FocusEvent) => {
@@ -447,7 +469,11 @@ const handleExtAction = (btn: any) => {
         @paste="handlePaste"
         @focus="handleFocus"
         @resize="autoResize"
-        @voice-input="handleVoiceInput"
+        @voice-start="handleVoiceStart"
+        @voice-stop="handleVoiceStop"
+        @voice-result="handleVoiceResult"
+        @voice-interim="handleVoiceInterim"
+        @voice-error="handleVoiceError"
       />
       
       <!-- Desktop Toolbar -->
@@ -460,12 +486,15 @@ const handleExtAction = (btn: any) => {
         :input="input"
         :is-loading="store.isLoading"
         :has-attachments="pendingAttachments.length > 0"
-        :is-recording="isRecording"
         :ext-buttons="extButtons"
         :search-by-web="store.searchByWeb"
         @select-mode="selectMode"
         @screenshot="handleScreenshot"
-        @voice-input="handleVoiceInput"
+        @voice-start="handleVoiceStart"
+        @voice-stop="handleVoiceStop"
+        @voice-result="handleVoiceResult"
+        @voice-interim="handleVoiceInterim"
+        @voice-error="handleVoiceError"
         @send="handleSend"
         @stop="store.stopGeneration()"
         @file-change="handleFileChange"

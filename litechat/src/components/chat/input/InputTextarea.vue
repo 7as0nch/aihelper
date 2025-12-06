@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Mic, ArrowUp, Square } from 'lucide-vue-next';
+import { ArrowUp, Square } from 'lucide-vue-next';
+import VoiceInput from '../../common/VoiceInput.vue';
 
 defineProps<{
   modelValue: string;
@@ -17,7 +18,11 @@ const emit = defineEmits<{
   (e: 'paste', event: ClipboardEvent): void;
   (e: 'focus', event: FocusEvent): void;
   (e: 'resize', event: Event): void;
-  (e: 'voice-input'): void;
+  (e: 'voice-start'): void;
+  (e: 'voice-stop'): void;
+  (e: 'voice-result', text: string): void;
+  (e: 'voice-interim', text: string): void;
+  (e: 'voice-error', message: string): void;
 }>();
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
@@ -60,13 +65,14 @@ defineExpose({
 
     <!-- Mobile Right Actions (Voice & Send) -->
     <div class="flex md:hidden items-center gap-2 pb-1">
-      <button 
-        @click="emit('voice-input')" 
-        class="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-        :class="{ 'text-red-500 bg-red-50 dark:bg-red-900/20': isRecording }"
-      >
-        <Mic class="w-5 h-5" />
-      </button>
+      <VoiceInput
+        size="md"
+        @start="emit('voice-start')"
+        @stop="emit('voice-stop')"
+        @result="emit('voice-result', $event)"
+        @interim="emit('voice-interim', $event)"
+        @error="emit('voice-error', $event)"
+      />
 
       <button 
         class="p-2 rounded-full transition-all duration-200 ease-in-out"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ChevronDown, Globe, Camera, Paperclip, Mic, ArrowUp, Square, Check, MoreHorizontal, Sparkles, Image as ImageIcon } from 'lucide-vue-next';
+import { ChevronDown, Globe, Camera, Paperclip, ArrowUp, Square, Check, MoreHorizontal, Sparkles, Image as ImageIcon } from 'lucide-vue-next';
+import VoiceInput from '../../common/VoiceInput.vue';
 
 defineProps<{
   currentMode: string;
@@ -10,7 +11,6 @@ defineProps<{
   input: string;
   isLoading: boolean;
   hasAttachments: boolean;
-  isRecording: boolean;
   extButtons?: Array<{ id: string; name: string; api: string; desc: string; icon?: any }>;
   searchByWeb?: boolean;
 }>();
@@ -19,7 +19,11 @@ const emit = defineEmits<{
   (e: 'select-mode', mode: string): void;
   (e: 'screenshot'): void;
   (e: 'upload'): void;
-  (e: 'voice-input'): void;
+  (e: 'voice-start'): void;
+  (e: 'voice-stop'): void;
+  (e: 'voice-result', text: string): void;
+  (e: 'voice-interim', text: string): void;
+  (e: 'voice-error', message: string): void;
   (e: 'send'): void;
   (e: 'stop'): void;
   (e: 'file-change', event: Event, type: 'file' | 'image'): void;
@@ -178,14 +182,14 @@ defineExpose({
         @change="(e) => emit('file-change', e, 'image')" 
       />
       
-      <button 
-        @click="emit('voice-input')" 
-        class="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-        :class="{ 'text-red-500 bg-red-50 dark:bg-red-900/20': isRecording }"
-        title="语音输入"
-      >
-        <Mic class="w-5 h-5" />
-      </button>
+      <VoiceInput
+        size="md"
+        @start="emit('voice-start')"
+        @stop="emit('voice-stop')"
+        @result="emit('voice-result', $event)"
+        @interim="emit('voice-interim', $event)"
+        @error="emit('voice-error', $event)"
+      />
 
       <button 
         class="p-2 rounded-full transition-all duration-200 ease-in-out ml-1"
