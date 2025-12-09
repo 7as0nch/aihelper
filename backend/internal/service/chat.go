@@ -250,7 +250,7 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	// Accumulate AI response for saving
 	var aiContentBuilder strings.Builder
 	var aiReasoningBuilder strings.Builder
-	var aiMsg *model.AIChatMessage
+	var aiMsg = &model.AIChatMessage{}
 
 	for msg := range stream {
 		if msg.Error != nil {
@@ -264,12 +264,22 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 		// Accumulate content
 		aiContentBuilder.WriteString(msg.Message.Content)
 		aiReasoningBuilder.WriteString(msg.Message.ReasoningContent)
-
-		jsonMsg, err := marshaler.Marshal(&pb.Message{
+		pbMsg := &pb.Message{
 			Role:             string(msg.Message.Role),
 			Content:          msg.Message.Content,
 			ReasoningContent: msg.Message.ReasoningContent,
-		})
+		}
+		if msg.Message.TokenUsage != nil {
+			aiMsg.TokenUsage = &model.TokenUsage{
+				CurrentTokens: msg.Message.TokenUsage.CurrentTokens,
+				TotalTokens:   msg.Message.TokenUsage.TotalTokens,
+			}
+			pbMsg.TokenUsage = &pb.TokenUsage{
+				CurrentTokens: msg.Message.TokenUsage.CurrentTokens,
+				TotalTokens:   msg.Message.TokenUsage.TotalTokens,
+			}
+		}
+		jsonMsg, err := marshaler.Marshal(pbMsg)
 		if err != nil {
 			s.log.Error("Marshal message error:", zap.Error(err))
 			return
@@ -286,7 +296,9 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	userMsg := s.uc.NewMessage(sessionID, model.RoleUser, req.CurMessage.Content)
 	userMsg.New()
 	// Save AI Message
-	aiMsg = s.uc.NewMessage(sessionID, model.RoleAssistant, aiContentBuilder.String())
+	aiMsg.Role = model.RoleAssistant
+	aiMsg.SessionID = sessionID
+	aiMsg.Content = aiContentBuilder.String()
 	aiMsg.ReasoningContent = aiReasoningBuilder.String()
 	aiMsg.New()
 	// TODO: Save other fields like TokenUsage, etc. if available in the last message or accumulated

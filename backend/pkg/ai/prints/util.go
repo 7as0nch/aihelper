@@ -39,7 +39,6 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 				chunk, err := s.Recv()
 				if err != nil {
 					if err == io.EOF {
-						handlerFn(nil, err)
 						break
 					}
 					log.Printf("error: %v", err)
@@ -90,13 +89,17 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 					} else if charNumOfOneRow >= maxCharNumOfOneRow {
 						charNumOfOneRow = 0
 					}
+					var tk *ai.TokenUsage
+					if chunk.ResponseMeta != nil && chunk.ResponseMeta.Usage != nil {
+						tk = &ai.TokenUsage{
+							CurrentTokens: int64(chunk.ResponseMeta.Usage.CompletionTokens),
+							TotalTokens:   int64(chunk.ResponseMeta.Usage.TotalTokens),
+						}
+					}
 					handlerFn(&ai.Message{
 						Role:    ai.RoleType(chunk.Role),
 						Content: chunk.Content,
-						TokenUsage: &ai.TokenUsage{
-							CurrentTokens: int64(chunk.ResponseMeta.Usage.CompletionTokens),
-							TotalTokens:   int64(chunk.ResponseMeta.Usage.TotalTokens),
-						},
+						TokenUsage: tk,
 					}, nil)
 				}
 

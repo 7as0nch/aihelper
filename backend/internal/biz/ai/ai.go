@@ -41,7 +41,9 @@ func NewAIUsecase(log *zap.Logger) *AIUsecase {
 func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 	agent, err := uc.factory.CreateWithSubAgents(ctx, &pkgai.AgentConfig{
 		Name:        "globalAgent",
-		Description: "你是一个全局工具调用助手:可获取系统配置，如当前系统时间。", // English description
+		Description: `你是一个全能助手: 
+		1.可获取系统配置，如当前系统时间。
+		2.websearch搜索用户想要搜索的东西并解答。`, // English description
 		AdapterType: pkgai.AdapterTypeDeepAdk,
 		ModelConfig: pkgai.ModelConfig{
 			ModelType: "deepseek",
@@ -51,6 +53,7 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 			Thinking:  true,
 		},
 		WithWebSearchAgent: true,
+		MaxIteration: 10,
 	}, []*pkgai.AgentConfig{})
 	if err != nil {
 		uc.log.Error("Failed to get agent", zap.Error(err))

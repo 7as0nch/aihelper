@@ -1,7 +1,12 @@
 package ai
 
 import (
+	"context"
+	"encoding/json"
 	"testing"
+	"time"
+
+	"github.com/cloudwego/eino-ext/components/tool/duckduckgo/v2"
 )
 
 // TestAIAgentConfig 测试 AIAgent 配置的创建和检查
@@ -124,4 +129,55 @@ func TestPromptManager(t *testing.T) {
 	}
 
 	t.Log("测试通过！")
+}
+
+func TestDuckDuckGo(t *testing.T) {
+    ctx := context.Background()
+
+    // Create configuration
+    config := &duckduckgo.Config{
+       MaxResults: 3, // Limit to return 20 results
+       Region:     duckduckgo.RegionWT,
+       Timeout:    10 * time.Second,
+    }
+
+    // Create search client
+    tool, err := duckduckgo.NewTextSearchTool(ctx, config)
+    if err != nil {
+       t.Fatalf("NewTextSearchTool of duckduckgo failed, err=%v", err)
+    }
+
+    results := make([]*duckduckgo.TextSearchResult, 0, config.MaxResults)
+
+    searchReq := &duckduckgo.TextSearchRequest{
+       Query: "eino",
+    }
+    jsonReq, err := json.Marshal(searchReq)
+    if err != nil {
+       t.Fatalf("Marshal of search request failed, err=%v", err)
+    }
+
+    resp, err := tool.InvokableRun(ctx, string(jsonReq))
+    if err != nil {
+       t.Fatalf("Search of duckduckgo failed, err=%v", err)
+    }
+
+    var searchResp duckduckgo.TextSearchResponse
+    if err = json.Unmarshal([]byte(resp), &searchResp); err != nil {
+       t.Fatalf("Unmarshal of search response failed, err=%v", err)
+    }
+
+    results = append(results, searchResp.Results...)
+
+    // Print results
+    t.Logf("Search Results:")
+    t.Logf("==============")
+    t.Logf("%s\n", searchResp.Message)
+    for i, result := range results {
+       t.Logf("\n%d. Title: %s\n", i+1, result.Title)
+       t.Logf("   URL: %s\n", result.URL)
+       t.Logf("   Summary: %s\n", result.Summary)
+    }
+    t.Logf("")
+    t.Logf("==============")
 }

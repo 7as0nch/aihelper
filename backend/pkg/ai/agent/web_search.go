@@ -44,7 +44,12 @@ func NewWebSearchAgent(ctx context.Context, config *ai.AgentConfig) (adk.Agent, 
 		return nil, err
 	}
 
-	searchTool, err := duckduckgo.NewTextSearchTool(ctx, &duckduckgo.Config{})
+	searchTool, err := duckduckgo.NewTextSearchTool(ctx, &duckduckgo.Config{
+		ToolName:   "duckduckgo_search",
+		ToolDesc:   "search for information by duckduckgo",
+		Region:     duckduckgo.RegionWT, // The geographical region for results.
+		MaxResults: 3,                   // Limit the number of results returned.
+	})
 	if err != nil {
 		return nil, err
 	}
