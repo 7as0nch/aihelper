@@ -9,6 +9,7 @@ type AIChat struct {
 	models.Model
 	Title  string `gorm:"column:title;type:varchar(255);not null" json:"title"`
 	UserID int64  `gorm:"column:user_id;type:bigint;not null;index" json:"user_id"`
+	// todo 是否涉及转人工处理。
 }
 
 // TableName AIChat's table name

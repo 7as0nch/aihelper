@@ -9,9 +9,10 @@ import (
 
 	pb "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/biz"
+	"github.com/example/aichat/backend/internal/biz/ai"
 	"github.com/example/aichat/backend/models/generator/model"
+	pkgai "github.com/example/aichat/backend/pkg/ai"
 	"github.com/example/aichat/backend/pkg/auth"
-	"github.com/example/aichat/backend/pkg/chat"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -19,14 +20,16 @@ import (
 
 type ChatService struct {
 	pb.UnimplementedChatServer
-	uc  *biz.ChatUsecase
-	log *zap.Logger
+	uc    *biz.ChatUsecase
+	agent *ai.AIUsecase
+	log   *zap.Logger
 }
 
-func NewChatService(uc *biz.ChatUsecase, logger *zap.Logger) *ChatService {
+func NewChatService(uc *biz.ChatUsecase, agent *ai.AIUsecase, logger *zap.Logger) *ChatService {
 	return &ChatService{
-		uc:  uc,
-		log: logger,
+		uc:    uc,
+		agent: agent,
+		log:   logger,
 	}
 }
 
@@ -219,9 +222,21 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use the abstract Agent interface
-	var agent chat.Agent[*pb.SendStreamRequest, *pb.Message] = chat.NewAdkAgent()
-
-	stream, err := agent.Stream(r.Context(), &req)
+	// var agent chat.Agent[*pb.SendStreamRequest, *pb.Message] = s.agent
+	var history []*pkgai.Message
+	for _, msg := range req.History {
+		history = append(history, &pkgai.Message{
+			Role:    pkgai.RoleType(msg.Role),
+			Content: msg.Content,
+		})
+	}
+	stream, err := s.agent.Stream(r.Context(), pkgai.Request{
+		History: history,
+		Message: &pkgai.Message{
+			Role:    pkgai.RoleType(req.CurMessage.Role),
+			Content: req.CurMessage.Content,
+		},
+	})
 	if err != nil {
 		s.log.Error("Stream failed:", zap.Error(err))
 		return
@@ -238,11 +253,23 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	var aiMsg *model.AIChatMessage
 
 	for msg := range stream {
+		if msg.Error != nil {
+			s.log.Error("Stream error:", zap.Error(msg.Error))
+			return
+		}
+		if msg.Message == nil {
+			s.log.Error("Stream message is nil")
+			continue
+		}
 		// Accumulate content
-		aiContentBuilder.WriteString(msg.Content)
-		aiReasoningBuilder.WriteString(msg.ReasoningContent)
+		aiContentBuilder.WriteString(msg.Message.Content)
+		aiReasoningBuilder.WriteString(msg.Message.ReasoningContent)
 
-		jsonMsg, err := marshaler.Marshal(msg)
+		jsonMsg, err := marshaler.Marshal(&pb.Message{
+			Role:             string(msg.Message.Role),
+			Content:          msg.Message.Content,
+			ReasoningContent: msg.Message.ReasoningContent,
+		})
 		if err != nil {
 			s.log.Error("Marshal message error:", zap.Error(err))
 			return
