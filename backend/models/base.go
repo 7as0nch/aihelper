@@ -56,3 +56,10 @@ func ToStatus(str string) Status {
 		return 0
 	}
 }
+
+type SystemType uint8
+
+const (
+	SystemType_System SystemType = iota + 1 // 系统内置
+	SystemType_User                         // 用户自定义
+)

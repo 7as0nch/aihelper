@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	pb "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/biz"
@@ -68,14 +69,13 @@ func (s *ChatService) HistoryById(ctx context.Context, req *pb.HistoryRequest) (
 			Timestamp:        msg.CreatedAt.Unix(),
 			QuoteId:          msg.QuoteId,
 			QuoteContent:     msg.QuoteContent,
-			IsStreaming:      msg.IsStreaming,
 		}
 
 		if msg.AIModel != nil {
 			pbMsg.AiModel = &pb.AIModel{
 				Id:           msg.AIModel.ID,
 				ModelName:    msg.AIModel.ModelName,
-				ThinkingMode: msg.AIModel.ThinkingMode,
+				ThinkingMode: string(msg.AIModel.ThinkingMode),
 			}
 		}
 		if len(msg.QuoteSearchLinks) > 0 {
@@ -164,7 +164,6 @@ func (s *ChatService) CreateMessage(ctx context.Context, req *pb.CreateMessageRe
 		Timestamp:        savedMsg.CreatedAt.Unix(),
 		QuoteId:          savedMsg.QuoteId,
 		QuoteContent:     savedMsg.QuoteContent,
-		IsStreaming:      savedMsg.IsStreaming,
 	}, nil
 }
 
@@ -226,15 +225,18 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	var history []*pkgai.Message
 	for _, msg := range req.History {
 		history = append(history, &pkgai.Message{
-			Role:    pkgai.RoleType(msg.Role),
-			Content: msg.Content,
+			Role:             pkgai.RoleType(msg.Role),
+			ReasoningContent: msg.ReasoningContent,
+			Content:          msg.Content,
 		})
 	}
 	stream, err := s.agent.Stream(r.Context(), pkgai.Request{
 		History: history,
 		Message: &pkgai.Message{
-			Role:    pkgai.RoleType(req.CurMessage.Role),
-			Content: req.CurMessage.Content,
+			Role:         pkgai.RoleType(req.CurMessage.Role),
+			Content:      req.CurMessage.Content,
+			QuoteId:      req.CurMessage.QuoteId,
+			QuoteContent: req.CurMessage.QuoteContent,
 		},
 	})
 	if err != nil {
@@ -251,7 +253,7 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	var aiContentBuilder strings.Builder
 	var aiReasoningBuilder strings.Builder
 	var aiMsg = &model.AIChatMessage{}
-
+	var startTime = time.Now()
 	for msg := range stream {
 		if msg.Error != nil {
 			s.log.Error("Stream error:", zap.Error(msg.Error))
@@ -295,11 +297,20 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	// Save User Message
 	userMsg := s.uc.NewMessage(sessionID, model.RoleUser, req.CurMessage.Content)
 	userMsg.New()
+	userMsg.QuoteId = req.CurMessage.QuoteId
+	userMsg.QuoteContent = req.CurMessage.QuoteContent
 	// Save AI Message
 	aiMsg.Role = model.RoleAssistant
 	aiMsg.SessionID = sessionID
+	aiMsg.AIModel = &model.UseAIModel{
+		ID:           req.CurMessage.AiModel.Id,
+		ModelName:    req.CurMessage.AiModel.ModelName,
+		ThinkingMode: model.AIModel_ThinkingMode(req.CurMessage.AiModel.ThinkingMode),
+		SearchByWeb:  model.AIModel_SearchByWeb_Bool(req.CurMessage.AiModel.SearchByWeb),
+	}
 	aiMsg.Content = aiContentBuilder.String()
 	aiMsg.ReasoningContent = aiReasoningBuilder.String()
+	aiMsg.GenerateTime = fmt.Sprintf("%v", time.Since(startTime).String())
 	aiMsg.New()
 	// TODO: Save other fields like TokenUsage, etc. if available in the last message or accumulated
 	if err := s.uc.BatchSaveMessages(ctx, []*model.AIChatMessage{userMsg, aiMsg}); err != nil {

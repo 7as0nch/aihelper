@@ -41,13 +41,14 @@ func newAIChatMessage(db *gorm.DB, opts ...gen.DOOption) aIChatMessage {
 	_aIChatMessage.Content = field.NewString(tableName, "content")
 	_aIChatMessage.ReasoningContent = field.NewString(tableName, "reasoning_content")
 	_aIChatMessage.AIModel = field.NewField(tableName, "ai_model")
-	_aIChatMessage.QuoteId = field.NewString(tableName, "quote_id")
+	_aIChatMessage.QuoteId = field.NewInt64(tableName, "quote_id")
 	_aIChatMessage.QuoteContent = field.NewString(tableName, "quote_content")
 	_aIChatMessage.QuoteSearchLinks = field.NewField(tableName, "quote_search_links")
 	_aIChatMessage.TokenUsage = field.NewField(tableName, "token_usage")
 	_aIChatMessage.CallingTools = field.NewField(tableName, "calling_tools")
 	_aIChatMessage.Attachments = field.NewField(tableName, "attachments")
-	_aIChatMessage.IsStreaming = field.NewBool(tableName, "is_streaming")
+	_aIChatMessage.GenerateTime = field.NewString(tableName, "generate_time")
+	_aIChatMessage.LikedStatus = field.NewUint8(tableName, "liked_status")
 
 	_aIChatMessage.fillFieldMap()
 
@@ -71,13 +72,14 @@ type aIChatMessage struct {
 	Content          field.String
 	ReasoningContent field.String
 	AIModel          field.Field
-	QuoteId          field.String
+	QuoteId          field.Int64
 	QuoteContent     field.String
 	QuoteSearchLinks field.Field
 	TokenUsage       field.Field
 	CallingTools     field.Field
 	Attachments      field.Field
-	IsStreaming      field.Bool
+	GenerateTime     field.String // '生成时间'
+	LikedStatus      field.Uint8  // '点赞状态'
 
 	fieldMap map[string]field.Expr
 }
@@ -107,13 +109,14 @@ func (a *aIChatMessage) updateTableName(table string) *aIChatMessage {
 	a.Content = field.NewString(table, "content")
 	a.ReasoningContent = field.NewString(table, "reasoning_content")
 	a.AIModel = field.NewField(table, "ai_model")
-	a.QuoteId = field.NewString(table, "quote_id")
+	a.QuoteId = field.NewInt64(table, "quote_id")
 	a.QuoteContent = field.NewString(table, "quote_content")
 	a.QuoteSearchLinks = field.NewField(table, "quote_search_links")
 	a.TokenUsage = field.NewField(table, "token_usage")
 	a.CallingTools = field.NewField(table, "calling_tools")
 	a.Attachments = field.NewField(table, "attachments")
-	a.IsStreaming = field.NewBool(table, "is_streaming")
+	a.GenerateTime = field.NewString(table, "generate_time")
+	a.LikedStatus = field.NewUint8(table, "liked_status")
 
 	a.fillFieldMap()
 
@@ -130,7 +133,7 @@ func (a *aIChatMessage) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (a *aIChatMessage) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 20)
+	a.fieldMap = make(map[string]field.Expr, 21)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["created_by"] = a.CreatedBy
@@ -150,7 +153,8 @@ func (a *aIChatMessage) fillFieldMap() {
 	a.fieldMap["token_usage"] = a.TokenUsage
 	a.fieldMap["calling_tools"] = a.CallingTools
 	a.fieldMap["attachments"] = a.Attachments
-	a.fieldMap["is_streaming"] = a.IsStreaming
+	a.fieldMap["generate_time"] = a.GenerateTime
+	a.fieldMap["liked_status"] = a.LikedStatus
 }
 
 func (a aIChatMessage) clone(db *gorm.DB) aIChatMessage {

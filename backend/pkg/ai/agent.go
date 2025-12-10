@@ -22,6 +22,8 @@ type Agent interface {
 	Close() error
 }
 
+type TOOL_FUNC[T, D any] func(ctx context.Context, input T) (output D, err error)
+
 // StreamRequest 流式请求
 type Request struct {
 	Message      *Message
@@ -43,7 +45,7 @@ type Message struct {
 	Content          string
 	ReasoningContent string
 	AIModel          *AIModel
-	QuoteId          string
+	QuoteId          int64
 	QuoteContent     string
 	QuoteSearchLinks []*QuoteSearchLink
 	TokenUsage       *TokenUsage

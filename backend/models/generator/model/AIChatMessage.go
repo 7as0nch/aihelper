@@ -17,20 +17,29 @@ type AIChatMessage struct {
 	Role             RoleType         `gorm:"column:role;type:varchar(50);not null" json:"role"`
 	Content          string           `gorm:"column:content;type:text" json:"content"`
 	ReasoningContent string           `gorm:"column:reasoning_content;type:text" json:"reasoning_content"`
-	AIModel          *AIModel         `gorm:"column:ai_model;type:text" json:"ai_model"`
-	QuoteId          string           `gorm:"column:quote_id;type:varchar(255)" json:"quote_id"`
+	AIModel          *UseAIModel      `gorm:"column:ai_model;type:text" json:"ai_model"`
+	QuoteId          int64            `gorm:"column:quote_id;type:bigint" json:"quote_id"`
 	QuoteContent     string           `gorm:"column:quote_content;type:text" json:"quote_content"`
 	QuoteSearchLinks QuoteSearchLinks `gorm:"column:quote_search_links;type:text" json:"quote_search_links"`
 	TokenUsage       *TokenUsage      `gorm:"column:token_usage;type:text" json:"token_usage"`
 	CallingTools     CallingTools     `gorm:"column:calling_tools;type:text" json:"calling_tools"`
 	Attachments      Attachments      `gorm:"column:attachments;type:text" json:"attachments"`
-	IsStreaming      bool             `gorm:"column:is_streaming;type:boolean;default:false" json:"is_streaming"`
+	GenerateTime     string           `gorm:"column:generate_time;type:varchar(50);comment:'生成时间'" json:"generate_time"`
+	LikedStatus      LikedStatus      `gorm:"column:liked_status;type:smallint;default:0;comment:'点赞状态'" json:"liked_status"`
 }
 
 // TableName AIChatMessage's table name
 func (*AIChatMessage) TableName() string {
 	return TableNameAIChatMessage
 }
+
+type LikedStatus uint8
+
+const (
+	_ LikedStatus = iota // 0
+	LikedStatus_Liked
+	LikedStatus_Unliked
+)
 
 // 'user' | 'assistant' | 'human'
 type RoleType string
@@ -43,19 +52,58 @@ const (
 
 // Custom Types
 
-type AIModel struct {
-	ID           string `json:"id"`
-	ModelName    string `json:"modelName"`
-	ThinkingMode string `json:"thinkingMode"` // 'smart' | 'deep' | 'quick'
+type AIModel_ThinkingMode string
+
+const (
+	AIModel_ThinkingModeSmart AIModel_ThinkingMode = "smart"
+	AIModel_ThinkingModeDeep  AIModel_ThinkingMode = "deep"
+	AIModel_ThinkingModeQuick AIModel_ThinkingMode = "quick"
+)
+
+type AIModel_SearchByWeb uint8
+
+const (
+	_                       AIModel_SearchByWeb = iota //smart
+	AIModel_SearchByWeb_Yes                            // 搜索网络
+	AIModel_SearchByWeb_No                             // 不搜索网络
+)
+
+func (m AIModel_SearchByWeb) String() string {
+	switch m {
+	case AIModel_SearchByWeb_Yes:
+		return "yes"
+	case AIModel_SearchByWeb_No:
+		return "no"
+	default:
+		return "smart"
+	}
+}
+func AIModel_SearchByWeb_Bool(val bool) AIModel_SearchByWeb {
+	if val {
+		return AIModel_SearchByWeb_Yes
+	}
+	return AIModel_SearchByWeb_No
 }
 
-func (m *AIModel) Scan(value interface{}) error {
+type UseAIModel struct {
+	ID           string               `json:"id"`
+	ModelName    string               `json:"modelName"`
+	ThinkingMode AIModel_ThinkingMode `json:"thinkingMode"` // 'smart' | 'deep' | 'quick'
+	SearchByWeb  AIModel_SearchByWeb  `json:"searchByWeb"`
+}
+
+func (m *UseAIModel) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	bytes, ok := value.([]byte)
-	if !ok {
-		return errors.New("type assertion to []byte failed")
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return errors.New("type assertion to []byte or string failed")
 	}
 	if len(bytes) == 0 {
 		return nil
@@ -63,7 +111,7 @@ func (m *AIModel) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, m)
 }
 
-func (m AIModel) Value() (driver.Value, error) {
+func (m UseAIModel) Value() (driver.Value, error) {
 	return json.Marshal(m)
 }
 
@@ -80,9 +128,14 @@ func (m *QuoteSearchLinks) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	bytes, ok := value.([]byte)
-	if !ok {
-		return errors.New("type assertion to []byte failed")
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return errors.New("type assertion to []byte or string failed")
 	}
 	if len(bytes) == 0 {
 		return nil
@@ -106,9 +159,14 @@ func (m *TokenUsage) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	bytes, ok := value.([]byte)
-	if !ok {
-		return errors.New("type assertion to []byte failed")
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return errors.New("type assertion to []byte or string failed")
 	}
 	if len(bytes) == 0 {
 		return nil
@@ -132,9 +190,14 @@ func (m *CallingTools) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	bytes, ok := value.([]byte)
-	if !ok {
-		return errors.New("type assertion to []byte failed")
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return errors.New("type assertion to []byte or string failed")
 	}
 	if len(bytes) == 0 {
 		return nil
@@ -162,9 +225,14 @@ func (m *Attachments) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	bytes, ok := value.([]byte)
-	if !ok {
-		return errors.New("type assertion to []byte failed")
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return errors.New("type assertion to []byte or string failed")
 	}
 	if len(bytes) == 0 {
 		return nil

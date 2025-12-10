@@ -335,7 +335,7 @@ type Message struct {
 	Content          string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
 	ReasoningContent string                 `protobuf:"bytes,5,opt,name=reasoningContent,proto3" json:"reasoningContent,omitempty"` // 深度思考内容。
 	Timestamp        int64                  `protobuf:"varint,6,opt,name=timestamp,proto3" json:"timestamp,omitempty"`              // 消息发送时间。
-	QuoteId          string                 `protobuf:"bytes,7,opt,name=quoteId,proto3" json:"quoteId,omitempty"`                   // 引用消息ID。
+	QuoteId          int64                  `protobuf:"varint,7,opt,name=quoteId,proto3" json:"quoteId,omitempty"`                  // 引用消息ID。
 	QuoteContent     string                 `protobuf:"bytes,8,opt,name=quoteContent,proto3" json:"quoteContent,omitempty"`         // 引用消息内容。
 	QuoteSearchLinks []*QuoteSearchLink     `protobuf:"bytes,9,rep,name=quoteSearchLinks,proto3" json:"quoteSearchLinks,omitempty"` // 联网搜索引用文章链接和内容。
 	TokenUsage       *TokenUsage            `protobuf:"bytes,10,opt,name=tokenUsage,proto3" json:"tokenUsage,omitempty"`            // token消耗累计。
@@ -418,11 +418,11 @@ func (x *Message) GetTimestamp() int64 {
 	return 0
 }
 
-func (x *Message) GetQuoteId() string {
+func (x *Message) GetQuoteId() int64 {
 	if x != nil {
 		return x.QuoteId
 	}
-	return ""
+	return 0
 }
 
 func (x *Message) GetQuoteContent() string {
@@ -1010,7 +1010,7 @@ const file_api_chat_v1_chat_proto_rawDesc = "" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12*\n" +
 	"\x10reasoningContent\x18\x05 \x01(\tR\x10reasoningContent\x12\x1c\n" +
 	"\ttimestamp\x18\x06 \x01(\x03R\ttimestamp\x12\x18\n" +
-	"\aquoteId\x18\a \x01(\tR\aquoteId\x12\"\n" +
+	"\aquoteId\x18\a \x01(\x03R\aquoteId\x12\"\n" +
 	"\fquoteContent\x18\b \x01(\tR\fquoteContent\x12D\n" +
 	"\x10quoteSearchLinks\x18\t \x03(\v2\x18.chat.v1.QuoteSearchLinkR\x10quoteSearchLinks\x123\n" +
 	"\n" +

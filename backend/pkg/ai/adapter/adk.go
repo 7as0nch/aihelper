@@ -9,7 +9,9 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/adk"
+	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"github.com/example/aichat/backend/pkg/agenttools"
 	"github.com/example/aichat/backend/pkg/ai"
 	"github.com/example/aichat/backend/pkg/ai/chatmodel"
 	"github.com/example/aichat/backend/pkg/ai/prints"
@@ -56,6 +58,15 @@ func NewEinoAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []ai.
 		Name:        config.Name,
 		Description: config.Description,
 		Model:       cm,
+		ToolsConfig: adk.ToolsConfig{
+			ToolsNodeConfig: compose.ToolsNodeConfig{
+				Tools: agenttools.GetBussinessTools(), // 工具可以后续扩展
+			},
+		},
+// 		Instruction: `
+// Notice:
+// 1. Tool Calls argument must be a valid json.
+// 2. Tool Calls argument should do not contains invalid suffix like ']<|FunctionCallEnd|>'.`,
 	}
 	agent, err := adk.NewChatModelAgent(ctx, agentConfig)
 	if err != nil {

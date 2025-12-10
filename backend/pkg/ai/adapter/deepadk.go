@@ -7,6 +7,7 @@ package adapter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/adk/prebuilt/deep"
@@ -74,7 +75,13 @@ func NewDeepAdkAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []
 				Tools: tool.GetGlobalTools(), // 工具可以后续扩展
 			},
 		},
-		MaxIteration: config.MaxIteration,
+		MaxIteration:           config.MaxIteration,
+		WithoutGeneralSubAgent: true,
+		Instruction: `
+		## 注意
+		1. 功能之外的问题请直接回复“我不了解，不能回答”。
+		2. 不管是thinking还是answer，不要暴露任何agent助手的细节和tool工具细节(特别是工具，agent名称)，只需要让用户知道在处理某件事情即可。
+		`,
 	}
 
 	deepAgent, err := deep.New(ctx, deepConfig)
@@ -144,11 +151,26 @@ func (a *DeepAdkAdapter) GetInternalAgent() adk.Agent {
 // convertToAdkMessages 将自定义消息转换为 adk 消息
 func (a *DeepAdkAdapter) convertToAdkMessages(msgs []*ai.Message) []adk.Message {
 	var result []adk.Message
-	for _, msg := range msgs {
-		result = append(result, &schema.Message{
-			Role:    schema.RoleType(msg.Role),
-			Content: msg.Content,
-		})
+	lenMsgs := len(msgs)
+	for i, msg := range msgs {
+		t := &schema.Message{
+			Role:             schema.RoleType(msg.Role),
+			Content:          msg.Content,
+			ReasoningContent: msg.ReasoningContent,
+		}
+		if i == lenMsgs-1 {
+			if msg.QuoteContent != "" {
+				t.Content = fmt.Sprintf(`
+				## quote content:
+				> this is the quote content by user selected.
+				%s
+				---
+				## user input:
+				%s`, 
+				msg.QuoteContent, msg.Content)
+			}
+		}
+		result = append(result, t)
 	}
 	return result
 }

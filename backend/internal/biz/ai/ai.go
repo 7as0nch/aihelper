@@ -39,11 +39,15 @@ func NewAIUsecase(log *zap.Logger) *AIUsecase {
 
 // GetAgent 获取 Agent（按需加载，带缓存）
 func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
+	// TODO 不同用户可能选择不同的 Agent，也可能直接@某个智能体。
 	agent, err := uc.factory.CreateWithSubAgents(ctx, &pkgai.AgentConfig{
 		Name:        "globalAgent",
 		Description: `你是一个全能助手: 
+		## 你的功能：
 		1.可获取系统配置，如当前系统时间。
-		2.websearch搜索用户想要搜索的东西并解答。`, // English description
+		2.websearch搜索用户想要搜索的东西并解答。
+		3.业务相关。
+		`, // English description
 		AdapterType: pkgai.AdapterTypeDeepAdk,
 		ModelConfig: pkgai.ModelConfig{
 			ModelType: "deepseek",
@@ -51,10 +55,27 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 			APIKey:    "sk-dc49fec5d27a416f8758ece703aed2ff",
 			BaseURL:   "https://api.deepseek.com",
 			Thinking:  true,
+			TopP:      0.9,
 		},
 		WithWebSearchAgent: true,
 		MaxIteration: 10,
-	}, []*pkgai.AgentConfig{})
+	}, []*pkgai.AgentConfig{{
+		Name:        "businessAgent",
+		Description: `你是一个业务助手: 报表相关需要返回表格形式。
+		1.用户报表查询
+		2.channel ROI查询。`, // English description
+		AdapterType: pkgai.AdapterTypeEino,
+		ModelConfig: pkgai.ModelConfig{
+			ModelType: "ark",
+			ModelName: "doubao-seed-1-6-250615",
+			APIKey:    "9292fee0-90fb-4739-86ff-eb1e886e2823",
+			BaseURL:   "",
+			Thinking:  true,
+			TopP:      0.9,
+		},
+		WithWebSearchAgent: false,
+		MaxIteration: 10,
+	}})
 	if err != nil {
 		uc.log.Error("Failed to get agent", zap.Error(err))
 		return nil, fmt.Errorf("failed to get agent: %w", err)

@@ -177,7 +177,7 @@ message Message {
     string content = 4;
     string reasoningContent = 5; // 深度思考内容。
     int64 timestamp = 6; // 消息发送时间。
-    string quoteId = 7; // 引用消息ID。
+    int64 quoteId = 7; // 引用消息ID。
     string quoteContent = 8; // 引用消息内容。
     repeated QuoteSearchLink quoteSearchLinks = 9; // 联网搜索引用文章链接和内容。
     TokenUsage tokenUsage = 10; // token消耗累计。
