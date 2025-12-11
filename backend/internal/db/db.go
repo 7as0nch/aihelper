@@ -45,7 +45,7 @@ func (d *Data) GetDB() *gorm.DB {
 func (d *Data) DB(ctx context.Context) *gorm.DB {
 	tx, ok := ctx.Value(contextTxKey{}).(*gorm.DB)
 	if ok {
-		return tx
+		return tx.WithContext(ctx)
 	}
 	return d.db
 }

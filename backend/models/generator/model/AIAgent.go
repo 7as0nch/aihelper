@@ -12,7 +12,7 @@ type AIAgent struct {
 	Name               string            `json:"name" gorm:"uniqueIndex;size:100"`                     // CnName
 	Code               string            `json:"code" gorm:"uniqueIndex;size:100"`                     // EnName
 	Description        string            `json:"description" gorm:"size:500"`                          // agent prompt
-	AdapterType        AdapterType       `json:"adapter_type" gorm:"size:50;default:eino"`             // adk, deepadk 等
+	AdapterType        AdapterType       `json:"adapter_type" gorm:"size:50;default:2"`             // adk, deepadk 等
 	AIModelID          int64             `json:"ai_model_id" gorm:"type:bigint;not null"`              // 关联的 AI 模型 ID
 	MaxIteration       int               `json:"max_iteration" gorm:"default:10;comment:'最大迭代次数'"`     // 最大迭代次数
 	SystemPrompt       string            `json:"system_prompt" gorm:"type:text;comment:'系统提示词'"`       // 系统提示词
@@ -50,4 +50,8 @@ type AgentBind struct {
 	models.Model
 	AgentID int64 `json:"agent_id" gorm:"type:bigint;not null"` // 关联的 AI Agent ID
 	SubAgentID int64 `json:"sub_agent_id" gorm:"type:bigint;not null"` // 关联的子 Agent ID
+}
+
+func (AgentBind) TableName() string {
+	return "ai_agent_bind"
 }
