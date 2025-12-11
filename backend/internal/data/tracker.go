@@ -9,18 +9,19 @@ import (
 	"context"
 
 	"github.com/example/aichat/backend/internal/biz/base"
+	"github.com/example/aichat/backend/internal/db"
 	"github.com/example/aichat/backend/models/generator/model"
 	"github.com/example/aichat/backend/models/generator/query"
 	"go.uber.org/zap"
 )
 
 type trackerRepo struct {
-	db    DataRepo
+	db    db.DataRepo
 	log   *zap.Logger
 	query *query.Query
 }
 
-func NewTrackerRepo(db DataRepo, log *zap.Logger) base.TrackerRepo {
+func NewTrackerRepo(db db.DataRepo, log *zap.Logger) base.TrackerRepo {
 	return &trackerRepo{
 		db:    db,
 		log:   log,

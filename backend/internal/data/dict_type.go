@@ -9,17 +9,18 @@ import (
 	"context"
 
 	"github.com/example/aichat/backend/internal/biz/base"
+	"github.com/example/aichat/backend/internal/db"
 	"github.com/example/aichat/backend/models/generator/model"
 	"github.com/example/aichat/backend/models/generator/query"
 	"go.uber.org/zap"
 )
 
 type dictTypeRepo struct {
-	db  DataRepo
+	db  db.DataRepo
 	log *zap.Logger
 }
 
-func NewDictTypeRepo(db DataRepo, log *zap.Logger) base.DictTypeRepo {
+func NewDictTypeRepo(db db.DataRepo, log *zap.Logger) base.DictTypeRepo {
 	return &dictTypeRepo{
 		db:  db,
 		log: log,

@@ -9,16 +9,17 @@ import (
 	"context"
 
 	"github.com/example/aichat/backend/internal/biz/base"
+	"github.com/example/aichat/backend/internal/db"
 	"github.com/example/aichat/backend/models/generator/model"
 	"github.com/example/aichat/backend/models/generator/query"
 )
 
 type sysUserRepo struct {
-	db    DataRepo
+	db    db.DataRepo
 	query *query.Query // 存储预编译的查询实例
 }
 
-func NewSysUserRepo(db DataRepo) base.SysUserRepo {
+func NewSysUserRepo(db db.DataRepo) base.SysUserRepo {
 	// 预编译查询实例，避免每次都重新创建
 	return &sysUserRepo{
 		db:    db,

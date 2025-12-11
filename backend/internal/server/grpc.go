@@ -1,10 +1,12 @@
 package server
 
 import (
+	aipb "github.com/example/aichat/backend/api/ai"
 	basepb "github.com/example/aichat/backend/api/base"
 	chatv1 "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/service"
+	"github.com/example/aichat/backend/internal/service/ai"
 	"github.com/example/aichat/backend/internal/service/base"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -19,6 +21,7 @@ func NewGRPCServer(c *conf.Server,
 	authServ *base.AuthService,
 	systemServ *base.SystemService,
 	trackerServ *base.TrackerService,
+	aiServ *ai.AIService,
 	chat *service.ChatService, logg log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
@@ -41,5 +44,6 @@ func NewGRPCServer(c *conf.Server,
 	basepb.RegisterAuthServer(srv, authServ)
 	basepb.RegisterSystemServer(srv, systemServ)
 	basepb.RegisterTrackerServer(srv, trackerServ)
+	aipb.RegisterAIServer(srv, aiServ)
 	return srv
 }

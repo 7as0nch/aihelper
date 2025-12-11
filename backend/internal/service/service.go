@@ -7,6 +7,7 @@ package service
 **/
 
 import (
+	"github.com/example/aichat/backend/internal/service/ai"
 	"github.com/example/aichat/backend/internal/service/base"
 	"github.com/google/wire"
 )
@@ -16,5 +17,6 @@ var ProviderSet = wire.NewSet(
 	base.NewAuthService,
 	base.NewSystemService,
 	base.NewTrackerService,
+	ai.NewAIService,
 	NewChatService,
 )

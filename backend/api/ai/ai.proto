@@ -1,0 +1,332 @@
+syntax = "proto3";
+
+package ai;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+option go_package = "backend/api/ai;ai";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.ai";
+option java_outer_classname = "AiProto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service AI {
+    // ========== AIAgent CRUD ==========
+    rpc ListAgents(ListAgentsRequest) returns (ListAgentsReply) {
+        option (google.api.http) = { get: "/api/ai/agents" };
+    }
+    rpc GetAgent(IdRequest) returns (AgentInfo) {
+        option (google.api.http) = { get: "/api/ai/agents/{id}" };
+    }
+    rpc CreateAgent(CreateAgentRequest) returns (AgentInfo) {
+        option (google.api.http) = { post: "/api/ai/agents", body: "*" };
+    }
+    rpc UpdateAgent(UpdateAgentRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { put: "/api/ai/agents/{id}", body: "*" };
+    }
+    rpc DeleteAgent(IdRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { delete: "/api/ai/agents/{id}" };
+    }
+    rpc BatchBindSubAgents(BatchBindSubAgentsRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { post: "/api/ai/agents/{agent_id}/sub-agents", body: "*" };
+    }
+
+    // ========== AIModel CRUD ==========
+    rpc ListModels(ListModelsRequest) returns (ListModelsReply) {
+        option (google.api.http) = { get: "/api/ai/models" };
+    }
+    rpc GetModel(IdRequest) returns (ModelInfo) {
+        option (google.api.http) = { get: "/api/ai/models/{id}" };
+    }
+    rpc CreateModel(CreateModelRequest) returns (ModelInfo) {
+        option (google.api.http) = { post: "/api/ai/models", body: "*" };
+    }
+    rpc UpdateModel(UpdateModelRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { put: "/api/ai/models/{id}", body: "*" };
+    }
+    rpc DeleteModel(IdRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { delete: "/api/ai/models/{id}" };
+    }
+
+    // ========== AIPromptTemplate CRUD ==========
+    rpc ListPrompts(ListPromptsRequest) returns (ListPromptsReply) {
+        option (google.api.http) = { get: "/api/ai/prompts" };
+    }
+    rpc GetPrompt(IdRequest) returns (PromptInfo) {
+        option (google.api.http) = { get: "/api/ai/prompts/{id}" };
+    }
+    rpc CreatePrompt(CreatePromptRequest) returns (PromptInfo) {
+        option (google.api.http) = { post: "/api/ai/prompts", body: "*" };
+    }
+    rpc UpdatePrompt(UpdatePromptRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { put: "/api/ai/prompts/{id}", body: "*" };
+    }
+    rpc DeletePrompt(IdRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { delete: "/api/ai/prompts/{id}" };
+    }
+
+    // ========== AITool CRUD ==========
+    rpc ListTools(ListToolsRequest) returns (ListToolsReply) {
+        option (google.api.http) = { get: "/api/ai/tools" };
+    }
+    rpc GetTool(IdRequest) returns (ToolInfo) {
+        option (google.api.http) = { get: "/api/ai/tools/{id}" };
+    }
+    rpc CreateTool(CreateToolRequest) returns (ToolInfo) {
+        option (google.api.http) = { post: "/api/ai/tools", body: "*" };
+    }
+    rpc UpdateTool(UpdateToolRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { put: "/api/ai/tools/{id}", body: "*" };
+    }
+    rpc DeleteTool(IdRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { delete: "/api/ai/tools/{id}" };
+    }
+    rpc BatchBindTools(BatchBindToolsRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = { post: "/api/ai/agents/{agent_id}/tools", body: "*" };
+    }
+}
+
+// ========== Common ==========
+message IdRequest { 
+    int64 id = 1; 
+}
+
+// ========== Agent Messages ==========
+message AgentInfo {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 adapter_type = 5;
+    int64 ai_model_id = 6;
+    int32 max_iteration = 7;
+    string system_prompt = 8;
+    string user_input_prompt = 9;
+    int32 status = 10;
+    int32 type = 11;
+    int32 order = 12;
+    bool with_write_todos = 13;
+    bool with_web_search_agent = 14;
+    int32 system_type = 15;
+    int64 created_at = 16;
+    repeated int64 sub_agent_ids = 17;
+}
+
+message ListAgentsRequest { 
+    int32 page = 1; 
+    int32 page_size = 2; 
+    string name = 3; 
+    int32 status = 4; 
+    int32 type = 5;
+}
+
+message ListAgentsReply { 
+    repeated AgentInfo list = 1; 
+    int64 total = 2; 
+}
+
+message CreateAgentRequest {
+    string name = 1;
+    string code = 2;
+    string description = 3;
+    int32 adapter_type = 4;
+    int64 ai_model_id = 5;
+    int32 max_iteration = 6;
+    string system_prompt = 7;
+    string user_input_prompt = 8;
+    int32 status = 9;
+    int32 type = 10;
+    int32 order = 11;
+    bool with_write_todos = 12;
+    bool with_web_search_agent = 13;
+    repeated int64 sub_agent_ids = 14;
+}
+
+message UpdateAgentRequest {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 adapter_type = 5;
+    int64 ai_model_id = 6;
+    int32 max_iteration = 7;
+    string system_prompt = 8;
+    string user_input_prompt = 9;
+    int32 status = 10;
+    int32 type = 11;
+    int32 order = 12;
+    bool with_write_todos = 13;
+    bool with_web_search_agent = 14;
+    repeated int64 sub_agent_ids = 15;
+}
+
+message BatchBindSubAgentsRequest { 
+    int64 agent_id = 1; 
+    repeated int64 sub_agent_ids = 2; 
+}
+
+// ========== Model Messages ==========
+message ModelInfo {
+    int64 id = 1;
+    int32 category = 2;
+    string model_type = 3;
+    string model_name = 4;
+    string api_key = 5;
+    string base_url = 6;
+    int32 max_tokens = 7;
+    float temperature = 8;
+    float top_p = 9;
+    int32 price_type = 10;
+    float price = 11;
+    string supplier = 12;
+    string description = 13;
+    int32 status = 14;
+    int32 is_default = 15;
+    int64 created_at = 16;
+}
+
+message ListModelsRequest { 
+    int32 page = 1; 
+    int32 page_size = 2; 
+    string model_name = 3; 
+    int32 status = 4;
+}
+
+message ListModelsReply { 
+    repeated ModelInfo list = 1; 
+    int64 total = 2; 
+}
+
+message CreateModelRequest {
+    int32 category = 1;
+    string model_type = 2;
+    string model_name = 3;
+    string api_key = 4;
+    string base_url = 5;
+    int32 max_tokens = 6;
+    float temperature = 7;
+    float top_p = 8;
+    int32 price_type = 9;
+    float price = 10;
+    string supplier = 11;
+    string description = 12;
+    int32 status = 13;
+    int32 is_default = 14;
+}
+
+message UpdateModelRequest {
+    int64 id = 1;
+    int32 category = 2;
+    string model_type = 3;
+    string model_name = 4;
+    string api_key = 5;
+    string base_url = 6;
+    int32 max_tokens = 7;
+    float temperature = 8;
+    float top_p = 9;
+    int32 price_type = 10;
+    float price = 11;
+    string supplier = 12;
+    string description = 13;
+    int32 status = 14;
+    int32 is_default = 15;
+}
+
+// ========== Prompt Messages ==========
+message PromptInfo {
+    int64 id = 1;
+    int32 type = 2;
+    string name = 3;
+    string description = 4;
+    string text = 5;
+    int64 created_at = 6;
+}
+
+message ListPromptsRequest { 
+    int32 page = 1; 
+    int32 page_size = 2; 
+    string name = 3; 
+    int32 type = 4;
+}
+
+message ListPromptsReply { 
+    repeated PromptInfo list = 1; 
+    int64 total = 2; 
+}
+
+message CreatePromptRequest {
+    int32 type = 1;
+    string name = 2;
+    string description = 3;
+    string text = 4;
+}
+
+message UpdatePromptRequest {
+    int64 id = 1;
+    int32 type = 2;
+    string name = 3;
+    string description = 4;
+    string text = 5;
+}
+
+// ========== Tool Messages ==========
+message ToolParam { 
+    string param_name = 1; 
+    string param_type = 2; 
+    string default_value = 3; 
+}
+
+message ToolInfo {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 sys_type = 5;
+    int32 type = 6;
+    int32 status = 7;
+    repeated ToolParam params = 8;
+    string mcp_url = 9;
+    string mcp_token = 10;
+    int64 created_at = 11;
+}
+
+message ListToolsRequest { 
+    int32 page = 1; 
+    int32 page_size = 2; 
+    string name = 3; 
+    int32 type = 4;
+    int32 status = 5;
+}
+
+message ListToolsReply { 
+    repeated ToolInfo list = 1; 
+    int64 total = 2; 
+}
+
+message CreateToolRequest {
+    string name = 1;
+    string code = 2;
+    string description = 3;
+    int32 type = 4;
+    int32 status = 5;
+    repeated ToolParam params = 6;
+    string mcp_url = 7;
+    string mcp_token = 8;
+}
+
+message UpdateToolRequest {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 type = 5;
+    int32 status = 6;
+    repeated ToolParam params = 7;
+    string mcp_url = 8;
+    string mcp_token = 9;
+}
+
+message BatchBindToolsRequest { 
+    int64 agent_id = 1; 
+    repeated string tool_codes = 2; 
+}

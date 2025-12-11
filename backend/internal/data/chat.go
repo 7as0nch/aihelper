@@ -4,18 +4,19 @@ import (
 	"context"
 
 	"github.com/example/aichat/backend/internal/biz"
+	"github.com/example/aichat/backend/internal/db"
 	"github.com/example/aichat/backend/models/generator/model"
 	"github.com/example/aichat/backend/models/generator/query"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
 type chatRepo struct {
-	data DataRepo
+	data db.DataRepo
 	log  *log.Helper
 }
 
 // NewChatRepo .
-func NewChatRepo(data DataRepo, logger log.Logger) biz.ChatRepo {
+func NewChatRepo(data db.DataRepo, logger log.Logger) biz.ChatRepo {
 	return &chatRepo{
 		data: data,
 		log:  log.NewHelper(logger),

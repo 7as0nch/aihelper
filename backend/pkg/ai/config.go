@@ -20,11 +20,6 @@ type AgentConfig struct {
 	WithWebSearchAgent bool
 }
 
-// TableName 指定表名
-func (AgentConfig) TableName() string {
-	return "ai_agent_config"
-}
-
 type AdapterType string
 
 const (
@@ -44,11 +39,6 @@ type ModelConfig struct {
 	TopP        float32 `json:"top_p" gorm:"default:0.9"`
 	Thinking    bool    `json:"thinking" gorm:"default:false"`
 	PriceType   string  `json:"price_type" gorm:"size:50"` // 计费方式
-}
-
-// TableName 指定表名
-func (ModelConfig) TableName() string {
-	return "ai_model_config"
 }
 
 // PromptConfig 提示词配置

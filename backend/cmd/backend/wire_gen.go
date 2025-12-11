@@ -8,12 +8,15 @@ package main
 
 import (
 	"github.com/example/aichat/backend/internal/biz"
-	"github.com/example/aichat/backend/internal/biz/ai"
+	ai2 "github.com/example/aichat/backend/internal/biz/ai"
 	"github.com/example/aichat/backend/internal/biz/base"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/data"
+	"github.com/example/aichat/backend/internal/data/ai"
+	"github.com/example/aichat/backend/internal/db"
 	"github.com/example/aichat/backend/internal/server"
 	"github.com/example/aichat/backend/internal/service"
+	ai3 "github.com/example/aichat/backend/internal/service/ai"
 	base2 "github.com/example/aichat/backend/internal/service/base"
 	"github.com/example/aichat/backend/pkg/auth"
 	"github.com/go-kratos/kratos/v2"
@@ -29,7 +32,7 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Logger, logLogger log.Logger) (*kratos.App, func(), error) {
-	dataRepo, cleanup, err := data.NewData(bootstrap, logger)
+	dataRepo, cleanup, err := db.NewData(bootstrap, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -41,19 +44,28 @@ func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Log
 	sysMenuUseCase := base.NewSysMenuUseCase(sysMenuRepo)
 	dictTypeRepo := data.NewDictTypeRepo(dataRepo, logger)
 	dictDataRepo := data.NewDictDataRepo(dataRepo, logger)
-	transaction := data.NewTransaction(dataRepo)
+	transaction := db.NewTransaction(dataRepo)
 	dictTypeUseCase := base.NewDictTypeUseCase(dictTypeRepo, dictDataRepo, transaction)
 	dictDataUseCase := base.NewDictDataUseCase(dictDataRepo)
 	systemService := base2.NewSystemService(sysMenuUseCase, dictTypeUseCase, dictDataUseCase)
 	trackerRepo := data.NewTrackerRepo(dataRepo, logger)
 	trackerUseCase := base.NewTrackerUseCase(trackerRepo)
 	trackerService := base2.NewTrackerService(trackerUseCase)
+	aiAgentRepo := ai.NewAIAgentRepo(dataRepo, logger)
+	aiAgentUseCase := ai2.NewAIAgentUseCase(aiAgentRepo, transaction)
+	aiModelRepo := ai.NewAIModelRepo(dataRepo, logger)
+	aiModelUseCase := ai2.NewAIModelUseCase(aiModelRepo)
+	aiPromptRepo := ai.NewAIPromptRepo(dataRepo, logger)
+	aiPromptUseCase := ai2.NewAIPromptUseCase(aiPromptRepo)
+	aiToolRepo := ai.NewAIToolRepo(dataRepo, logger)
+	aiToolUseCase := ai2.NewAIToolUseCase(aiToolRepo, transaction)
+	aiService := ai3.NewAIService(aiAgentUseCase, aiModelUseCase, aiPromptUseCase, aiToolUseCase)
 	chatRepo := data.NewChatRepo(dataRepo, logLogger)
 	chatUsecase := biz.NewChatUsecase(chatRepo, logLogger)
-	aiUsecase := ai.NewAIUsecase(logger)
+	aiUsecase := ai2.NewAIUsecase(logger)
 	chatService := service.NewChatService(chatUsecase, aiUsecase, logger)
-	grpcServer := server.NewGRPCServer(confServer, authService, systemService, trackerService, chatService, logLogger)
-	httpServer := server.NewHTTPServer(confServer, chatService, authService, authRepo, systemService, trackerService, logLogger)
+	grpcServer := server.NewGRPCServer(confServer, authService, systemService, trackerService, aiService, chatService, logLogger)
+	httpServer := server.NewHTTPServer(confServer, chatService, authService, authRepo, systemService, trackerService, aiService, logLogger)
 	webSocketServer := server.NewWebSocketServerWrapper(chatService, logger)
 	webSocketApp := server.NewWebSocketAppWrapper(webSocketServer, logger)
 	app := newApp(logLogger, grpcServer, httpServer, webSocketApp)

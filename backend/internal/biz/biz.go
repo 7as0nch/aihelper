@@ -20,4 +20,8 @@ var ProviderSet = wire.NewSet(
 	base.NewDictDataUseCase,
 	base.NewTrackerUseCase,
 	ai.NewAIUsecase,
+	ai.NewAIAgentUseCase,
+	ai.NewAIModelUseCase,
+	ai.NewAIPromptUseCase,
+	ai.NewAIToolUseCase,
 	NewChatUsecase)

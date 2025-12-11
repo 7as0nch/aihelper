@@ -9,18 +9,19 @@ import (
 	"context"
 
 	"github.com/example/aichat/backend/internal/biz/base"
+	"github.com/example/aichat/backend/internal/db"
 	"github.com/example/aichat/backend/models/generator/model"
 	"github.com/example/aichat/backend/models/generator/query"
 	"go.uber.org/zap"
 )
 
 type dictDataRepo struct {
-	db    DataRepo
+	db    db.DataRepo
 	log   *zap.Logger
 	query *query.Query // 存储预编译的查询实例，避免重复获取DB连接
 }
 
-func NewDictDataRepo(db DataRepo, log *zap.Logger) base.DictDataRepo {
+func NewDictDataRepo(db db.DataRepo, log *zap.Logger) base.DictDataRepo {
 	// 单例模式：复用查询实例，避免频繁获取数据库连接
 	return &dictDataRepo{
 		db:    db,

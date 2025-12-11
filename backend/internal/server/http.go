@@ -5,9 +5,11 @@ import (
 	"net/http"
 
 	basepb "github.com/example/aichat/backend/api/base"
+	aipb "github.com/example/aichat/backend/api/ai"
 	chatv1 "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/service"
+	"github.com/example/aichat/backend/internal/service/ai"
 	"github.com/example/aichat/backend/internal/service/base"
 	"github.com/example/aichat/backend/pkg/auth"
 	"github.com/go-kratos/kratos/v2/log"
@@ -32,6 +34,7 @@ func NewHTTPServer(c *conf.Server,
 	authRepo auth.AuthRepo,
 	system *base.SystemService,
 	tracker *base.TrackerService,
+	aiServ *ai.AIService,
 	logg log.Logger) *kratoshttp.Server {
 
 	// 初始化 tracer provider（开发环境使用采样率100%，生产环境可调整）
@@ -101,6 +104,7 @@ func NewHTTPServer(c *conf.Server,
 	basepb.RegisterAuthHTTPServer(srv, authServ)
 	basepb.RegisterSystemHTTPServer(srv, system)
 	basepb.RegisterTrackerHTTPServer(srv, tracker)
+	aipb.RegisterAIHTTPServer(srv, aiServ)
 	srv.HandleFunc("/chat/send", chat.SSEHandler)
 	srv.HandlePrefix("/q/", openapiv2.NewHandler())
 	return srv
