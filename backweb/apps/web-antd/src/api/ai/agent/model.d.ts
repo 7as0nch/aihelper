@@ -6,7 +6,7 @@ export interface AgentInfo {
   name: string;
   code: string;
   description: string;
-  adapterType: number;
+  adapterType: number; // 适配器类型 1. adk, 2. deepadk
   aiModelId: number;
   maxIteration: number;
   systemPrompt: string;

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import type {
+  CreatePromptRequest,
+  UpdatePromptRequest,
+} from '#/api/ai/prompt/model';
+
 import { computed, ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
@@ -7,7 +12,6 @@ import { cloneDeep } from '@vben/utils';
 
 import { useVbenForm } from '#/adapter/form';
 import { promptAdd, promptInfo, promptUpdate } from '#/api/ai/prompt';
-import type { CreatePromptRequest, UpdatePromptRequest } from '#/api/ai/prompt/model';
 
 import { drawerSchema } from './data';
 

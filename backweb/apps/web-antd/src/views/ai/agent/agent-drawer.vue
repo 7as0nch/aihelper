@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import type {
+  CreateAgentRequest,
+  UpdateAgentRequest,
+} from '#/api/ai/agent/model';
+
 import { computed, ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
@@ -7,7 +12,6 @@ import { cloneDeep } from '@vben/utils';
 
 import { useVbenForm } from '#/adapter/form';
 import { agentAdd, agentInfo, agentUpdate } from '#/api/ai/agent';
-import type { CreateAgentRequest, UpdateAgentRequest } from '#/api/ai/agent/model';
 
 import { drawerSchema } from './data';
 

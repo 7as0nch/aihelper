@@ -49,9 +49,9 @@ const gridOptions: VxeGridProps = {
   rowConfig: {
     keyField: 'id',
   },
-  toolbarConfig: {
-    search: true,
-  },
+  // toolbarConfig: {
+  //   search: true,
+  // },
   id: 'ai-model-index',
 };
 
@@ -109,9 +109,7 @@ function handleMultiDelete() {
           >
             批量删除
           </a-button>
-          <a-button type="primary" @click="handleAdd">
-            新增
-          </a-button>
+          <a-button type="primary" @click="handleAdd"> 新增 </a-button>
         </Space>
       </template>
       <template #status="{ row }">
@@ -121,18 +119,14 @@ function handleMultiDelete() {
       </template>
       <template #action="{ row }">
         <Space>
-          <ghost-button @click.stop="handleEdit(row)">
-            编辑
-          </ghost-button>
+          <ghost-button @click.stop="handleEdit(row)"> 编辑 </ghost-button>
           <Popconfirm
             :get-popup-container="getVxePopupContainer"
             placement="left"
             title="确认删除？"
             @confirm="handleDelete(row)"
           >
-            <ghost-button danger @click.stop="">
-              删除
-            </ghost-button>
+            <ghost-button danger @click.stop=""> 删除 </ghost-button>
           </Popconfirm>
         </Space>
       </template>

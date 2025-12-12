@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import type {
+  CreateModelRequest,
+  UpdateModelRequest,
+} from '#/api/ai/model/model';
+
 import { computed, ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
@@ -7,7 +12,6 @@ import { cloneDeep } from '@vben/utils';
 
 import { useVbenForm } from '#/adapter/form';
 import { modelAdd, modelInfo, modelUpdate } from '#/api/ai/model';
-import type { CreateModelRequest, UpdateModelRequest } from '#/api/ai/model/model';
 
 import { drawerSchema } from './data';
 

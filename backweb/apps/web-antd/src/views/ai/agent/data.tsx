@@ -1,7 +1,12 @@
 import type { FormSchemaGetter } from '#/adapter/form';
 import type { VxeGridProps } from '#/adapter/vxe-table';
 
+import { DictEnum } from '@vben/constants';
+
 import { Tag } from 'ant-design-vue';
+
+import { renderDict } from '#/utils/render';
+import { formatMessageTime } from '#/utils/time';
 
 // Agent 状态选项
 export const agentStatusOptions = [
@@ -11,16 +16,14 @@ export const agentStatusOptions = [
 
 // Agent 类型选项
 export const agentTypeOptions = [
-  { label: '普通 Agent', value: 1 },
-  { label: '系统 Agent', value: 2 },
+  { label: '根 Agent', value: 1 },
+  { label: '子 Agent', value: 2 },
 ];
 
 // 适配器类型选项
 export const adapterTypeOptions = [
-  { label: 'OpenAI', value: 1 },
-  { label: 'Claude', value: 2 },
-  { label: 'Gemini', value: 3 },
-  { label: '其他', value: 0 },
+  { label: 'Eino ADK', value: 1 },
+  { label: 'Eino DeepADK', value: 2 },
 ];
 
 export const querySchema: FormSchemaGetter = () => [
@@ -48,19 +51,15 @@ export const querySchema: FormSchemaGetter = () => [
 ];
 
 export const columns: VxeGridProps['columns'] = [
-  { type: 'checkbox', width: 60 },
-  {
-    title: 'ID',
-    field: 'id',
-    width: 80,
-  },
+  { type: 'checkbox', width: 60, fixed: 'left' },
   {
     title: '名称',
     field: 'name',
     minWidth: 120,
+    fixed: 'left',
   },
   {
-    title: '代码',
+    title: '编码',
     field: 'code',
     minWidth: 120,
     slots: {
@@ -75,7 +74,7 @@ export const columns: VxeGridProps['columns'] = [
     minWidth: 200,
   },
   {
-    title: '适配器类型',
+    title: '注册类型',
     field: 'adapterType',
     width: 120,
     slots: {
@@ -83,7 +82,7 @@ export const columns: VxeGridProps['columns'] = [
         const found = adapterTypeOptions.find(
           (item) => item.value === row.adapterType,
         );
-        return <Tag>{found?.label ?? row.adapterType}</Tag>;
+        return <Tag color="blue">{found?.label ?? row.adapterType}</Tag>;
       },
     },
   },
@@ -102,12 +101,22 @@ export const columns: VxeGridProps['columns'] = [
     title: '状态',
     field: 'status',
     width: 80,
-    slots: { default: 'status' },
+    slots: {
+      default: ({ row }) => {
+        return renderDict(row.status, DictEnum.SYS_NORMAL_DISABLE);
+      },
+    },
   },
   {
     title: '创建时间',
     field: 'createdAt',
     width: 180,
+    // formatMessageTime
+    slots: {
+      default: ({ row }) => {
+        return formatMessageTime(row.createdAt);
+      },
+    },
   },
   {
     field: 'action',

@@ -79,9 +79,9 @@ func (s *SystemService) AllMenu(ctx context.Context, req *emptypb.Empty) (*pb.Al
 			IsFrame:    "1",
 			IsCache:    func() string {
 				if m.Meta.NoCache {
-					return "2"
+					return "1"
 				}
-				return "1"
+				return "0"
 			}(),
 			MenuType:   m.Type.String(),
 			Visible:    "1",
@@ -124,7 +124,7 @@ func (s *SystemService) AddSysMenu(ctx context.Context, req *pb.AddSysMenuReques
 		Meta: &model.Meta{
 			Title:   req.MenuName,
 			Icon:    req.Icon,
-			NoCache: req.IsCache == "2",
+			NoCache: req.IsCache == "1",
 		},
 		PermsCode: req.Perms,
 		Remark:    req.Remark,
@@ -153,7 +153,7 @@ func (s *SystemService) UpdateSysMenu(ctx context.Context, req *pb.AddSysMenuReq
 		Meta: &model.Meta{
 			Title:   req.MenuName,
 			Icon:    req.Icon,
-			NoCache: req.IsCache == "2",
+			NoCache: req.IsCache == "1",
 		},
 		PermsCode: req.Perms,
 		Remark:    req.Remark,
