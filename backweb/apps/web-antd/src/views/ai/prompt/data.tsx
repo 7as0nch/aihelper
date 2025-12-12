@@ -115,6 +115,8 @@ export const drawerSchema: FormSchemaGetter = () => [
     label: '描述',
     componentProps: {
       rows: 2,
+      maxlength: 200,
+      showCount: true,
     },
   },
   {

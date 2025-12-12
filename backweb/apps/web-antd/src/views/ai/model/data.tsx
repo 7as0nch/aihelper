@@ -216,12 +216,12 @@ export const drawerSchema: FormSchemaGetter = () => [
     formItemClass: 'col-span-2',
   },
   {
-    component: 'Input',
+    component: 'InputPassword',
     fieldName: 'apiKey',
     label: 'API Key',
     formItemClass: 'col-span-2',
     componentProps: {
-      type: 'password',
+      visibilityToggle: true,
     },
   },
   {
@@ -300,7 +300,8 @@ export const drawerSchema: FormSchemaGetter = () => [
     fieldName: 'description',
     formItemClass: 'col-span-2',
     componentProps: {
-      maxLength: 255,
+      maxlength: 200,
+      showCount: true,
     },
     label: '描述',
   },

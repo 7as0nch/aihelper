@@ -154,6 +154,10 @@ export const drawerSchema: FormSchemaGetter = () => [
     fieldName: 'description',
     formItemClass: 'col-span-2',
     label: '描述',
+    componentProps: {
+      maxlength: 200,
+      showCount: true,
+    },
   },
   {
     component: 'Select',

@@ -168,6 +168,8 @@ export const drawerSchema: FormSchemaGetter = () => [
     label: '描述',
     componentProps: {
       rows: 3,
+      maxlength: 200,
+      showCount: true,
     },
   },
   {
@@ -181,7 +183,7 @@ export const drawerSchema: FormSchemaGetter = () => [
     },
   },
   {
-    component: 'Input',
+    component: 'InputPassword',
     fieldName: 'mcpToken',
     formItemClass: 'col-span-2',
     label: 'MCP Token',
@@ -190,7 +192,7 @@ export const drawerSchema: FormSchemaGetter = () => [
       triggerFields: ['type'],
     },
     componentProps: {
-      type: 'password',
+      visibilityToggle: true,
     },
   },
 ];
