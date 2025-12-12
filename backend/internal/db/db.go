@@ -47,7 +47,7 @@ func (d *Data) DB(ctx context.Context) *gorm.DB {
 	if ok {
 		return tx.WithContext(ctx)
 	}
-	return d.db
+	return d.db.WithContext(ctx)
 }
 
 type contextTxKey struct{}

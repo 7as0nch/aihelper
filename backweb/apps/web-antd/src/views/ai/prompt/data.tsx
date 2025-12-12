@@ -7,8 +7,8 @@ import { formatMessageTime } from '#/utils/time';
 
 // Prompt 类型选项
 export const promptTypeOptions = [
-  { label: '系统提示词模板', value: 1 },
-  { label: '用户提示词模板', value: 2 },
+  { label: '系统模板', value: 1 },
+  { label: '用户模板', value: 2 },
 ];
 
 export const querySchema: FormSchemaGetter = () => [

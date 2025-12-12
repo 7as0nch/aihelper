@@ -59,6 +59,12 @@ func getClientID() log.Valuer {
 		return val
 	}
 }
+func getUserID() log.Valuer {
+	return func(ctx context.Context) interface{} {
+		val, _ := ctx.Value(auth.UserId).(int64)
+		return val
+	}
+}
 
 func main() {
 	flag.Parse()
@@ -79,14 +85,14 @@ func main() {
 	}
 
 	zapLogger := NewKratosLogger(
-        &bc,
-        zap.NewAtomicLevelAt(zapcore.DebugLevel),
-        zap.AddStacktrace(
-            zap.NewAtomicLevelAt(zapcore.WarnLevel)),
-        // zap.AddCaller(),
-        zap.AddCallerSkip(3),
-        zap.Development(),
-    )
+		&bc,
+		zap.NewAtomicLevelAt(zapcore.DebugLevel),
+		zap.AddStacktrace(
+			zap.NewAtomicLevelAt(zapcore.WarnLevel)),
+		// zap.AddCaller(),
+		zap.AddCallerSkip(3),
+		zap.Development(),
+	)
 
 	logger := log.With(zapLogger,
 		"caller", log.DefaultCaller,
@@ -95,7 +101,7 @@ func main() {
 		// "service.name", Name,
 		// "service.version", Version,
 		"trace.id", tracing.TraceID(),
-		"span.id", tracing.SpanID(),
+		"user.id", getUserID(),
 		"client.id", getClientID(),
 	)
 
