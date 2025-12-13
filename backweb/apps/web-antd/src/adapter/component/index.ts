@@ -8,7 +8,7 @@ import type { Component } from 'vue';
 import type { BaseFormComponentType } from '@vben/common-ui';
 import type { Recordable } from '@vben/types';
 
-import { computed, defineComponent, getCurrentInstance, h, ref } from 'vue';
+import { computed, defineAsyncComponent, defineComponent, getCurrentInstance, h, ref } from 'vue';
 
 import { ApiComponent, globalShareState, IconPicker } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -104,6 +104,7 @@ export type ComponentType =
   | 'RangePicker'
   | 'Rate'
   | 'RichTextarea'
+  | 'PromptEditor'
   | 'Select'
   | 'Space'
   | 'Switch'
@@ -194,6 +195,7 @@ async function initComponentAdapter() {
     ImageUpload,
     FileUpload,
     RichTextarea,
+    PromptEditor: defineAsyncComponent(() => import('#/components/PromptEditor/index.vue')),
   };
 
   // 将组件注册到全局共享状态中

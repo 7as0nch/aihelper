@@ -1,4 +1,6 @@
 import type { FormSchemaGetter } from '#/adapter/form';
+import PromptPreviewCell from './components/PromptPreviewCell.vue';
+
 import type { VxeGridProps } from '#/adapter/vxe-table';
 
 import { Tag } from 'ant-design-vue';
@@ -57,9 +59,7 @@ export const columns: VxeGridProps['columns'] = [
     minWidth: 300,
     slots: {
       default: ({ row }) => {
-        const text = row.text || '';
-        const preview = text.length > 100 ? `${text.slice(0, 100)}...` : text;
-        return <span class="text-gray-500">{preview}</span>;
+        return <PromptPreviewCell text={row.text} row={row} />;
       },
     },
   },
@@ -120,14 +120,14 @@ export const drawerSchema: FormSchemaGetter = () => [
     },
   },
   {
-    component: 'Textarea',
+    component: 'PromptEditor',
     fieldName: 'text',
     formItemClass: 'col-span-2',
     label: '提示词内容',
     rules: 'required',
     componentProps: {
-      rows: 10,
-      placeholder: '请输入提示词内容...',
+      rows: 15,
+      placeholder: '请输入提示词内容... 支持 Markdown 和 {{变量}}',
     },
   },
 ];
