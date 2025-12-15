@@ -119,7 +119,7 @@ func toAgentInfo(a *model.AIAgent, subIDs []int64) *pb.AgentInfo {
 		WithWebSearchAgent: a.WithWebSearchAgent,
 		SystemType:         int32(a.SystemType),
 		CreatedAt:          a.CreatedAt.Unix(),
-		SubAgentIds:        subIDs,
+		// ParentAgentId:      0,
 	}
 }
 

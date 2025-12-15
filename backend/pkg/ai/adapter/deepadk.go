@@ -78,9 +78,10 @@ func NewDeepAdkAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []
 		MaxIteration:           config.MaxIteration,
 		WithoutGeneralSubAgent: true,
 		Instruction: `
-		## 注意
+		## 注意（强制要求）
 		1. 功能之外的问题请直接回复“我不了解，不能回答”。
-		2. 不管是thinking还是answer，不要暴露任何agent助手的细节和tool工具细节(特别是工具，agent名称)，只需要让用户知道在处理某件事情即可。
+		2. 不管是深度思考还是回答用户都不要暴露底层逻辑细节和专业的技术术语，用用户能直接明白的普通语言友好描述，只需要让用户知道在处理某件事情即可。
+		3. 引导用户进行想要询问的问题描述。
 		`,
 	}
 

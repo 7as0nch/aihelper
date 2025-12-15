@@ -71,11 +71,6 @@ func (uc *AIAgentUseCase) CreateWithSubAgents(ctx context.Context, agent *model.
 		if err := uc.repo.Create(ctx, agent); err != nil {
 			return err
 		}
-		if len(subAgentIDs) > 0 {
-			if err := uc.repo.BatchBindSubAgents(ctx, agent.ID, subAgentIDs); err != nil {
-				return err
-			}
-		}
 		return nil
 	})
 }

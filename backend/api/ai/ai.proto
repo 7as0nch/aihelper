@@ -109,7 +109,8 @@ message AgentInfo {
     bool with_web_search_agent = 14;
     int32 system_type = 15;
     int64 created_at = 16;
-    repeated int64 sub_agent_ids = 17;
+    int64 parent_agent_id = 17;
+    repeated AgentInfo sub_agents = 18;
 }
 
 message ListAgentsRequest { 
@@ -139,7 +140,6 @@ message CreateAgentRequest {
     int32 order = 11;
     bool with_write_todos = 12;
     bool with_web_search_agent = 13;
-    repeated int64 sub_agent_ids = 14;
 }
 
 message UpdateAgentRequest {
@@ -157,7 +157,6 @@ message UpdateAgentRequest {
     int32 order = 12;
     bool with_write_todos = 13;
     bool with_web_search_agent = 14;
-    repeated int64 sub_agent_ids = 15;
 }
 
 message BatchBindSubAgentsRequest { 

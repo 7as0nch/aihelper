@@ -5,14 +5,20 @@
 **/
 package model
 
-import "github.com/example/aichat/backend/models"
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+
+	"github.com/example/aichat/backend/models"
+)
 
 type AIAgent struct {
 	models.Model
 	Name               string            `json:"name" gorm:"uniqueIndex;size:100"`                     // CnName
 	Code               string            `json:"code" gorm:"uniqueIndex;size:100"`                     // EnName
 	Description        string            `json:"description" gorm:"size:500"`                          // agent prompt
-	AdapterType        AdapterType       `json:"adapter_type" gorm:"size:50;default:2"`             // adk, deepadk 等
+	AdapterType        AdapterType       `json:"adapter_type" gorm:"size:50;default:2"`                // adk, deepadk 等
 	AIModelID          int64             `json:"ai_model_id" gorm:"type:bigint;not null"`              // 关联的 AI 模型 ID
 	MaxIteration       int               `json:"max_iteration" gorm:"default:10;comment:'最大迭代次数'"`     // 最大迭代次数
 	SystemPrompt       string            `json:"system_prompt" gorm:"type:text;comment:'系统提示词'"`       // 系统提示词
@@ -23,11 +29,37 @@ type AIAgent struct {
 	WithWriteTODOs     bool              `json:"with_write_todos" gorm:"default:false"`                // 是否启用写入 TODO 功能
 	WithWebSearchAgent bool              `json:"with_web_search_agent" gorm:"default:false"`           // 是否启用 Web 搜索功能
 	SystemType         models.SystemType `json:"system_type" gorm:"default:2"`                         // 系统类型: 1-系统内置(不可删除), 2-用户自定义
+	ParentID           int64             `json:"parent_id" gorm:"-"`                                   // 父 Agent ID
+	SubAIAgents        []*AIAgent        `json:"sub_agents" gorm:"-"`                                  // 子 Agent 列表
 }
 
 // TableName 指定表名
 func (AIAgent) TableName() string {
 	return "ai_agent"
+}
+
+// scan value
+func (m *AIAgent) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return errors.New("type assertion to []byte or string failed")
+	}
+	if len(bytes) == 0 {
+		return nil
+	}
+	return json.Unmarshal(bytes, m)
+}
+
+func (a AIAgent) Value() (driver.Value, error) {
+	return json.Marshal(a)
 }
 
 type AdapterType uint8
@@ -48,10 +80,51 @@ const (
 
 type AgentBind struct {
 	models.Model
-	AgentID int64 `json:"agent_id" gorm:"type:bigint;not null"` // 关联的 AI Agent ID
+	ProgramID  int64 `json:"program_id" gorm:"type:bigint;not null"`   // 关联的 AI Agent (方案) 程序 ID
+	AgentID    int64 `json:"agent_id" gorm:"type:bigint;not null"`     // 关联的 AI Agent ID
 	SubAgentID int64 `json:"sub_agent_id" gorm:"type:bigint;not null"` // 关联的子 Agent ID
 }
 
 func (AgentBind) TableName() string {
 	return "ai_agent_bind"
 }
+
+type AIAgentProgram struct { // AI Agent (方案) 程序
+	models.Model
+	Name      string        `json:"name" gorm:"type:varchar(100);comment:'名称'"`      // 名称
+	Code      string        `json:"code" gorm:"type:varchar(100);comment:'编码'"`      // 编码
+	Mode      ProgramMode   `json:"mode" gorm:"default:2;comment:'模式'"`              // 模式：1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
+	Status    models.Status `json:"status" gorm:"default:1;comment:'状态'"`            // 2: 禁用, 1: 启用
+	Type      ProgramType   `json:"type" gorm:"default:1;comment:'程序类型'"`            // 1. 预定义，2. 自定义
+	Scope     Scope         `json:"scope" gorm:"default:1;comment:'作用粒度'"`           // 作用粒度：1.所有人，2.指定角色，3.指定用户
+	SelfAgent *AIAgent      `json:"self_agent" gorm:"type:json;comment:'自定义 Agent'"` // 自定义 Agent
+}
+
+func (AIAgentProgram) TableName() string {
+	return "ai_program"
+}
+
+// 程序类型：1. 预定义，2. 自定义
+type ProgramType uint8
+
+const (
+	ProgramType_Predefined ProgramType = iota + 1 // 预定义程序：通过bind获取agent关系。
+	ProgramType_Custom                            // 自定义程序: 可以使用SelfAgent，存入。后续无需通过agentbind获取对应的agent信息了。
+)
+
+// 作用粒度：1.所有人，2.指定角色，3.指定用户
+type Scope uint8
+
+const (
+	Scope_All  Scope = iota + 1 // 所有人
+	Scope_Role                  // 指定角色
+	Scope_User                  // 指定用户
+)
+
+// Program 模式：1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
+type ProgramMode uint8
+
+const (
+	ProgramMode_Single ProgramMode = iota + 1 // 单agent模式
+	ProgramMode_Multi                         // 多agent模式
+)

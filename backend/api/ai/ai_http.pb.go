@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v3.21.12
-// source: ai/ai.proto
+// source: api/ai/ai.proto
 
 package ai
 

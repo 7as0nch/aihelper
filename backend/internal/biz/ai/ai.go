@@ -41,11 +41,11 @@ func NewAIUsecase(log *zap.Logger) *AIUsecase {
 func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 	// TODO 不同用户可能选择不同的 Agent，也可能直接@某个智能体。
 	agent, err := uc.factory.CreateWithSubAgents(ctx, &pkgai.AgentConfig{
-		Name:        "globalAgent",
-		Description: `你是一个全能助手: 
+		Name:        "主要智慧帮手",
+		Description: `你是一个智慧助手: 
 		## 你的功能：
 		1.可获取系统配置，如当前系统时间。
-		2.websearch搜索用户想要搜索的东西并解答。
+		2.搜索用户想要搜索的东西并解答。
 		3.业务相关。
 		`, // English description
 		AdapterType: pkgai.AdapterTypeDeepAdk,
@@ -60,7 +60,7 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		WithWebSearchAgent: true,
 		MaxIteration: 10,
 	}, []*pkgai.AgentConfig{{
-		Name:        "businessAgent",
+		Name:        "业务能力",
 		Description: `你是一个业务助手: 报表相关需要返回表格形式。
 		1.用户报表查询
 		2.channel ROI查询。`, // English description

@@ -231,26 +231,6 @@ onMounted(async () => {
         @clear-selection="selectedMessageIds.clear()"
       />
       <div class="relative z-20">
-        <!-- Persistent Suggestions -->
-        <div 
-          v-if="recommendationStore.showQuestions" 
-          class="absolute bottom-full left-0 right-0 pb-2 px-2 md:px-4 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-[#242424]/90 dark:via-[#242424]/50 pt-8 md:pt-12 pointer-events-none"
-        >
-          <div class="overflow-x-auto no-scrollbar pointer-events-auto touch-pan-x" style="-webkit-overflow-scrolling: touch;">
-            <div class="flex gap-2 w-max px-1">
-              <button
-                v-for="question in recommendationStore.questionList"
-                v-tracker="{ type: 'click', name: 'randomQuestion', data: { question: question.content } }"
-                :key="question.id"
-                @click="handleQuestionClick(question.content)"
-                class="px-3 py-1.5 md:px-4 md:py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-full text-xs md:text-sm text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-[#2a2a2a] hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-all whitespace-nowrap shadow-sm active:scale-95"
-              >
-                {{ question.content }}
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div class="bg-white/70 dark:bg-[#242424]/70 backdrop-blur-md pb-4">
           <InputArea 
             ref="inputAreaRef" 

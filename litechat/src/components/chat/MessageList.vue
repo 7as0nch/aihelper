@@ -40,7 +40,7 @@ const handleScroll = () => {
   const { scrollTop, scrollHeight, clientHeight } = containerRef.value;
   // Show button if we are more than 200px away from bottom
   const distanceToBottom = scrollHeight - scrollTop - clientHeight;
-  showScrollButton.value = distanceToBottom > 200;
+  showScrollButton.value = distanceToBottom > 50;
 };
 
 onMounted(() => {
@@ -59,9 +59,6 @@ watch(() => store.messages, async () => {
 // Watch for specific message content updates (streaming)
 watch(() => store.messages[store.messages.length - 1]?.content, async () => {
   if (!showScrollButton.value) {
-     // Use 'auto' behavior for streaming updates to avoid jitter, or 'smooth' if preferred
-     // But 'smooth' might lag behind fast streaming. 'auto' is better for keeping up.
-     // However, scrollToBottom uses smooth by default. Let's override.
      bottomRef.value?.scrollIntoView({ behavior: 'auto' });
   }
 });
@@ -153,7 +150,7 @@ defineExpose({
     <button
       v-show="showScrollButton"
       @click="scrollToBottom(true)"
-      class="fixed bottom-[250px] left-1/2 -translate-x-1/2 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition-all duration-300 z-30 animate-fade-in"
+      class="fixed bottom-[200px] left-1/2 -translate-x-1/2 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition-all duration-300 z-30 animate-fade-in"
       title="回到底部"
     >
       <ArrowDown class="w-5 h-5" />

@@ -94,7 +94,7 @@ const handleSelection = () => {
   selectedText.value = text;
   quoteBtnPosition.value = {
     top: rect.top - 40, // Position above selection
-    left: rect.left + (rect.width / 2) - 30 // Center horizontally
+    left: rect.left + (rect.width / 2) - 200 // Center horizontally
   };
   showQuoteBtn.value = true;
 };

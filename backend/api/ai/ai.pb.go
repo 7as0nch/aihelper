@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v3.21.12
-// source: ai/ai.proto
+// source: api/ai/ai.proto
 
 package ai
 
@@ -34,7 +34,7 @@ type IdRequest struct {
 
 func (x *IdRequest) Reset() {
 	*x = IdRequest{}
-	mi := &file_ai_ai_proto_msgTypes[0]
+	mi := &file_api_ai_ai_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +46,7 @@ func (x *IdRequest) String() string {
 func (*IdRequest) ProtoMessage() {}
 
 func (x *IdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[0]
+	mi := &file_api_ai_ai_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *IdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IdRequest.ProtoReflect.Descriptor instead.
 func (*IdRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{0}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *IdRequest) GetId() int64 {
@@ -88,14 +88,15 @@ type AgentInfo struct {
 	WithWebSearchAgent bool                   `protobuf:"varint,14,opt,name=with_web_search_agent,json=withWebSearchAgent,proto3" json:"with_web_search_agent,omitempty"`
 	SystemType         int32                  `protobuf:"varint,15,opt,name=system_type,json=systemType,proto3" json:"system_type,omitempty"`
 	CreatedAt          int64                  `protobuf:"varint,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	SubAgentIds        []int64                `protobuf:"varint,17,rep,packed,name=sub_agent_ids,json=subAgentIds,proto3" json:"sub_agent_ids,omitempty"`
+	ParentAgentId      int64                  `protobuf:"varint,17,opt,name=parent_agent_id,json=parentAgentId,proto3" json:"parent_agent_id,omitempty"`
+	SubAgents          []*AgentInfo           `protobuf:"bytes,18,rep,name=sub_agents,json=subAgents,proto3" json:"sub_agents,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
 
 func (x *AgentInfo) Reset() {
 	*x = AgentInfo{}
-	mi := &file_ai_ai_proto_msgTypes[1]
+	mi := &file_api_ai_ai_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -107,7 +108,7 @@ func (x *AgentInfo) String() string {
 func (*AgentInfo) ProtoMessage() {}
 
 func (x *AgentInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[1]
+	mi := &file_api_ai_ai_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -120,7 +121,7 @@ func (x *AgentInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentInfo.ProtoReflect.Descriptor instead.
 func (*AgentInfo) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{1}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AgentInfo) GetId() int64 {
@@ -235,9 +236,16 @@ func (x *AgentInfo) GetCreatedAt() int64 {
 	return 0
 }
 
-func (x *AgentInfo) GetSubAgentIds() []int64 {
+func (x *AgentInfo) GetParentAgentId() int64 {
 	if x != nil {
-		return x.SubAgentIds
+		return x.ParentAgentId
+	}
+	return 0
+}
+
+func (x *AgentInfo) GetSubAgents() []*AgentInfo {
+	if x != nil {
+		return x.SubAgents
 	}
 	return nil
 }
@@ -255,7 +263,7 @@ type ListAgentsRequest struct {
 
 func (x *ListAgentsRequest) Reset() {
 	*x = ListAgentsRequest{}
-	mi := &file_ai_ai_proto_msgTypes[2]
+	mi := &file_api_ai_ai_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -267,7 +275,7 @@ func (x *ListAgentsRequest) String() string {
 func (*ListAgentsRequest) ProtoMessage() {}
 
 func (x *ListAgentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[2]
+	mi := &file_api_ai_ai_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -280,7 +288,7 @@ func (x *ListAgentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAgentsRequest.ProtoReflect.Descriptor instead.
 func (*ListAgentsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{2}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListAgentsRequest) GetPage() int32 {
@@ -328,7 +336,7 @@ type ListAgentsReply struct {
 
 func (x *ListAgentsReply) Reset() {
 	*x = ListAgentsReply{}
-	mi := &file_ai_ai_proto_msgTypes[3]
+	mi := &file_api_ai_ai_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -340,7 +348,7 @@ func (x *ListAgentsReply) String() string {
 func (*ListAgentsReply) ProtoMessage() {}
 
 func (x *ListAgentsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[3]
+	mi := &file_api_ai_ai_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,7 +361,7 @@ func (x *ListAgentsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAgentsReply.ProtoReflect.Descriptor instead.
 func (*ListAgentsReply) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{3}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListAgentsReply) GetList() []*AgentInfo {
@@ -392,7 +400,7 @@ type CreateAgentRequest struct {
 
 func (x *CreateAgentRequest) Reset() {
 	*x = CreateAgentRequest{}
-	mi := &file_ai_ai_proto_msgTypes[4]
+	mi := &file_api_ai_ai_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -404,7 +412,7 @@ func (x *CreateAgentRequest) String() string {
 func (*CreateAgentRequest) ProtoMessage() {}
 
 func (x *CreateAgentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[4]
+	mi := &file_api_ai_ai_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -417,7 +425,7 @@ func (x *CreateAgentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAgentRequest.ProtoReflect.Descriptor instead.
 func (*CreateAgentRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{4}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateAgentRequest) GetName() string {
@@ -541,7 +549,7 @@ type UpdateAgentRequest struct {
 
 func (x *UpdateAgentRequest) Reset() {
 	*x = UpdateAgentRequest{}
-	mi := &file_ai_ai_proto_msgTypes[5]
+	mi := &file_api_ai_ai_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -553,7 +561,7 @@ func (x *UpdateAgentRequest) String() string {
 func (*UpdateAgentRequest) ProtoMessage() {}
 
 func (x *UpdateAgentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[5]
+	mi := &file_api_ai_ai_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -566,7 +574,7 @@ func (x *UpdateAgentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateAgentRequest.ProtoReflect.Descriptor instead.
 func (*UpdateAgentRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{5}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateAgentRequest) GetId() int64 {
@@ -684,7 +692,7 @@ type BatchBindSubAgentsRequest struct {
 
 func (x *BatchBindSubAgentsRequest) Reset() {
 	*x = BatchBindSubAgentsRequest{}
-	mi := &file_ai_ai_proto_msgTypes[6]
+	mi := &file_api_ai_ai_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -696,7 +704,7 @@ func (x *BatchBindSubAgentsRequest) String() string {
 func (*BatchBindSubAgentsRequest) ProtoMessage() {}
 
 func (x *BatchBindSubAgentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[6]
+	mi := &file_api_ai_ai_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -709,7 +717,7 @@ func (x *BatchBindSubAgentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchBindSubAgentsRequest.ProtoReflect.Descriptor instead.
 func (*BatchBindSubAgentsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{6}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *BatchBindSubAgentsRequest) GetAgentId() int64 {
@@ -751,7 +759,7 @@ type ModelInfo struct {
 
 func (x *ModelInfo) Reset() {
 	*x = ModelInfo{}
-	mi := &file_ai_ai_proto_msgTypes[7]
+	mi := &file_api_ai_ai_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -763,7 +771,7 @@ func (x *ModelInfo) String() string {
 func (*ModelInfo) ProtoMessage() {}
 
 func (x *ModelInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[7]
+	mi := &file_api_ai_ai_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -776,7 +784,7 @@ func (x *ModelInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelInfo.ProtoReflect.Descriptor instead.
 func (*ModelInfo) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{7}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ModelInfo) GetId() int64 {
@@ -903,7 +911,7 @@ type ListModelsRequest struct {
 
 func (x *ListModelsRequest) Reset() {
 	*x = ListModelsRequest{}
-	mi := &file_ai_ai_proto_msgTypes[8]
+	mi := &file_api_ai_ai_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -915,7 +923,7 @@ func (x *ListModelsRequest) String() string {
 func (*ListModelsRequest) ProtoMessage() {}
 
 func (x *ListModelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[8]
+	mi := &file_api_ai_ai_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +936,7 @@ func (x *ListModelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListModelsRequest.ProtoReflect.Descriptor instead.
 func (*ListModelsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{8}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListModelsRequest) GetPage() int32 {
@@ -969,7 +977,7 @@ type ListModelsReply struct {
 
 func (x *ListModelsReply) Reset() {
 	*x = ListModelsReply{}
-	mi := &file_ai_ai_proto_msgTypes[9]
+	mi := &file_api_ai_ai_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -981,7 +989,7 @@ func (x *ListModelsReply) String() string {
 func (*ListModelsReply) ProtoMessage() {}
 
 func (x *ListModelsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[9]
+	mi := &file_api_ai_ai_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -994,7 +1002,7 @@ func (x *ListModelsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListModelsReply.ProtoReflect.Descriptor instead.
 func (*ListModelsReply) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{9}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListModelsReply) GetList() []*ModelInfo {
@@ -1033,7 +1041,7 @@ type CreateModelRequest struct {
 
 func (x *CreateModelRequest) Reset() {
 	*x = CreateModelRequest{}
-	mi := &file_ai_ai_proto_msgTypes[10]
+	mi := &file_api_ai_ai_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1045,7 +1053,7 @@ func (x *CreateModelRequest) String() string {
 func (*CreateModelRequest) ProtoMessage() {}
 
 func (x *CreateModelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[10]
+	mi := &file_api_ai_ai_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1058,7 +1066,7 @@ func (x *CreateModelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateModelRequest.ProtoReflect.Descriptor instead.
 func (*CreateModelRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{10}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateModelRequest) GetCategory() int32 {
@@ -1182,7 +1190,7 @@ type UpdateModelRequest struct {
 
 func (x *UpdateModelRequest) Reset() {
 	*x = UpdateModelRequest{}
-	mi := &file_ai_ai_proto_msgTypes[11]
+	mi := &file_api_ai_ai_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1194,7 +1202,7 @@ func (x *UpdateModelRequest) String() string {
 func (*UpdateModelRequest) ProtoMessage() {}
 
 func (x *UpdateModelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[11]
+	mi := &file_api_ai_ai_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1207,7 +1215,7 @@ func (x *UpdateModelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateModelRequest.ProtoReflect.Descriptor instead.
 func (*UpdateModelRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{11}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UpdateModelRequest) GetId() int64 {
@@ -1330,7 +1338,7 @@ type PromptInfo struct {
 
 func (x *PromptInfo) Reset() {
 	*x = PromptInfo{}
-	mi := &file_ai_ai_proto_msgTypes[12]
+	mi := &file_api_ai_ai_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1342,7 +1350,7 @@ func (x *PromptInfo) String() string {
 func (*PromptInfo) ProtoMessage() {}
 
 func (x *PromptInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[12]
+	mi := &file_api_ai_ai_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1355,7 +1363,7 @@ func (x *PromptInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PromptInfo.ProtoReflect.Descriptor instead.
 func (*PromptInfo) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{12}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *PromptInfo) GetId() int64 {
@@ -1412,7 +1420,7 @@ type ListPromptsRequest struct {
 
 func (x *ListPromptsRequest) Reset() {
 	*x = ListPromptsRequest{}
-	mi := &file_ai_ai_proto_msgTypes[13]
+	mi := &file_api_ai_ai_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1424,7 +1432,7 @@ func (x *ListPromptsRequest) String() string {
 func (*ListPromptsRequest) ProtoMessage() {}
 
 func (x *ListPromptsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[13]
+	mi := &file_api_ai_ai_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1437,7 +1445,7 @@ func (x *ListPromptsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPromptsRequest.ProtoReflect.Descriptor instead.
 func (*ListPromptsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{13}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListPromptsRequest) GetPage() int32 {
@@ -1478,7 +1486,7 @@ type ListPromptsReply struct {
 
 func (x *ListPromptsReply) Reset() {
 	*x = ListPromptsReply{}
-	mi := &file_ai_ai_proto_msgTypes[14]
+	mi := &file_api_ai_ai_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1490,7 +1498,7 @@ func (x *ListPromptsReply) String() string {
 func (*ListPromptsReply) ProtoMessage() {}
 
 func (x *ListPromptsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[14]
+	mi := &file_api_ai_ai_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1503,7 +1511,7 @@ func (x *ListPromptsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPromptsReply.ProtoReflect.Descriptor instead.
 func (*ListPromptsReply) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{14}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListPromptsReply) GetList() []*PromptInfo {
@@ -1532,7 +1540,7 @@ type CreatePromptRequest struct {
 
 func (x *CreatePromptRequest) Reset() {
 	*x = CreatePromptRequest{}
-	mi := &file_ai_ai_proto_msgTypes[15]
+	mi := &file_api_ai_ai_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1544,7 +1552,7 @@ func (x *CreatePromptRequest) String() string {
 func (*CreatePromptRequest) ProtoMessage() {}
 
 func (x *CreatePromptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[15]
+	mi := &file_api_ai_ai_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1557,7 +1565,7 @@ func (x *CreatePromptRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePromptRequest.ProtoReflect.Descriptor instead.
 func (*CreatePromptRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{15}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CreatePromptRequest) GetType() int32 {
@@ -1601,7 +1609,7 @@ type UpdatePromptRequest struct {
 
 func (x *UpdatePromptRequest) Reset() {
 	*x = UpdatePromptRequest{}
-	mi := &file_ai_ai_proto_msgTypes[16]
+	mi := &file_api_ai_ai_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1613,7 +1621,7 @@ func (x *UpdatePromptRequest) String() string {
 func (*UpdatePromptRequest) ProtoMessage() {}
 
 func (x *UpdatePromptRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[16]
+	mi := &file_api_ai_ai_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1626,7 +1634,7 @@ func (x *UpdatePromptRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePromptRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePromptRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{16}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UpdatePromptRequest) GetId() int64 {
@@ -1676,7 +1684,7 @@ type ToolParam struct {
 
 func (x *ToolParam) Reset() {
 	*x = ToolParam{}
-	mi := &file_ai_ai_proto_msgTypes[17]
+	mi := &file_api_ai_ai_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1688,7 +1696,7 @@ func (x *ToolParam) String() string {
 func (*ToolParam) ProtoMessage() {}
 
 func (x *ToolParam) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[17]
+	mi := &file_api_ai_ai_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1701,7 +1709,7 @@ func (x *ToolParam) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToolParam.ProtoReflect.Descriptor instead.
 func (*ToolParam) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{17}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ToolParam) GetParamName() string {
@@ -1744,7 +1752,7 @@ type ToolInfo struct {
 
 func (x *ToolInfo) Reset() {
 	*x = ToolInfo{}
-	mi := &file_ai_ai_proto_msgTypes[18]
+	mi := &file_api_ai_ai_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1756,7 +1764,7 @@ func (x *ToolInfo) String() string {
 func (*ToolInfo) ProtoMessage() {}
 
 func (x *ToolInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[18]
+	mi := &file_api_ai_ai_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1769,7 +1777,7 @@ func (x *ToolInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToolInfo.ProtoReflect.Descriptor instead.
 func (*ToolInfo) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{18}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ToolInfo) GetId() int64 {
@@ -1862,7 +1870,7 @@ type ListToolsRequest struct {
 
 func (x *ListToolsRequest) Reset() {
 	*x = ListToolsRequest{}
-	mi := &file_ai_ai_proto_msgTypes[19]
+	mi := &file_api_ai_ai_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1874,7 +1882,7 @@ func (x *ListToolsRequest) String() string {
 func (*ListToolsRequest) ProtoMessage() {}
 
 func (x *ListToolsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[19]
+	mi := &file_api_ai_ai_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1887,7 +1895,7 @@ func (x *ListToolsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListToolsRequest.ProtoReflect.Descriptor instead.
 func (*ListToolsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{19}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListToolsRequest) GetPage() int32 {
@@ -1935,7 +1943,7 @@ type ListToolsReply struct {
 
 func (x *ListToolsReply) Reset() {
 	*x = ListToolsReply{}
-	mi := &file_ai_ai_proto_msgTypes[20]
+	mi := &file_api_ai_ai_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1947,7 +1955,7 @@ func (x *ListToolsReply) String() string {
 func (*ListToolsReply) ProtoMessage() {}
 
 func (x *ListToolsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[20]
+	mi := &file_api_ai_ai_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1960,7 +1968,7 @@ func (x *ListToolsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListToolsReply.ProtoReflect.Descriptor instead.
 func (*ListToolsReply) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{20}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ListToolsReply) GetList() []*ToolInfo {
@@ -1993,7 +2001,7 @@ type CreateToolRequest struct {
 
 func (x *CreateToolRequest) Reset() {
 	*x = CreateToolRequest{}
-	mi := &file_ai_ai_proto_msgTypes[21]
+	mi := &file_api_ai_ai_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2005,7 +2013,7 @@ func (x *CreateToolRequest) String() string {
 func (*CreateToolRequest) ProtoMessage() {}
 
 func (x *CreateToolRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[21]
+	mi := &file_api_ai_ai_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2018,7 +2026,7 @@ func (x *CreateToolRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateToolRequest.ProtoReflect.Descriptor instead.
 func (*CreateToolRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{21}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CreateToolRequest) GetName() string {
@@ -2094,7 +2102,7 @@ type UpdateToolRequest struct {
 
 func (x *UpdateToolRequest) Reset() {
 	*x = UpdateToolRequest{}
-	mi := &file_ai_ai_proto_msgTypes[22]
+	mi := &file_api_ai_ai_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2106,7 +2114,7 @@ func (x *UpdateToolRequest) String() string {
 func (*UpdateToolRequest) ProtoMessage() {}
 
 func (x *UpdateToolRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[22]
+	mi := &file_api_ai_ai_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2119,7 +2127,7 @@ func (x *UpdateToolRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateToolRequest.ProtoReflect.Descriptor instead.
 func (*UpdateToolRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{22}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpdateToolRequest) GetId() int64 {
@@ -2195,7 +2203,7 @@ type BatchBindToolsRequest struct {
 
 func (x *BatchBindToolsRequest) Reset() {
 	*x = BatchBindToolsRequest{}
-	mi := &file_ai_ai_proto_msgTypes[23]
+	mi := &file_api_ai_ai_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2207,7 +2215,7 @@ func (x *BatchBindToolsRequest) String() string {
 func (*BatchBindToolsRequest) ProtoMessage() {}
 
 func (x *BatchBindToolsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_ai_proto_msgTypes[23]
+	mi := &file_api_ai_ai_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2220,7 +2228,7 @@ func (x *BatchBindToolsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchBindToolsRequest.ProtoReflect.Descriptor instead.
 func (*BatchBindToolsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_ai_proto_rawDescGZIP(), []int{23}
+	return file_api_ai_ai_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *BatchBindToolsRequest) GetAgentId() int64 {
@@ -2237,13 +2245,13 @@ func (x *BatchBindToolsRequest) GetToolCodes() []string {
 	return nil
 }
 
-var File_ai_ai_proto protoreflect.FileDescriptor
+var File_api_ai_ai_proto protoreflect.FileDescriptor
 
-const file_ai_ai_proto_rawDesc = "" +
+const file_api_ai_ai_proto_rawDesc = "" +
 	"\n" +
-	"\vai/ai.proto\x12\x02ai\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\x1b\n" +
+	"\x0fapi/ai/ai.proto\x12\x02ai\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\x1b\n" +
 	"\tIdRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"\xa1\x04\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\xd3\x04\n" +
 	"\tAgentInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -2263,8 +2271,10 @@ const file_ai_ai_proto_rawDesc = "" +
 	"\vsystem_type\x18\x0f \x01(\x05R\n" +
 	"systemType\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x10 \x01(\x03R\tcreatedAt\x12\"\n" +
-	"\rsub_agent_ids\x18\x11 \x03(\x03R\vsubAgentIds\"\x84\x01\n" +
+	"created_at\x18\x10 \x01(\x03R\tcreatedAt\x12&\n" +
+	"\x0fparent_agent_id\x18\x11 \x01(\x03R\rparentAgentId\x12,\n" +
+	"\n" +
+	"sub_agents\x18\x12 \x03(\v2\r.ai.AgentInfoR\tsubAgents\"\x84\x01\n" +
 	"\x11ListAgentsRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x12\n" +
@@ -2497,19 +2507,19 @@ const file_ai_ai_proto_rawDesc = "" +
 	"\x11dev.kratos.api.aiB\aAiProtoP\x01Z\x11backend/api/ai;aib\x06proto3"
 
 var (
-	file_ai_ai_proto_rawDescOnce sync.Once
-	file_ai_ai_proto_rawDescData []byte
+	file_api_ai_ai_proto_rawDescOnce sync.Once
+	file_api_ai_ai_proto_rawDescData []byte
 )
 
-func file_ai_ai_proto_rawDescGZIP() []byte {
-	file_ai_ai_proto_rawDescOnce.Do(func() {
-		file_ai_ai_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_ai_ai_proto_rawDesc), len(file_ai_ai_proto_rawDesc)))
+func file_api_ai_ai_proto_rawDescGZIP() []byte {
+	file_api_ai_ai_proto_rawDescOnce.Do(func() {
+		file_api_ai_ai_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_ai_ai_proto_rawDesc), len(file_api_ai_ai_proto_rawDesc)))
 	})
-	return file_ai_ai_proto_rawDescData
+	return file_api_ai_ai_proto_rawDescData
 }
 
-var file_ai_ai_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
-var file_ai_ai_proto_goTypes = []any{
+var file_api_ai_ai_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_api_ai_ai_proto_goTypes = []any{
 	(*IdRequest)(nil),                 // 0: ai.IdRequest
 	(*AgentInfo)(nil),                 // 1: ai.AgentInfo
 	(*ListAgentsRequest)(nil),         // 2: ai.ListAgentsRequest
@@ -2536,85 +2546,86 @@ var file_ai_ai_proto_goTypes = []any{
 	(*BatchBindToolsRequest)(nil),     // 23: ai.BatchBindToolsRequest
 	(*emptypb.Empty)(nil),             // 24: google.protobuf.Empty
 }
-var file_ai_ai_proto_depIdxs = []int32{
-	1,  // 0: ai.ListAgentsReply.list:type_name -> ai.AgentInfo
-	7,  // 1: ai.ListModelsReply.list:type_name -> ai.ModelInfo
-	12, // 2: ai.ListPromptsReply.list:type_name -> ai.PromptInfo
-	17, // 3: ai.ToolInfo.params:type_name -> ai.ToolParam
-	18, // 4: ai.ListToolsReply.list:type_name -> ai.ToolInfo
-	17, // 5: ai.CreateToolRequest.params:type_name -> ai.ToolParam
-	17, // 6: ai.UpdateToolRequest.params:type_name -> ai.ToolParam
-	2,  // 7: ai.AI.ListAgents:input_type -> ai.ListAgentsRequest
-	0,  // 8: ai.AI.GetAgent:input_type -> ai.IdRequest
-	4,  // 9: ai.AI.CreateAgent:input_type -> ai.CreateAgentRequest
-	5,  // 10: ai.AI.UpdateAgent:input_type -> ai.UpdateAgentRequest
-	0,  // 11: ai.AI.DeleteAgent:input_type -> ai.IdRequest
-	6,  // 12: ai.AI.BatchBindSubAgents:input_type -> ai.BatchBindSubAgentsRequest
-	8,  // 13: ai.AI.ListModels:input_type -> ai.ListModelsRequest
-	0,  // 14: ai.AI.GetModel:input_type -> ai.IdRequest
-	10, // 15: ai.AI.CreateModel:input_type -> ai.CreateModelRequest
-	11, // 16: ai.AI.UpdateModel:input_type -> ai.UpdateModelRequest
-	0,  // 17: ai.AI.DeleteModel:input_type -> ai.IdRequest
-	13, // 18: ai.AI.ListPrompts:input_type -> ai.ListPromptsRequest
-	0,  // 19: ai.AI.GetPrompt:input_type -> ai.IdRequest
-	15, // 20: ai.AI.CreatePrompt:input_type -> ai.CreatePromptRequest
-	16, // 21: ai.AI.UpdatePrompt:input_type -> ai.UpdatePromptRequest
-	0,  // 22: ai.AI.DeletePrompt:input_type -> ai.IdRequest
-	19, // 23: ai.AI.ListTools:input_type -> ai.ListToolsRequest
-	0,  // 24: ai.AI.GetTool:input_type -> ai.IdRequest
-	21, // 25: ai.AI.CreateTool:input_type -> ai.CreateToolRequest
-	22, // 26: ai.AI.UpdateTool:input_type -> ai.UpdateToolRequest
-	0,  // 27: ai.AI.DeleteTool:input_type -> ai.IdRequest
-	23, // 28: ai.AI.BatchBindTools:input_type -> ai.BatchBindToolsRequest
-	3,  // 29: ai.AI.ListAgents:output_type -> ai.ListAgentsReply
-	1,  // 30: ai.AI.GetAgent:output_type -> ai.AgentInfo
-	1,  // 31: ai.AI.CreateAgent:output_type -> ai.AgentInfo
-	24, // 32: ai.AI.UpdateAgent:output_type -> google.protobuf.Empty
-	24, // 33: ai.AI.DeleteAgent:output_type -> google.protobuf.Empty
-	24, // 34: ai.AI.BatchBindSubAgents:output_type -> google.protobuf.Empty
-	9,  // 35: ai.AI.ListModels:output_type -> ai.ListModelsReply
-	7,  // 36: ai.AI.GetModel:output_type -> ai.ModelInfo
-	7,  // 37: ai.AI.CreateModel:output_type -> ai.ModelInfo
-	24, // 38: ai.AI.UpdateModel:output_type -> google.protobuf.Empty
-	24, // 39: ai.AI.DeleteModel:output_type -> google.protobuf.Empty
-	14, // 40: ai.AI.ListPrompts:output_type -> ai.ListPromptsReply
-	12, // 41: ai.AI.GetPrompt:output_type -> ai.PromptInfo
-	12, // 42: ai.AI.CreatePrompt:output_type -> ai.PromptInfo
-	24, // 43: ai.AI.UpdatePrompt:output_type -> google.protobuf.Empty
-	24, // 44: ai.AI.DeletePrompt:output_type -> google.protobuf.Empty
-	20, // 45: ai.AI.ListTools:output_type -> ai.ListToolsReply
-	18, // 46: ai.AI.GetTool:output_type -> ai.ToolInfo
-	18, // 47: ai.AI.CreateTool:output_type -> ai.ToolInfo
-	24, // 48: ai.AI.UpdateTool:output_type -> google.protobuf.Empty
-	24, // 49: ai.AI.DeleteTool:output_type -> google.protobuf.Empty
-	24, // 50: ai.AI.BatchBindTools:output_type -> google.protobuf.Empty
-	29, // [29:51] is the sub-list for method output_type
-	7,  // [7:29] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+var file_api_ai_ai_proto_depIdxs = []int32{
+	1,  // 0: ai.AgentInfo.sub_agents:type_name -> ai.AgentInfo
+	1,  // 1: ai.ListAgentsReply.list:type_name -> ai.AgentInfo
+	7,  // 2: ai.ListModelsReply.list:type_name -> ai.ModelInfo
+	12, // 3: ai.ListPromptsReply.list:type_name -> ai.PromptInfo
+	17, // 4: ai.ToolInfo.params:type_name -> ai.ToolParam
+	18, // 5: ai.ListToolsReply.list:type_name -> ai.ToolInfo
+	17, // 6: ai.CreateToolRequest.params:type_name -> ai.ToolParam
+	17, // 7: ai.UpdateToolRequest.params:type_name -> ai.ToolParam
+	2,  // 8: ai.AI.ListAgents:input_type -> ai.ListAgentsRequest
+	0,  // 9: ai.AI.GetAgent:input_type -> ai.IdRequest
+	4,  // 10: ai.AI.CreateAgent:input_type -> ai.CreateAgentRequest
+	5,  // 11: ai.AI.UpdateAgent:input_type -> ai.UpdateAgentRequest
+	0,  // 12: ai.AI.DeleteAgent:input_type -> ai.IdRequest
+	6,  // 13: ai.AI.BatchBindSubAgents:input_type -> ai.BatchBindSubAgentsRequest
+	8,  // 14: ai.AI.ListModels:input_type -> ai.ListModelsRequest
+	0,  // 15: ai.AI.GetModel:input_type -> ai.IdRequest
+	10, // 16: ai.AI.CreateModel:input_type -> ai.CreateModelRequest
+	11, // 17: ai.AI.UpdateModel:input_type -> ai.UpdateModelRequest
+	0,  // 18: ai.AI.DeleteModel:input_type -> ai.IdRequest
+	13, // 19: ai.AI.ListPrompts:input_type -> ai.ListPromptsRequest
+	0,  // 20: ai.AI.GetPrompt:input_type -> ai.IdRequest
+	15, // 21: ai.AI.CreatePrompt:input_type -> ai.CreatePromptRequest
+	16, // 22: ai.AI.UpdatePrompt:input_type -> ai.UpdatePromptRequest
+	0,  // 23: ai.AI.DeletePrompt:input_type -> ai.IdRequest
+	19, // 24: ai.AI.ListTools:input_type -> ai.ListToolsRequest
+	0,  // 25: ai.AI.GetTool:input_type -> ai.IdRequest
+	21, // 26: ai.AI.CreateTool:input_type -> ai.CreateToolRequest
+	22, // 27: ai.AI.UpdateTool:input_type -> ai.UpdateToolRequest
+	0,  // 28: ai.AI.DeleteTool:input_type -> ai.IdRequest
+	23, // 29: ai.AI.BatchBindTools:input_type -> ai.BatchBindToolsRequest
+	3,  // 30: ai.AI.ListAgents:output_type -> ai.ListAgentsReply
+	1,  // 31: ai.AI.GetAgent:output_type -> ai.AgentInfo
+	1,  // 32: ai.AI.CreateAgent:output_type -> ai.AgentInfo
+	24, // 33: ai.AI.UpdateAgent:output_type -> google.protobuf.Empty
+	24, // 34: ai.AI.DeleteAgent:output_type -> google.protobuf.Empty
+	24, // 35: ai.AI.BatchBindSubAgents:output_type -> google.protobuf.Empty
+	9,  // 36: ai.AI.ListModels:output_type -> ai.ListModelsReply
+	7,  // 37: ai.AI.GetModel:output_type -> ai.ModelInfo
+	7,  // 38: ai.AI.CreateModel:output_type -> ai.ModelInfo
+	24, // 39: ai.AI.UpdateModel:output_type -> google.protobuf.Empty
+	24, // 40: ai.AI.DeleteModel:output_type -> google.protobuf.Empty
+	14, // 41: ai.AI.ListPrompts:output_type -> ai.ListPromptsReply
+	12, // 42: ai.AI.GetPrompt:output_type -> ai.PromptInfo
+	12, // 43: ai.AI.CreatePrompt:output_type -> ai.PromptInfo
+	24, // 44: ai.AI.UpdatePrompt:output_type -> google.protobuf.Empty
+	24, // 45: ai.AI.DeletePrompt:output_type -> google.protobuf.Empty
+	20, // 46: ai.AI.ListTools:output_type -> ai.ListToolsReply
+	18, // 47: ai.AI.GetTool:output_type -> ai.ToolInfo
+	18, // 48: ai.AI.CreateTool:output_type -> ai.ToolInfo
+	24, // 49: ai.AI.UpdateTool:output_type -> google.protobuf.Empty
+	24, // 50: ai.AI.DeleteTool:output_type -> google.protobuf.Empty
+	24, // 51: ai.AI.BatchBindTools:output_type -> google.protobuf.Empty
+	30, // [30:52] is the sub-list for method output_type
+	8,  // [8:30] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
-func init() { file_ai_ai_proto_init() }
-func file_ai_ai_proto_init() {
-	if File_ai_ai_proto != nil {
+func init() { file_api_ai_ai_proto_init() }
+func file_api_ai_ai_proto_init() {
+	if File_api_ai_ai_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_ai_proto_rawDesc), len(file_ai_ai_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_ai_ai_proto_rawDesc), len(file_api_ai_ai_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_ai_ai_proto_goTypes,
-		DependencyIndexes: file_ai_ai_proto_depIdxs,
-		MessageInfos:      file_ai_ai_proto_msgTypes,
+		GoTypes:           file_api_ai_ai_proto_goTypes,
+		DependencyIndexes: file_api_ai_ai_proto_depIdxs,
+		MessageInfos:      file_api_ai_ai_proto_msgTypes,
 	}.Build()
-	File_ai_ai_proto = out.File
-	file_ai_ai_proto_goTypes = nil
-	file_ai_ai_proto_depIdxs = nil
+	File_api_ai_ai_proto = out.File
+	file_api_ai_ai_proto_goTypes = nil
+	file_api_ai_ai_proto_depIdxs = nil
 }
