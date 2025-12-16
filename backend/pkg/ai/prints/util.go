@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"strings"
 
 	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/schema"
@@ -17,24 +16,31 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 	log.Printf("name: %s\npath: %s", event.AgentName, event.RunPath)
 	if event.Output != nil && event.Output.MessageOutput != nil {
 		if m := event.Output.MessageOutput.Message; m != nil {
+			msg := &ai.Message{
+				Role:    ai.RoleType(schema.Assistant),
+			}
 			if len(m.Content) > 0 {
 				if m.Role == schema.Tool {
 					log.Printf("\ntool response: %s", m.Content)
 				} else {
 					log.Printf("\nanswer: %s", m.Content)
+					msg.Content = m.Content
 				}
 			}
 			if len(m.ToolCalls) > 0 {
 				for _, tc := range m.ToolCalls {
 					log.Printf("\ntool name: %s", tc.Function.Name)
 					log.Printf("\narguments: %s", tc.Function.Arguments)
+					msg.CallingTools = append(msg.CallingTools, &ai.CallingTool{
+						Name:         tc.Function.Name,
+						FunctionName: tc.Function.Name,
+					})
 				}
 			}
+			handlerFn(msg, nil)
 		} else if s := event.Output.MessageOutput.MessageStream; s != nil {
 			toolMap := map[int][]*schema.Message{}
 			var contentStart, thinkingStart bool
-			charNumOfOneRow := 0
-			maxCharNumOfOneRow := 120
 			for {
 				chunk, err := s.Recv()
 				if err != nil {
@@ -45,6 +51,13 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 					handlerFn(nil, err)
 					return
 				}
+				msg := &ai.Message{
+					Role:             ai.RoleType(chunk.Role),
+				}
+				if chunk.Role != schema.Tool {
+					msg.ReasoningContent = chunk.ReasoningContent
+					msg.Content = chunk.Content
+				}
 				if chunk.ReasoningContent != "" {
 					if !thinkingStart {
 						thinkingStart = true
@@ -54,25 +67,6 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 							log.Printf("\nThinking: ")
 						}
 					}
-
-					charNumOfOneRow += len(chunk.ReasoningContent)
-					if strings.Contains(chunk.ReasoningContent, "\n") {
-						charNumOfOneRow = 0
-					} else if charNumOfOneRow >= maxCharNumOfOneRow {
-						charNumOfOneRow = 0
-					}
-					var tk *ai.TokenUsage
-					if chunk.ResponseMeta != nil && chunk.ResponseMeta.Usage != nil {
-						tk = &ai.TokenUsage{
-							CurrentTokens: int64(chunk.ResponseMeta.Usage.CompletionTokens),
-							TotalTokens:   int64(chunk.ResponseMeta.Usage.TotalTokens),
-						}
-					}
-					handlerFn(&ai.Message{
-						Role:             ai.RoleType(chunk.Role),
-						ReasoningContent: chunk.ReasoningContent,
-						TokenUsage:       tk,
-					}, nil)
 				}
 				if chunk.Content != "" {
 					if !contentStart {
@@ -83,24 +77,6 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 							log.Printf("\nanswer: ")
 						}
 					}
-					charNumOfOneRow += len(chunk.Content)
-					if strings.Contains(chunk.Content, "\n") {
-						charNumOfOneRow = 0
-					} else if charNumOfOneRow >= maxCharNumOfOneRow {
-						charNumOfOneRow = 0
-					}
-					var tk *ai.TokenUsage
-					if chunk.ResponseMeta != nil && chunk.ResponseMeta.Usage != nil {
-						tk = &ai.TokenUsage{
-							CurrentTokens: int64(chunk.ResponseMeta.Usage.CompletionTokens),
-							TotalTokens:   int64(chunk.ResponseMeta.Usage.TotalTokens),
-						}
-					}
-					handlerFn(&ai.Message{
-						Role:    ai.RoleType(chunk.Role),
-						Content: chunk.Content,
-						TokenUsage: tk,
-					}, nil)
 				}
 
 				if len(chunk.ToolCalls) > 0 {
@@ -123,8 +99,23 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 								},
 							},
 						})
+						if tc.Function.Name != "" {
+							if tc.Function.Arguments != "" {
+								var args map[string]interface{}
+								if err := json.Unmarshal([]byte(tc.Function.Arguments), &args); err != nil {
+									log.Fatalf("Unmarshal arguments failed: %v", err)
+									return
+								}
+								msg.CallingTools[len(msg.CallingTools)-1].Args = args
+							}
+							msg.CallingTools = append(msg.CallingTools, &ai.CallingTool{
+								Name:         tc.Function.Name,
+								FunctionName: tc.Function.Name,
+							})
+						}
 					}
 				}
+				handlerFn(msg, nil)
 			}
 
 			for _, msgs := range toolMap {

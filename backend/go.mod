@@ -14,6 +14,7 @@ require (
 	github.com/cloudwego/eino-ext/components/tool/commandline v0.0.0-20251202030425-890b7f22076d
 	github.com/cloudwego/eino-ext/components/tool/duckduckgo/v2 v2.0.0-20251117090452-bd6375a0b3cf
 	github.com/cloudwego/eino-ext/components/tool/mcp v0.0.6
+	github.com/cloudwego/eino-ext/components/tool/sequentialthinking v0.0.0-20251216025750-8834f6431b97
 	github.com/coze-dev/cozeloop-go v0.1.11
 	github.com/go-kratos/kratos/v2 v2.8.0
 	github.com/go-kratos/swagger-api v1.0.1

@@ -1,11 +1,11 @@
 import type { FormSchemaGetter } from '#/adapter/form';
-import PromptPreviewCell from './components/PromptPreviewCell.vue';
-
 import type { VxeGridProps } from '#/adapter/vxe-table';
 
 import { Tag } from 'ant-design-vue';
 
 import { formatMessageTime } from '#/utils/time';
+
+import PromptPreviewCell from './components/PromptPreviewCell.vue';
 
 // Prompt 类型选项
 export const promptTypeOptions = [
@@ -59,7 +59,7 @@ export const columns: VxeGridProps['columns'] = [
     minWidth: 300,
     slots: {
       default: ({ row }) => {
-        return <PromptPreviewCell text={row.text} row={row} />;
+        return <PromptPreviewCell row={row} text={row.text} />;
       },
     },
   },

@@ -7,6 +7,8 @@ import (
 	"io"
 	"testing"
 
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino-ext/components/tool/sequentialthinking"
 	"github.com/cloudwego/eino/adk"
 	"github.com/cloudwego/eino/schema"
 	"github.com/example/aichat/backend/pkg/agenttools"
@@ -77,12 +79,11 @@ func TestPgAgent(t *testing.T) {
 		// t.Logf("Message: %+v, thinking: %v", msg, msg.ReasoningContent)
 		if msg.ReasoningContent != "" {
 			fmt.Print(msg.ReasoningContent)
-		}else{
+		} else {
 			fmt.Print(msg.Content)
 		}
 	}
 }
-
 
 func TestDB(t *testing.T) {
 	ctx := context.Background()
@@ -115,7 +116,7 @@ func TestDB(t *testing.T) {
 	t.Logf("ChannelRoi: %+v", channelRois)
 }
 
-func TestGraph_adk(t *testing.T) { 
+func TestGraph_adk(t *testing.T) {
 	event := chat.NewAdkAgent().Run(context.Background(), []adk.Message{
 		chat.PgHelperPrompt(),
 		{
@@ -153,4 +154,34 @@ func TestGraph_adk(t *testing.T) {
 func TestMCP(t *testing.T) {
 	tools := agenttools.McpTools()
 	t.Logf("MCP Tools: %+v", tools)
+}
+
+func TestTools(t *testing.T) {
+	ctx := context.Background()
+
+	// Instantiate the tool
+	tool, err := sequentialthinking.NewTool()
+	if err != nil {
+		panic(err)
+	}
+
+	args := &sequentialthinking.ThoughtRequest{
+		Thought:           "This is a test thought",
+		ThoughtNumber:     1,
+		TotalThoughts:     3,
+		NextThoughtNeeded: true,
+	}
+
+	argsStr, _ := sonic.Marshal(args)
+
+	// Use the tool
+	// (This is just a placeholder; actual usage will depend on the tool's functionality)
+	result, err := tool.InvokableRun(ctx, string(argsStr))
+	if err != nil {
+		panic(err)
+	}
+
+	// Process the result
+	// (This is just a placeholder; actual processing will depend on the tool's output)
+	fmt.Println(result)
 }

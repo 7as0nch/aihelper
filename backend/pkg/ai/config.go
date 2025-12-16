@@ -25,6 +25,7 @@ type AdapterType string
 const (
 	AdapterTypeEino    AdapterType = "adk"
 	AdapterTypeDeepAdk AdapterType = "deepadk"
+	AdapterTypeHost    AdapterType = "host"
 )
 
 // ModelConfig 模型配置

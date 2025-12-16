@@ -136,6 +136,8 @@ github.com/cloudwego/eino-ext/components/tool/duckduckgo/v2 v2.0.0-2025111709045
 github.com/cloudwego/eino-ext/components/tool/duckduckgo/v2 v2.0.0-20251117090452-bd6375a0b3cf/go.mod h1:Np0BXy/9hPRu3wCgn+ij6L7YsjFcybVzg1k7uYOXh0M=
 github.com/cloudwego/eino-ext/components/tool/mcp v0.0.6 h1:+KGa6ZUtMMNmMpJORjRVVR/lzw49bhJ0MY91Ak3BnSc=
 github.com/cloudwego/eino-ext/components/tool/mcp v0.0.6/go.mod h1:T1663yWcuWSdnZ8WeYRcw6ISSJkxOjOPnKf/alperKQ=
+github.com/cloudwego/eino-ext/components/tool/sequentialthinking v0.0.0-20251216025750-8834f6431b97 h1:RKo2usy42tGHiSAh2T6V114DmyKRMvvHfiJTwg7TMcw=
+github.com/cloudwego/eino-ext/components/tool/sequentialthinking v0.0.0-20251216025750-8834f6431b97/go.mod h1:tfHD4Gn2kHfabi0pghN4y2yYDS24AZX1nQUwG0PESm8=
 github.com/cloudwego/eino-ext/libs/acl/openai v0.1.2 h1:r9Id2wzJ05PoHl+Km7jQgNMgciaZI93TVnUYso89esM=
 github.com/cloudwego/eino-ext/libs/acl/openai v0.1.2/go.mod h1:S4OkvglPY9hsm9tXeShODrf/WN1Cgu4bqu4nn/CnIic=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=

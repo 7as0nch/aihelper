@@ -281,6 +281,16 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 				TotalTokens:   msg.Message.TokenUsage.TotalTokens,
 			}
 		}
+		for _, t := range msg.Message.CallingTools {
+			pbMsg.CallingTools = append(pbMsg.CallingTools, &pb.CallingTool{
+				Name:         t.Name,
+				FunctionName: t.FunctionName,
+			})
+			aiMsg.CallingTools = append(aiMsg.CallingTools, &model.CallingTool{
+				Name:         t.Name,
+				FunctionName: t.FunctionName,
+			})
+		}
 		jsonMsg, err := marshaler.Marshal(pbMsg)
 		if err != nil {
 			s.log.Error("Marshal message error:", zap.Error(err))

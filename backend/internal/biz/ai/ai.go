@@ -29,6 +29,7 @@ func NewAIUsecase(log *zap.Logger) *AIUsecase {
 
 	// 注册 DeepADK 适配器
 	factory.RegisterAdapter(pkgai.AdapterTypeDeepAdk, adapter.NewDeepAdkAdapter)
+	factory.RegisterAdapter(pkgai.AdapterTypeHost, adapter.NewHost)
 
 	return &AIUsecase{
 		factory: factory,
@@ -48,7 +49,7 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		2.搜索用户想要搜索的东西并解答。
 		3.业务相关。
 		`, // English description
-		AdapterType: pkgai.AdapterTypeDeepAdk,
+		AdapterType: pkgai.AdapterTypeHost,
 		ModelConfig: pkgai.ModelConfig{
 			ModelType: "deepseek",
 			ModelName: "deepseek",

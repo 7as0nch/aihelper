@@ -79,6 +79,13 @@ func testGetId() {
 var Node *snowflake.Node
 
 func init() {
+	// 1. 【修改这里】设置起始时间 (Epoch)
+    // 必须在 NewNode 之前设置。
+    // 这里设置为 2025-01-01 00:00:00 UTC 的毫秒时间戳
+    // 你也可以直接写死一个 int64 数字，比如 1735689600000
+    // st := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+    // snowflake.Epoch = st.UnixMilli()
+	//
     ip := lib.GetIP()
     var seed int
     var err error

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import type { Message, Attachment } from '../../stores/chat';
+import type { CallingTool } from '../../api/chat';
 import { useChatStore } from '../../stores/chat';
 import { User, Bot, Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight, Copy } from 'lucide-vue-next';
 import { formatMessageTime } from '../../utils/time';
@@ -11,6 +12,21 @@ const props = defineProps<{
   message: Message;
   isLastMessage: boolean;
 }>();
+
+// 添加一个 ref 来缓存 callingTools
+const cachedCallingTools = ref<CallingTool[]>([]);
+
+// 监听 message.callingTools 的变化，更新缓存
+watch(() => props.message.callingTools, (newCallingTools) => {
+  if (newCallingTools && newCallingTools.length > 0) {
+    cachedCallingTools.value = [...newCallingTools];
+  }
+}, { immediate: true });
+
+// 创建一个计算属性来返回缓存的 callingTools
+const displayCallingTools = computed(() => {
+  return cachedCallingTools.value.length > 0 ? cachedCallingTools.value : (props.message.callingTools || []);
+});
 
 const emit = defineEmits<{
   (e: 'quote', id: string, content: string): void;
@@ -250,14 +266,14 @@ onUnmounted(() => {
         </div>
         
         <!-- Calling Tools -->
-        <div v-if="message.callingTools && message.callingTools.length > 0" class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/50">
+        <div v-if="displayCallingTools && displayCallingTools.length > 0" class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/50">
           <div class="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
             <Wrench class="w-3.5 h-3.5" />
             <span>使用的工具</span>
           </div>
           <div class="flex flex-wrap gap-2">
             <div 
-              v-for="(tool, index) in message.callingTools" 
+              v-for="(tool, index) in displayCallingTools" 
               :key="index"
               class="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md text-xs text-gray-600 dark:text-gray-300"
             >
