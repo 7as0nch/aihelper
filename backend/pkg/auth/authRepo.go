@@ -51,7 +51,7 @@ func (a *authRepo) CheckToken(ctx context.Context, tokenString string) (*JwtClai
 	//at(time.Unix(0, 0), func() {
 	//
 	//})
-	token, _ := jwt.ParseWithClaims(jwtToken, &JwtClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(jwtToken, &JwtClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return a.signingKey, nil
 	})
 	if err != nil {
@@ -72,6 +72,7 @@ func (a *authRepo) CheckToken(ctx context.Context, tokenString string) (*JwtClai
 				//return
 			}
 		}
+		return nil, err
 	}
 	if claimsInner, ok := token.Claims.(*JwtClaims); ok && token.Valid {
 		claims = claimsInner

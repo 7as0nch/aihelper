@@ -10,6 +10,7 @@ defineProps<{
   currentModeIcon: any;
   extButtons?: Array<{ id: string; name: string; api: string; desc: string; icon?: any }>;
   searchByWeb?: boolean;
+  showUpload?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -72,7 +73,7 @@ defineExpose({
         <!-- Dropdown Menu -->
         <div 
           v-if="isDropdownOpen"
-          class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden p-1 animate-fade-in-up z-[99999]"
+          class="fixed bottom-[150px] left-10 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 p-1 animate-fade-in-up z-[99999]"
           @click.stop
         >
           <button 
@@ -123,6 +124,7 @@ defineExpose({
 
       <!-- Upload -->
       <button 
+        v-if="showUpload !== false"
         v-tracker="{ type: 'click', name: '上传' }"
         @click="emit('upload'); emit('trigger-bounce', 'upload')"
         class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"

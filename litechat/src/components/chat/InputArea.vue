@@ -123,6 +123,7 @@ const handleClickOutside = (event: MouseEvent) => {
 };
 
 import { chatApi } from '../../api/chat';
+import { getConfig } from '../../config';
 
 // ...
 
@@ -412,6 +413,7 @@ const handleExtAction = (btn: any) => {
       @upload="desktopToolbarRef?.triggerFileUpload" 
       @ext-action="handleExtAction"
       @toggle-web-search="store.searchByWeb = !store.searchByWeb"
+      :show-upload="getConfig('VITE_SHOW_UPLOAD_BTN') !== 'false'"
     />
     <!-- Note: upload on mobile might need a separate hidden input or reuse desktop's if visible/accessible, 
          but desktop toolbar is hidden on mobile. 
@@ -474,6 +476,8 @@ const handleExtAction = (btn: any) => {
         @voice-result="handleVoiceResult"
         @voice-interim="handleVoiceInterim"
         @voice-error="handleVoiceError"
+        :placeholder="getConfig('VITE_INPUT_PLACEHOLDER')"
+        :show-audio="getConfig('VITE_SHOW_AUDIO_BTN') === 'true'"
       />
       
       <!-- Desktop Toolbar -->
@@ -500,6 +504,8 @@ const handleExtAction = (btn: any) => {
         @file-change="handleFileChange"
         @ext-action="handleExtAction"
         @toggle-web-search="store.searchByWeb = !store.searchByWeb"
+        :show-upload="getConfig('VITE_SHOW_UPLOAD_BTN') !== 'false'"
+        :show-audio="getConfig('VITE_SHOW_AUDIO_BTN') === 'true'"
       />
     </div>
   </div>

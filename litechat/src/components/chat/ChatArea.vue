@@ -10,6 +10,7 @@ import { Menu, X, MessageCircle, Star, Share2, Plus, ChevronLeft } from 'lucide-
 import { useChatStore } from '../../stores/chat';
 import { useAuthStore } from '../../stores/auth';
 import { useRecommendationStore } from '../../stores/recommendation';
+import { getConfig } from '../../config';
 
 const store = useChatStore();
 const authStore = useAuthStore();
@@ -71,10 +72,10 @@ const toggleScreenshotMode = () => {
   // Clearing selection is handled by the parent or ScreenshotManager when mode changes
 };
 
-const handleQuestionClick = (content: string) => {
-  if (!authStore.checkAuth()) return;
-  store.sendMessage(content);
-};
+// const handleQuestionClick = (content: string) => {
+//   if (!authStore.checkAuth()) return;
+//   store.sendMessage(content);
+// };
 
 // Announcement Logic
 import Announcement from './Announcement.vue';
@@ -160,7 +161,10 @@ onMounted(async () => {
     <!-- Standard Chat Layout -->
     <template v-else>
       <!-- Desktop Header -->
-      <div class="hidden md:flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-gray-800">
+      <div 
+        v-if="getConfig('VITE_SHOW_HEADER') !== 'false'"
+        class="hidden md:flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-gray-800"
+      >
         <div class="flex items-center gap-3">
           <button 
             @click="$router.push('/chat')"
@@ -238,8 +242,11 @@ onMounted(async () => {
             @clear-quote="quotedContent = null" 
             @toggle-screenshot="toggleScreenshotMode"
           />
-          <div class="text-center mt-2 text-xs text-gray-400">
-            AI 生成的内容可能不准确，请谨慎参考
+          <div 
+            v-if="getConfig('VITE_SHOW_FOOTER') !== 'false'"
+            class="text-center mt-2 text-xs text-gray-400"
+          >
+            {{ getConfig('VITE_FOOTER_TEXT') }}
           </div>
         </div>
       </div>

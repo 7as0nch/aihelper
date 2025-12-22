@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
 	pb "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/biz"
 	"github.com/example/aichat/backend/internal/biz/ai"
@@ -172,6 +171,7 @@ func (s *ChatService) SendStream(req *pb.SendStreamRequest, conn pb.Chat_SendStr
 	return nil
 }
 
+
 func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
@@ -200,22 +200,6 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	var sessionID int64 = req.CurSessionID
 	// If sessionID is 0, create new session
 	if sessionID == 0 {
-		// Create new session
-		// title := "New Chat"
-		// if len(req.CurMessage.Content) > 0 {
-		// 	runes := []rune(req.CurMessage.Content)
-		// 	if len(runes) > 20 {
-		// 		title = string(runes[:20]) + "..."
-		// 	} else {
-		// 		title = string(runes)
-		// 	}
-		// }
-		// session, err := s.uc.CreateSession(ctx, userId, title)
-		// if err != nil {
-		// 	s.log.Error("Create session error:", zap.Error(err))
-		// 	return
-		// }
-		// sessionID = session.ID
 		s.log.Error("Session ID is required for SSE chat")
 		return
 	}

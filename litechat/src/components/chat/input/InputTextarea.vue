@@ -8,6 +8,8 @@ defineProps<{
   isLoading: boolean;
   isRecording: boolean;
   hasAttachments: boolean;
+  placeholder?: string;
+  showAudio?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -56,7 +58,7 @@ defineExpose({
       :value="modelValue"
       rows="1"
       class="flex-1 w-full bg-transparent border-0 focus:ring-0 focus:outline-none resize-none py-3 px-3 md:py-4 md:pl-4 md:pr-12 max-h-48 text-gray-900 dark:text-gray-100 placeholder-gray-400 overflow-y-hidden"
-      placeholder="输入你的问题..."
+      :placeholder="placeholder || '输入你的问题...'"
       @input="handleInput"
       @keydown="emit('keydown', $event)"
       @paste="emit('paste', $event)"
@@ -66,6 +68,7 @@ defineExpose({
     <!-- Mobile Right Actions (Voice & Send) -->
     <div class="flex md:hidden items-center gap-2 pb-1">
       <VoiceInput
+        v-if="showAudio !== false"
         size="md"
         @start="emit('voice-start')"
         @stop="emit('voice-stop')"

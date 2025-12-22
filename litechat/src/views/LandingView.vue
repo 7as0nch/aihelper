@@ -661,7 +661,7 @@ const drawGame = (ctx: CanvasRenderingContext2D, width: number, height: number) 
     foods.value.forEach(food => {
         const pulse = Math.sin(time) * 0.3 + 0.7;
         const foodSize = cellSize * 0.8;
-        const offset = (cellSize - foodSize * pulse) / 2;
+        // const offset = (cellSize - foodSize * pulse) / 2;
         
         ctx.fillStyle = isDark.value ? '#fbbf24' : '#f59e0b'; // Amber/Gold
         ctx.shadowBlur = 20 * pulse;

@@ -11,6 +11,7 @@ import (
 
 	pkgai "github.com/example/aichat/backend/pkg/ai"
 	"github.com/example/aichat/backend/pkg/ai/adapter"
+	"github.com/example/aichat/backend/pkg/ai/chatmodel"
 	"go.uber.org/zap"
 )
 
@@ -49,12 +50,16 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		2.搜索用户想要搜索的东西并解答。
 		3.业务相关。
 		`, // English description
-		AdapterType: pkgai.AdapterTypeHost,
+		AdapterType: pkgai.AdapterTypeDeepAdk,
 		ModelConfig: pkgai.ModelConfig{
-			ModelType: "deepseek",
-			ModelName: "deepseek",
-			APIKey:    "sk-dc49fec5d27a416f8758ece703aed2ff",
-			BaseURL:   "https://api.deepseek.com",
+			// ModelType: "deepseek",
+			// ModelName: "deepseek",
+			// APIKey:    "sk-dc49fec5d27a416f8758ece703aed2ff",
+			// BaseURL:   "https://api.deepseek.com",
+			ModelType: string(chatmodel.OPENAI_MODEL),
+			ModelName: "mimo-v2-flash",
+			APIKey:    "sk-c5pp6zngjk8gc2jxo0knffvw04g4zofvrrkjas8p5p7j51ml",
+			BaseURL:   "https://api.xiaomimimo.com/v1",
 			Thinking:  true,
 			TopP:      0.9,
 		},
@@ -67,10 +72,13 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		2.channel ROI查询。`, // English description
 		AdapterType: pkgai.AdapterTypeEino,
 		ModelConfig: pkgai.ModelConfig{
-			ModelType: "ark",
+			ModelType: string(chatmodel.ARK_MODEL),
 			ModelName: "doubao-seed-1-6-250615",
 			APIKey:    "9292fee0-90fb-4739-86ff-eb1e886e2823",
-			BaseURL:   "",
+			// ModelType: string(chatmodel.OPENAI_MODEL),
+			// ModelName: "mimo-v2-flash",
+			// APIKey:    "sk-c5pp6zngjk8gc2jxo0knffvw04g4zofvrrkjas8p5p7j51ml",
+			// BaseURL:   "https://api.xiaomimimo.com/v1",
 			Thinking:  true,
 			TopP:      0.9,
 		},

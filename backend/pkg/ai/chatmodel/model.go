@@ -91,11 +91,12 @@ func NewModel(ctx context.Context, config ModelConfig, opts ...CreateChatModelOp
 			ByAzure: func() bool {
 				return os.Getenv("OPENAI_BY_AZURE") == "true"
 			}(),
-			BaseURL:     baseURL,
-			Model:       modelName,
-			MaxTokens:   o.MaxTokens,
-			Temperature: o.Temperature,
-			TopP:        o.TopP,
+			BaseURL:         baseURL,
+			Model:           modelName,
+			MaxTokens:       o.MaxTokens,
+			Temperature:     o.Temperature,
+			TopP:            o.TopP,
+			ReasoningEffort: openai.ReasoningEffortLevelHigh,
 		}
 		if o.JsonSchema != nil {
 			conf.ResponseFormat = &openai.ChatCompletionResponseFormat{

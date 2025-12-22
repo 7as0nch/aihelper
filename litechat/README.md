@@ -46,8 +46,8 @@ pnpm add @7as0nch/litechat
 import { initAiChat } from '@7as0nch/litechat';
 
 // 在组件中
-const AiChat = initAiChat({
-  config: {
+const AiChat = initAiChat({ // InitOptions
+  config: { // RuntimeConfig
     VITE_APP_TITLE: '我的 AI 助手',
   },
   defaultOpen: false,
@@ -90,33 +90,94 @@ const AiChat = initAiChat({
 
 ## 配置选项
 
+### 完整配置对象 (LiteChat SDK)
+
 ```typescript
 interface InitOptions {
-  // 运行时配置
-  config?: {
-    VITE_APP_TITLE?: string;         // 应用标题
-    VITE_APP_LOGO?: string;           // Logo URL
-    VITE_API_BASE_URL?: string;       // API 基础 UR
-    VITE_OPENAI_API_KEY?: string; // OpenAI API Key
-    VITE_OPENAI_BASE_URL?: string; // 后台接口
-    VITE_OPENAI_MODEL?: string;
-    // # backend : 纯前端模式：无需登录，只需要接入模型key即可，记录存到本地。
-    // # frontend : 后台模式： 需要登录，接入配套的后台管理。（这里可考虑与宿主完成单点登录配置）
-    // # demo : 样例模式：里面包含各种demo例子。全部使用mock数据。
-    VITE_AI_TYPE?: string; // 
-    VITE_ENABLE_QR_LOGIN?: string;
-    VITE_BASE_URL?: string;
-    // ... 其他配置
+  // 1. 基础配置 (Legacy)
+  config?: Partial<RuntimeConfig>; // 见下文 RuntimeConfig
+  
+  // 2. 聊天配置
+  chat?: {
+    appId?: string;      // Bot ID (对应 VITE_OPENAI_MODEL)
+    repoId?: string;
   };
   
-  // 是否默认打开
-  defaultOpen?: boolean;  // 默认 false
-
-  // 是否默认显示 (浮球或窗口)
-  defaultShow?: boolean;  // 默认 true
+  // 3. 系统设置
+  setting?: {
+    apiBaseUrl?: string; // API 地址 (对应 VITE_API_BASE_URL)
+  };
   
-  // 挂载容器 ID
-  containerId?: string;   // 默认 'ai-chat-widget-root'
+  // 4. 认证信息
+  auth?: {
+    type?: 'token' | 'external';
+    token?: string;      // API Key / Token
+    onRefreshToken?: (oldToken?: string) => string | Promise<string>;
+  };
+
+  // 5. 用户信息 (可选)
+  user?: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
+
+  // 6. UI 配置
+  ui?: {
+    layout?: 'pc' | 'mobile'; // 默认 pc
+    header?: {
+      isNeed?: boolean;       // 是否显示头部
+      title?: string;         // 标题
+      icon?: string;          // 图标 URL
+    };
+    footer?: {
+      isNeed?: boolean;       // 是否显示底部
+      expressionText?: string;// 底部免责声明文本
+    };
+    chatSlot?: {
+      input?: {
+        placeholder?: string; // 输入框占位符
+        isNeedAudio?: boolean;// 是否显示语音按钮
+      };
+    };
+    uploadBtn?: {
+      isNeed?: boolean;       // 是否显示上传按钮
+    };
+  };
+
+  // 通用选项
+  defaultOpen?: boolean;  // 默认打开?
+  defaultShow?: boolean;  // 默认显示?
+  containerId?: string;   // 挂载容器 ID
+}
+```
+
+### 环境变量 / RuntimeConfig
+
+```typescript
+interface RuntimeConfig {
+    // 基础
+    VITE_APP_TITLE?: string;           // 应用标题
+    VITE_APP_LOGO?: string;            // Logo URL
+    VITE_BASE_URL?: string;            // 基础路径
+    VITE_AI_TYPE?: 'backend' | 'frontend' | 'demo'; // 运行模式
+    
+    // API
+    VITE_API_BASE_URL?: string;        // 接口地址
+    VITE_OPENAI_API_KEY?: string;      // API Key
+    VITE_OPENAI_MODEL?: string;        // 模型ID
+
+    // UI 配置 (LiteChat 特性)
+    VITE_SHOW_HEADER?: string;         // 'true' | 'false'
+    VITE_SHOW_FOOTER?: string;         // 'true' | 'false'
+    VITE_FOOTER_TEXT?: string;         // 底部文本
+    VITE_INPUT_PLACEHOLDER?: string;   // 输入框提示
+    VITE_SHOW_UPLOAD_BTN?: string;     // 'true' | 'false'
+    VITE_SHOW_AUDIO_BTN?: string;      // 'true' | 'false'
+    
+    // 其他
+    VITE_ENABLE_QR_LOGIN?: string;
+    VITE_FLOAT_BALL_IMAGE?: string;
 }
 ```
 
@@ -161,8 +222,7 @@ npm run dev
 npm run build:lib
 
 # 预览 demo
-open demo-widget.html
-open demo-npm.html
+open test-widget.html
 ```
 
 ## License

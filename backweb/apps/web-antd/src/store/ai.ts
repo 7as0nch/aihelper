@@ -15,8 +15,9 @@ export const useAiStore = defineStore('ai', () => {
   const aiChat = initAiChat({
     config: {
       VITE_APP_TITLE: '我的 AI 助手',
-      VITE_API_BASE_URL: 'https://api.example.com',
-      VITE_AI_TYPE: 'demo',
+      VITE_BASE_URL: '/api',
+      VITE_OPENAI_BASE_URL: 'http://127.0.0.1:6039',
+      VITE_AI_TYPE: 'backend',
     },
     defaultOpen: false,
     defaultShow: false,

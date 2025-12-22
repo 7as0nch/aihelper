@@ -26,7 +26,7 @@
     "#/*": "./src/*"
   },
   "dependencies": {
-    "@7as0nch/litechat": "^0.1.6",
+    "@7as0nch/litechat": "^0.1.7",
     "@ant-design/icons-vue": "^7.0.1",
     "@codemirror/autocomplete": "^6.20.0",
     "@codemirror/commands": "^6.10.0",

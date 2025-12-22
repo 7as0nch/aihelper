@@ -2,8 +2,10 @@ import { mountApp } from '../mount';
 import type { InitOptions } from './types';
 // @ts-ignore
 import styleContent from '../style.css?inline';
-// import markdownLightCss from 'github-markdown-css/github-markdown-light.css?inline';
-// import markdownDarkCss from 'github-markdown-css/github-markdown-dark.css?inline';
+// @ts-ignore
+import mdPreviewCss from 'md-editor-v3/lib/preview.css?inline';
+// @ts-ignore
+import highlightCss from 'highlight.js/styles/github-dark.css?inline';
 
 export function createIframeRenderer(container: HTMLElement, options: InitOptions) {
     const iframe = document.createElement('iframe');
@@ -64,10 +66,10 @@ export function createIframeRenderer(container: HTMLElement, options: InitOption
             styleEl.textContent = styleContent;
             doc.head.appendChild(styleEl);
 
-            // // Inject markdown styles for code blocks and tables
-            // const markdownStyleEl = doc.createElement('style');
-            // markdownStyleEl.textContent = markdownLightCss + '\n' + markdownDarkCss;
-            // doc.head.appendChild(markdownStyleEl);
+            // Inject markdown styles (md-editor-v3 & highlight.js)
+            const mdStyleEl = doc.createElement('style');
+            mdStyleEl.textContent = mdPreviewCss + '\n' + highlightCss;
+            doc.head.appendChild(mdStyleEl);
 
             // Sync initial dark mode state from parent
             const syncTheme = () => {

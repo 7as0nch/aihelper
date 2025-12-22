@@ -12,6 +12,15 @@ export interface RuntimeConfig {
     VITE_BASE_URL?: string;
     VITE_FLOAT_BALL_IMAGE?: string;
     VITE_FLOAT_BALL_WELCOME_CONTENTS?: string;
+
+    // UI Configuration
+    VITE_SHOW_HEADER?: string;
+    VITE_SHOW_FOOTER?: string;
+    VITE_FOOTER_TEXT?: string;
+    VITE_INPUT_PLACEHOLDER?: string;
+    VITE_SHOW_UPLOAD_BTN?: string;
+    VITE_SHOW_AUDIO_BTN?: string;
+
     [key: string]: string | undefined;
 }
 
@@ -31,6 +40,14 @@ const defaultConfig: RuntimeConfig = {
     VITE_ENABLE_QR_LOGIN: import.meta.env.VITE_ENABLE_QR_LOGIN,
     VITE_FLOAT_BALL_WELCOME_CONTENTS: import.meta.env.VITE_FLOAT_BALL_WELCOME_CONTENTS,
     VITE_FLOAT_BALL_IMAGE: import.meta.env.VITE_FLOAT_BALL_IMAGE,
+
+    // UI Configuration
+    VITE_SHOW_HEADER: import.meta.env.VITE_SHOW_HEADER ?? 'true',
+    VITE_SHOW_FOOTER: import.meta.env.VITE_SHOW_FOOTER ?? 'true',
+    VITE_FOOTER_TEXT: import.meta.env.VITE_FOOTER_TEXT ?? 'AI 生成的内容可能不准确，请谨慎参考',
+    VITE_INPUT_PLACEHOLDER: import.meta.env.VITE_INPUT_PLACEHOLDER ?? '输入消息...',
+    VITE_SHOW_UPLOAD_BTN: import.meta.env.VITE_SHOW_UPLOAD_BTN ?? 'true',
+    VITE_SHOW_AUDIO_BTN: import.meta.env.VITE_SHOW_AUDIO_BTN ?? 'false',
 };
 
 export const runtimeConfig = reactive<RuntimeConfig>({ ...defaultConfig });

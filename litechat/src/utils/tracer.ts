@@ -254,21 +254,21 @@ class AnalyticsTracker {
         });
         axiosInstance.interceptors.response.use(
             (res: AxiosResponse) => {
-                const config = res.config as InternalAxiosRequestConfig;
+                const config = res.config as InternalAxiosRequestConfig | undefined;
                 this.report('api', {
-                    url: config.url,
-                    method: config.method,
+                    url: config?.url,
+                    method: config?.method,
                     status: res.status,
-                    duration: Date.now() - (config.metadata?.startTime || Date.now()),
+                    duration: Date.now() - (config?.metadata?.startTime || Date.now()),
                     success: true
                 });
                 return res;
             },
             (err: any) => {
-                const config = err.config as InternalAxiosRequestConfig | undefined;
+                const config = err?.config as InternalAxiosRequestConfig | undefined;
                 this.report('api', {
                     url: config?.url,
-                    status: err.response?.status || 0,
+                    status: err?.response?.status || 0,
                     duration: Date.now() - (config?.metadata?.startTime || Date.now()),
                     success: false
                 });

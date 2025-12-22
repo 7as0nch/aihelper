@@ -20,8 +20,15 @@ interface ResultBody {
 
 request.interceptors.request.use(
     (config) => {
+        if (!config) {
+            return config;
+        }
         const token = getToken();
         if (token) {
+            // Ensure headers object exists
+            if (!config.headers) {
+                config.headers = new axios.AxiosHeaders();
+            }
             config.headers['Authorization'] = `Bearer ${token}`;
         }
         return config;

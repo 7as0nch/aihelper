@@ -60,10 +60,9 @@ onMounted(() => {
       @close="emit('close')"
       @toggle-collapse="emit('toggleCollapse')"
     />
-
+    <SidebarNavigation :is-collapsed="isCollapsed" />
     <!-- Nav Items -->
     <nav class="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
-      <SidebarNavigation :is-collapsed="isCollapsed" />
       <SidebarHistory :is-collapsed="isCollapsed" />
     </nav>
 

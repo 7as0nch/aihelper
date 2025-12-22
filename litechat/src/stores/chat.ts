@@ -24,6 +24,9 @@ export const useChatStore = defineStore('chat', () => {
             historyItems.value = await chatApi.getHistoryList();
         } catch (e) {
             console.error('Failed to fetch history list', e);
+            if (e instanceof Error) {
+                console.error(e.message, e.stack);
+            }
         }
     };
 
@@ -91,6 +94,7 @@ export const useChatStore = defineStore('chat', () => {
             if (currentChatId.value === id) {
                 clearMessages();
             }
+            fetchHistoryList();
         } catch (e) {
             console.error('Failed to delete chat', e);
         }

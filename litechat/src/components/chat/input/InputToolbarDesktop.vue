@@ -13,6 +13,8 @@ defineProps<{
   hasAttachments: boolean;
   extButtons?: Array<{ id: string; name: string; api: string; desc: string; icon?: any }>;
   searchByWeb?: boolean;
+  showUpload?: boolean;
+  showAudio?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -170,7 +172,7 @@ defineExpose({
         class="hidden" 
         @change="(e) => emit('file-change', e, 'file')" 
       />
-      <button @click="triggerFileUpload" class="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors" title="上传文件">
+      <button v-if="showUpload !== false" @click="triggerFileUpload" class="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors" title="上传文件">
         <Paperclip class="w-5 h-5" />
       </button>
       
@@ -183,6 +185,7 @@ defineExpose({
       />
       
       <VoiceInput
+        v-if="showAudio !== false"
         size="md"
         @start="emit('voice-start')"
         @stop="emit('voice-stop')"

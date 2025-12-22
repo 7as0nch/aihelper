@@ -100,18 +100,28 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 							},
 						})
 						if tc.Function.Name != "" {
+							tl := &ai.CallingTool{
+								Name:         tc.Function.Name,
+								FunctionName: tc.Function.Name,
+							}
+							msg.CallingTools = append(msg.CallingTools, tl)
 							if tc.Function.Arguments != "" {
 								var args map[string]interface{}
 								if err := json.Unmarshal([]byte(tc.Function.Arguments), &args); err != nil {
 									log.Fatalf("Unmarshal arguments failed: %v", err)
 									return
 								}
-								msg.CallingTools[len(msg.CallingTools)-1].Args = args
+								tl.Args = args
 							}
-							msg.CallingTools = append(msg.CallingTools, &ai.CallingTool{
-								Name:         tc.Function.Name,
-								FunctionName: tc.Function.Name,
-							})
+						}
+					}
+				}
+				if chunk.ResponseMeta.FinishReason == "stop" {
+					if chunk.ResponseMeta.Usage != nil {
+						log.Printf("\nusage: %v", chunk.ResponseMeta.Usage)
+						msg.TokenUsage = &ai.TokenUsage{
+							CurrentTokens: int64(chunk.ResponseMeta.Usage.PromptTokens),
+							TotalTokens:   int64(chunk.ResponseMeta.Usage.TotalTokens),
 						}
 					}
 				}
