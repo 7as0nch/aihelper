@@ -74,30 +74,46 @@ export interface HistoryListReply {
     total: number;
 }
 
+export interface HistoryRequest {
+    // id: string;
+    page: number;
+    pageSize: number;
+}
+
 export interface MessageListReply {
     messages: Message[];
     total: number;
 }
 
 export const chatApi = {
-    async getHistoryList(): Promise<Session[]> {
+    async getHistoryList(params: HistoryRequest): Promise<HistoryListReply> {
         const aiType = getConfig('VITE_AI_TYPE');
         if (aiType === 'demo') {
-            return mockHistoryList;
+            return { sessions: mockHistoryList, total: mockHistoryList.length };
         }
         if (aiType === 'frontend') {
             // Frontend mode: Load from local storage
             const saved = localStorage.getItem('litechat_history');
-            return saved ? JSON.parse(saved) : [];
+            const allSessions = saved ? JSON.parse(saved) : [];
+            // Implement basic pagination for frontend mode
+            const start = (params.page - 1) * params.pageSize;
+            const end = start + params.pageSize;
+            return {
+                sessions: allSessions.slice(start, end),
+                total: allSessions.length
+            };
         }
         // 检查是否登录，登录后才能请求。
         const token = getToken();
         if (!token) {
-            return [];
+            return { sessions: [], total: 0 };
         }
         // Backend mode: Call API
-        const resp = await request<HistoryListReply>({ url: '/chat/history', method: 'get' });
-        return resp.sessions
+        return await request<HistoryListReply>({
+            url: '/chat/history',
+            method: 'get',
+            params
+        });
     },
 
     async getHistoryMsg(id: string): Promise<Message[]> {

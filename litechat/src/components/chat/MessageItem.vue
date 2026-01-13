@@ -159,7 +159,7 @@ onUnmounted(() => {
 
     <!-- Content -->
     <div 
-      class="flex-1 min-w-0 overflow-hidden"
+      class="flex-1 min-w-0 overflow-visible"
       :class="[message.role === 'user' ? 'text-right' : 'text-left']"
     >
       <div 

@@ -180,6 +180,22 @@ onMounted(renderMermaid);
 /* Ensure sticky header works */
 .md-editor-code-head {
   position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #f6f8fa; /* github-light code header color */
+}
+
+.dark .md-editor-code-head {
+  background-color: #161b22; /* github-dark code header color */
+}
+
+/* Ensure no parent container blocks sticky behavior */
+.md-editor-code,
+.md-editor-preview-wrapper,
+.md-editor-preview,
+#litechat-preview,
+#litechat-preview-preview {
+  overflow: visible !important;
 }
 
 /* Force dark backgorund for code blocks as requested */

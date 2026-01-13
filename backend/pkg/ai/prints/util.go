@@ -120,7 +120,8 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 					if chunk.ResponseMeta.Usage != nil {
 						log.Printf("\nusage: %v", chunk.ResponseMeta.Usage)
 						msg.TokenUsage = &ai.TokenUsage{
-							CurrentTokens: int64(chunk.ResponseMeta.Usage.PromptTokens),
+							InputTokens:   int64(chunk.ResponseMeta.Usage.PromptTokens),
+							CurrentTokens: int64(chunk.ResponseMeta.Usage.CompletionTokens),
 							TotalTokens:   int64(chunk.ResponseMeta.Usage.TotalTokens),
 						}
 					}

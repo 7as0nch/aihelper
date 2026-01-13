@@ -32,18 +32,20 @@ const navItems = computed(() => {
 </script>
 
 <template>
-  <router-link 
-    v-for="item in navItems" 
-    :key="item.label"
-    :to="item.path" 
-    class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ease-in-out hover:translate-x-1"
-    :class="[
-      { 'bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400': route.path === item.path },
-      isCollapsed ? 'justify-center' : ''
-    ]"
-    :title="isCollapsed ? item.label : ''"
-  >
-    <component :is="item.icon" class="w-5 h-5 shrink-0" />
-    <span v-show="!isCollapsed" class="whitespace-nowrap overflow-hidden">{{ item.label }}</span>
-  </router-link>
+  <div class="px-3 space-y-1">
+    <router-link 
+      v-for="item in navItems" 
+      :key="item.label"
+      :to="item.path" 
+      class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ease-in-out hover:translate-x-1"
+      :class="[
+        { 'bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400': route.path === item.path },
+        isCollapsed ? 'justify-center' : ''
+      ]"
+      :title="isCollapsed ? item.label : ''"
+    >
+      <component :is="item.icon" class="w-5 h-5 shrink-0" />
+      <span v-show="!isCollapsed" class="whitespace-nowrap overflow-hidden">{{ item.label }}</span>
+    </router-link>
+  </div>
 </template>

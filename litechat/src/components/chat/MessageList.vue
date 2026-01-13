@@ -150,7 +150,7 @@ defineExpose({
     <button
       v-show="showScrollButton"
       @click="scrollToBottom(true)"
-      class="fixed bottom-[200px] left-1/2 -translate-x-1/2 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition-all duration-300 z-30 animate-fade-in"
+      class="fixed bottom-[200px] left-1/2 -translate-x-1/2 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary hover:border-primary transition-all duration-300 z-[99999] animate-fade-in"
       title="回到底部"
     >
       <ArrowDown class="w-5 h-5" />

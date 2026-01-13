@@ -56,7 +56,8 @@ export function useHistoryMenu() {
     };
 
     // Rename actions
-    const startRename = (id: string, currentTitle: string) => {
+    const startRename = (id: string | null, currentTitle: string) => {
+        if (!id) return;
         editingId.value = id;
         editTitle.value = currentTitle;
         activeDropdownId.value = null;
@@ -76,11 +77,13 @@ export function useHistoryMenu() {
     };
 
     // Delete actions
-    const showDeleteConfirm = (id: string) => {
+    const showDeleteConfirm = (id: string | null) => {
+        if (!id) return;
         deleteConfirmId.value = id;
     };
 
-    const confirmDelete = async (id: string) => {
+    const confirmDelete = async (id: string | null) => {
+        if (!id) return;
         await store.deleteChat(id);
         if (route.path === `/chat/${id}`) {
             router.push('/');

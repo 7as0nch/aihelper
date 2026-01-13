@@ -19,19 +19,53 @@ export const useChatStore = defineStore('chat', () => {
 
     const historyItems = ref<{ id: string; title: string }[]>([]);
 
-    const fetchHistoryList = async () => {
+    const isHistoryLoading = ref(false);
+    const historyPage = ref(1);
+    const historyTotal = ref(0);
+    const historyPageSize = ref(20);
+
+    const fetchHistoryList = async (loadMore = false) => {
+        if (isHistoryLoading.value) return;
+
+        // If loading more and we've reached the end, stop.
+        if (loadMore && historyItems.value.length >= historyTotal.value) {
+            return;
+        }
+
+        if (!loadMore) {
+            historyPage.value = 1;
+        } else {
+            historyPage.value++;
+        }
+
+        isHistoryLoading.value = true;
         try {
-            historyItems.value = await chatApi.getHistoryList();
+            const res = await chatApi.getHistoryList({
+                page: historyPage.value,
+                pageSize: historyPageSize.value
+            });
+
+            historyTotal.value = res.total;
+
+            if (loadMore) {
+                // Filter out duplicates just in case
+                const newItems = res.sessions.filter(s => !historyItems.value.some(args => args.id === s.id));
+                historyItems.value.push(...newItems);
+            } else {
+                historyItems.value = res.sessions;
+            }
         } catch (e) {
             console.error('Failed to fetch history list', e);
-            if (e instanceof Error) {
-                console.error(e.message, e.stack);
-            }
+            if (loadMore) historyPage.value--; // Revert
+        } finally {
+            isHistoryLoading.value = false;
         }
     };
 
     const clearHistoryList = () => {
         historyItems.value = [];
+        historyPage.value = 1;
+        historyTotal.value = 0;
     };
 
     const addMessage = (message: Message) => {
@@ -88,21 +122,30 @@ export const useChatStore = defineStore('chat', () => {
         currentChatId.value = null;
     };
 
-    const deleteChat = (id: string) => {
+    const deleteChat = async (id: string) => {
         try {
-            chatApi.deleteChat(id);
+            await chatApi.deleteChat(id);
+            // Immediately remove from local state for instant feedback
+            historyItems.value = historyItems.value.filter(item => item.id !== id);
+            historyTotal.value = Math.max(0, historyTotal.value - 1);
+            
             if (currentChatId.value === id) {
                 clearMessages();
             }
-            fetchHistoryList();
+            // Optionally refetch to ensure pagination state is correct
+            // fetchHistoryList(); 
         } catch (e) {
             console.error('Failed to delete chat', e);
         }
     };
 
-    const renameChat = (id: string, newTitle: string) => {
+    const renameChat = async (id: string, newTitle: string) => {
         try {
-            chatApi.renameChat(id, newTitle);
+            await chatApi.renameChat(id, newTitle);
+            const item = historyItems.value.find(h => h.id === id);
+            if (item) {
+                item.title = newTitle;
+            }
         } catch (e) {
             console.error('Failed to rename chat', e);
         }
@@ -268,5 +311,8 @@ export const useChatStore = defineStore('chat', () => {
         toggleFavorite,
         isFavorite,
         stopGeneration,
+        isHistoryLoading,
+        historyPage,
+        historyTotal,
     };
 });

@@ -89,6 +89,7 @@ type QuoteSearchLink struct {
 type TokenUsage struct {
 	CurrentTokens int64 `json:"currentTokens"`
 	TotalTokens   int64 `json:"totalTokens"`
+	InputTokens   int64 `json:"inputTokens"`
 }
 
 type CallingTool struct {

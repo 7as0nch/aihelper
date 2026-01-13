@@ -26,6 +26,7 @@ type AIChatMessage struct {
 	Attachments      Attachments      `gorm:"column:attachments;type:text" json:"attachments"`
 	GenerateTime     string           `gorm:"column:generate_time;type:varchar(50);comment:'生成时间'" json:"generate_time"`
 	LikedStatus      LikedStatus      `gorm:"column:liked_status;type:smallint;default:0;comment:'点赞状态'" json:"liked_status"`
+	Type             uint8            `gorm:"-" json:"type"` // 0 普通文本，1 多模态类型
 }
 
 // TableName AIChatMessage's table name

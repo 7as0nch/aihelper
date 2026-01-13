@@ -14,6 +14,17 @@ const route = useRoute();
 const store = useChatStore();
 const isHistoryOpen = ref(true);
 
+const emit = defineEmits<{
+  (e: 'scroll-end'): void;
+}>();
+
+const handleScroll = (e: Event) => {
+  const target = e.target as HTMLElement;
+  if (target.scrollTop + target.clientHeight >= target.scrollHeight - 50) {
+    emit('scroll-end');
+  }
+};
+
 // Use history menu composable
 const {
   activeDropdownId,
@@ -35,40 +46,47 @@ const {
 </script>
 
 <template>
-  <div class="pt-4" :class="{ 'border-t border-gray-200 dark:border-gray-800 mt-2': !isCollapsed }">
+  <div 
+    class="flex flex-col min-h-0 pt-4" 
+    :class="{ 'border-t border-gray-200 dark:border-gray-800 mt-2': !isCollapsed }"
+  >
     <!-- Collapsed State: Icon Only -->
-    <router-link 
-      v-if="isCollapsed"
-      to="/"
-      class="flex items-center justify-center px-3 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-      :class="{ 'bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400': route.path === '/history' }"
-      title="历史记录"
-    >
-      <Clock class="w-5 h-5 shrink-0" />
-    </router-link>
+    <div v-if="isCollapsed" class="px-3">
+      <router-link 
+        to="/"
+        class="flex items-center justify-center px-3 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        :class="{ 'bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400': route.path === '/history' }"
+        title="历史记录"
+      >
+        <Clock class="w-5 h-5 shrink-0" />
+      </router-link>
+    </div>
 
     <!-- Expanded State: Accordion -->
-    <div v-else>
-      <button 
-        @click="isHistoryOpen = !isHistoryOpen"
-        class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors group"
-      >
-        <span class="flex items-center gap-2">
-          <Clock class="w-4 h-4" />
-          历史记录
-        </span>
-        <component 
-          :is="isHistoryOpen ? ChevronDown : ChevronRight" 
-          class="w-3 h-3 transition-transform duration-200" 
-        />
-      </button>
+    <div v-else class="flex-1 flex flex-col min-h-0">
+      <div class="px-3">
+        <button 
+          @click="isHistoryOpen = !isHistoryOpen"
+          class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ease-in-out group"
+        >
+          <Clock class="w-5 h-5 shrink-0" />
+          <span class="flex-1 text-left whitespace-nowrap overflow-hidden">历史记录</span>
+          <component 
+            :is="isHistoryOpen ? ChevronDown : ChevronRight" 
+            class="w-4 h-4 transition-transform duration-200" 
+          />
+        </button>
+      </div>
 
       <div 
-        class="grid transition-all duration-300 ease-in-out"
+        class="flex-1 min-h-0 grid transition-all duration-300 ease-in-out"
         :class="isHistoryOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
       >
-        <div class="overflow-hidden">
-          <div class="mt-1 space-y-0.5">
+        <div class="overflow-hidden flex flex-col">
+          <div 
+            class="flex-1 overflow-y-auto px-3 py-1 space-y-0.5 custom-scrollbar"
+            @scroll="handleScroll"
+          >
             <div
               v-for="history in store.historyItems" 
               :key="history.id"
@@ -117,44 +135,44 @@ const {
               <!-- Dropdown Menu -->
               <div 
                 v-if="activeDropdownId === history.id"
-                class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-[#2a2a2a] rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden"
+                class="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden"
                 v-click-outside="closeDropdown"
               >
                 <!-- Normal Menu -->
                 <template v-if="deleteConfirmId !== history.id">
                   <button 
                     @click.stop="startRename(history.id, history.title)"
-                    class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-left"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-left transition-colors"
                   >
-                    <Edit2 class="w-3 h-3" />
+                    <Edit2 class="w-4 h-4" />
                     重命名
                   </button>
                   <button 
                     @click.stop="showDeleteConfirm(history.id)"
-                    class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-left"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-left transition-colors"
                   >
-                    <Trash2 class="w-3 h-3" />
+                    <Trash2 class="w-4 h-4" />
                     删除
                   </button>
                 </template>
                 
                 <!-- Delete Confirmation -->
                 <template v-else>
-                  <div class="p-2">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-2 px-1">
-                      确认删除此对话？
+                  <div class="p-3">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">确认删除？</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                      此操作无法撤销，将永久删除此对话。
                     </div>
-                    <div class="flex gap-1">
+                    <div class="flex gap-2">
                       <button 
                         @click.stop="confirmDelete(history.id)"
-                        class="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 rounded transition-colors"
+                        class="flex-1 px-3 py-2 text-xs font-medium bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
                       >
-                        <Trash2 class="w-3 h-3" />
-                        删除
+                        确认删除
                       </button>
                       <button 
                         @click.stop="cancelDelete"
-                        class="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 rounded transition-colors"
+                        class="flex-1 px-3 py-2 text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors"
                       >
                         取消
                       </button>
@@ -169,46 +187,46 @@ const {
 
       <!-- Context Menu -->
       <div 
-        v-if="contextMenu.show"
-        class="fixed z-[100] w-32 bg-white dark:bg-[#2a2a2a] rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden"
+        v-if="contextMenu.show && contextMenu.id"
+        class="fixed z-[100] w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden"
         :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
         v-click-outside="closeContextMenu"
       >
         <!-- Normal Menu -->
         <template v-if="deleteConfirmId !== contextMenu.id">
           <button 
-            @click.stop="startRename(contextMenu.id!, store.historyItems.find(h => h.id === contextMenu.id)?.title || '')"
-            class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-left"
+            @click.stop="startRename(contextMenu.id, store.historyItems.find(h => h.id === contextMenu.id)?.title || '')"
+            class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-left transition-colors"
           >
-            <Edit2 class="w-3 h-3" />
+            <Edit2 class="w-4 h-4" />
             重命名
           </button>
           <button 
-            @click.stop="showDeleteConfirm(contextMenu.id!)"
-            class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-left"
+            @click.stop="showDeleteConfirm(contextMenu.id)"
+            class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-left transition-colors"
           >
-            <Trash2 class="w-3 h-3" />
+            <Trash2 class="w-4 h-4" />
             删除
           </button>
         </template>
         
         <!-- Delete Confirmation -->
         <template v-else>
-          <div class="p-2">
-            <div class="text-xs text-gray-500 dark:text-gray-400 mb-2 px-1">
-              确认删除此对话？
+          <div class="p-3">
+            <div class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">确认删除？</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              此操作无法撤销，将永久删除此对话。
             </div>
-            <div class="flex gap-1">
+            <div class="flex gap-2">
               <button 
-                @click.stop="confirmDelete(contextMenu.id!)"
-                class="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 rounded transition-colors"
+                @click.stop="confirmDelete(contextMenu.id)"
+                class="flex-1 px-3 py-2 text-xs font-medium bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
               >
-                <Trash2 class="w-3 h-3" />
-                删除
+                确认删除
               </button>
               <button 
                 @click.stop="cancelDelete"
-                class="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 rounded transition-colors"
+                class="flex-1 px-3 py-2 text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 取消
               </button>
@@ -219,3 +237,30 @@ const {
     </div>
   </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.3);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.5);
+}
+</style>
