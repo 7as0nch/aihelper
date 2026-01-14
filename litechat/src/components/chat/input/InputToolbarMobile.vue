@@ -24,7 +24,6 @@ const emit = defineEmits<{
 }>();
 
 const isDropdownOpen = ref(false);
-const dropdownRef = ref<HTMLElement | null>(null);
 
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value;
@@ -56,14 +55,14 @@ defineExpose({
 </script>
 
 <template>
-  <div class="md:hidden mb-2 overflow-x-auto no-scrollbar touch-pan-x">
-    <div class="flex items-center gap-2 w-max px-1">
+  <div class="md:hidden mb-2 overflow-x-auto custom-scrollbar touch-pan-x pb-1">
+    <div class="flex items-center gap-2 w-max px-2">
       <!-- Model Selection -->
-      <div class="relative shrink-0" ref="dropdownRef">
+      <div class="relative shrink-0">
         <button 
           @click.stop="toggleDropdown"
           v-tracker="{ type: 'click', name: '模型选择' }"
-          class="flex items-center gap-1.5 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-[#333] transition-colors"
+          class="flex items-center gap-1.5 px-3 py-2 bg-white/80 dark:bg-[#242424]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-[#242424] transition-colors"
         >
           <component :is="currentModeIcon" class="w-4 h-4 text-primary" />
           <span>{{ currentModeLabel }}</span>
@@ -73,7 +72,7 @@ defineExpose({
         <!-- Dropdown Menu -->
         <div 
           v-if="isDropdownOpen"
-          class="fixed bottom-[150px] left-10 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 p-1 animate-fade-in-up z-[99999]"
+          class="fixed bottom-[150px] left-10 mb-2 w-48 bg-white dark:bg-[#242424] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 p-1 animate-fade-in-up z-[99999]"
           @click.stop
         >
           <button 
@@ -103,7 +102,7 @@ defineExpose({
         :class="[
           searchByWeb 
             ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800' 
-            : 'bg-white/80 dark:bg-[#2a2a2a]/80 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400',
+            : 'bg-white/80 dark:bg-[#242424]/80 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-[#242424] hover:text-blue-500 dark:hover:text-blue-400',
           { 'animate-jump': activeButton === 'search' }
         ]"
       >
@@ -115,7 +114,7 @@ defineExpose({
       <button 
         @click="emit('screenshot'); emit('trigger-bounce', 'screenshot')"
         v-tracker="{ type: 'click', name: '截屏'}"
-        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
+        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#242424]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#242424] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
         :class="{ 'animate-jump': activeButton === 'screenshot' }"
       >
         <Scissors class="w-4 h-4 text-gray-500 group-hover:text-blue-500" />
@@ -127,7 +126,7 @@ defineExpose({
         v-if="showUpload !== false"
         v-tracker="{ type: 'click', name: '上传' }"
         @click="emit('upload'); emit('trigger-bounce', 'upload')"
-        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
+        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#242424]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#242424] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
         :class="{ 'animate-jump': activeButton === 'upload' }"
       >
         <Paperclip class="w-4 h-4 text-gray-500 group-hover:text-blue-500" />
@@ -139,7 +138,7 @@ defineExpose({
         v-for="btn in extButtons"
         :key="btn.id"
         @click="emit('ext-action', btn)"
-        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#333] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
+        class="flex items-center justify-center h-9 px-3 py-2 bg-white/80 dark:bg-[#242424]/80 backdrop-blur-xl rounded-full shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:bg-white dark:hover:bg-[#242424] hover:text-blue-500 dark:hover:text-blue-400 shrink-0 gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200"
       >
         <component :is="getIcon(btn.icon)" class="w-4 h-4" />
         {{ btn.name }}

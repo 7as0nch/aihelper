@@ -95,10 +95,10 @@ defineExpose({
   <div 
     ref="containerRef"
     id="message-list-container"
-    class="flex-1 min-w-0 overflow-y-auto space-y-6 relative scroll-smooth message-list-container"
+    class="flex-1 min-w-0 overflow-y-auto space-y-6 relative scroll-smooth message-list-container custom-scrollbar message-list-mask"
   >
     <!-- Message List -->
-    <div class="space-y-6 pb-4 pt-4">
+    <div class="space-y-6 pb-48 pt-4">
       <MessageItem 
         v-for="(msg, index) in messages" 
         :key="msg.id" 
@@ -157,3 +157,7 @@ defineExpose({
     </button>
   </div>
 </template>
+
+<style scoped>
+/* 消息列表特有的遮罩效果，滚动条样式已移至全局 style.css */
+</style>

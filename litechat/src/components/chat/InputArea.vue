@@ -423,7 +423,7 @@ const handleExtAction = (btn: any) => {
          Wait, DesktopToolbar is hidden with CSS (hidden md:flex), so it IS mounted. We can access it.
     -->
 
-    <div class="relative bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-xl rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out hover:shadow-lg focus-within:shadow-lg">
+    <div class="relative bg-white/95 dark:bg-[#242424]/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-[0_8px_30px_rgb(0,0,0,0.16)] focus-within:shadow-[0_8px_30px_rgb(0,0,0,0.16)]">
       
       <!-- Pending Attachments -->
       <InputAttachments 
@@ -447,13 +447,15 @@ const handleExtAction = (btn: any) => {
         :active-index="selectedMentionIndex"
         :active-type="activeMentionType"
         :show-date-picker="showDatePicker"
-        v-model:date-range-value="dateRangeValue"
-        v-model:picker-mode="pickerMode"
+        :date-range-value="dateRangeValue"
+        :picker-mode="pickerMode"
         :get-date-format="getDateFormat"
         @select-type="handleMentionSelect"
         @select-option="handleOptionSelect"
         @close="showMentionMenu = false"
         @confirm-date="confirmDateRange"
+        @update:date-range-value="dateRangeValue = $event"
+        @update:picker-mode="pickerMode = $event"
         @update:active-type="activeMentionType = $event"
         @update:show-date-picker="showDatePicker = $event"
       />
@@ -467,15 +469,15 @@ const handleExtAction = (btn: any) => {
         :has-attachments="pendingAttachments.length > 0"
         @send="handleSend"
         @stop="store.stopGeneration()"
-        @keydown="handleKeydown"
-        @paste="handlePaste"
-        @focus="handleFocus"
-        @resize="autoResize"
+        @keydown="handleKeydown($event)"
+        @paste="handlePaste($event)"
+        @focus="handleFocus($event)"
+        @resize="autoResize($event)"
         @voice-start="handleVoiceStart"
         @voice-stop="handleVoiceStop"
-        @voice-result="handleVoiceResult"
-        @voice-interim="handleVoiceInterim"
-        @voice-error="handleVoiceError"
+        @voice-result="handleVoiceResult($event)"
+        @voice-interim="handleVoiceInterim($event)"
+        @voice-error="handleVoiceError($event)"
         :placeholder="getConfig('VITE_INPUT_PLACEHOLDER')"
         :show-audio="getConfig('VITE_SHOW_AUDIO_BTN') === 'true'"
       />

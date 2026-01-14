@@ -234,8 +234,8 @@ onMounted(async () => {
         :target-element="messageListRef?.containerRef || null"
         @clear-selection="selectedMessageIds.clear()"
       />
-      <div class="relative z-20">
-        <div class="bg-white/70 dark:bg-[#242424]/70 backdrop-blur-md pb-4">
+      <div class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
+        <div class="pb-6 pointer-events-auto">
           <InputArea 
             ref="inputAreaRef" 
             :quoted-content="quotedContent" 
@@ -244,7 +244,7 @@ onMounted(async () => {
           />
           <div 
             v-if="getConfig('VITE_SHOW_FOOTER') !== 'false'"
-            class="text-center mt-2 text-xs text-gray-400"
+            class="text-center mt-2 text-[10px] text-gray-400 opacity-60"
           >
             {{ getConfig('VITE_FOOTER_TEXT') }}
           </div>

@@ -232,7 +232,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Image Attachments -->
-        <div v-if="message.attachments?.some(a => a.type === 'image')" class="flex gap-2 mb-2 overflow-x-auto pb-2 no-scrollbar">
+        <div v-if="message.attachments?.some(a => a.type === 'image')" class="flex gap-2 mb-2 overflow-x-auto pb-2 custom-scrollbar">
           <div 
             v-for="img in message.attachments.filter(a => a.type === 'image')" 
             :key="img.id"

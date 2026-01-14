@@ -81,7 +81,7 @@ defineExpose({
         <!-- Dropdown Menu -->
         <div 
           v-if="isDropdownOpen"
-          class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
+          class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#242424] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
         >
           <button 
             v-for="mode in modes" 
@@ -106,7 +106,7 @@ defineExpose({
 
       <button 
         @click="emit('screenshot')"
-        class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
+        class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm"
         title="截屏当前会话"
       >
         <Camera class="w-4 h-4" />
@@ -126,7 +126,7 @@ defineExpose({
         <!-- More Menu -->
         <div 
           v-if="isMoreDropdownOpen"
-          class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
+          class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#242424] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
         >
           <!-- Web Search Toggle -->
           <button 
