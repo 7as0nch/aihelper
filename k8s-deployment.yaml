@@ -1,0 +1,236 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aichat
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: aichat
+data:
+  config.yaml: |
+    server:
+      http:
+        addr: 0.0.0.0:8000
+        timeout: 1000s
+      grpc:
+        addr: 0.0.0.0:9000
+        timeout: 1000s
+    data:
+      database:
+        driver: mysql
+        source: read_rentianhua:yNxruv24C26@tcp(rm-bp1hw1ynxruv24c26jo.mysql.rds.aliyuncs.com:3306)/rth?parseTime=True&loc=Local
+      pg_database:
+        host: 115.120.248.67
+        port: 31042
+        user: pgadmin
+        password: "123456"
+        dbname: pgdb
+        sslmode: disable
+      redis:
+        addr: 127.0.0.1:6379
+        read_timeout: 0.2s
+        write_timeout: 0.2s
+    log:
+      maxAge: 30
+      level: "debug"
+      format: "console"
+      director: "./logs"
+      encodeLevel: "CapitalColorLevelEncoder"
+---
+# 1. 后端服务 (Backend API)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: aichat
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: 7as0nch/aichat-backend:latest
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: config-volume
+          mountPath: /data/conf
+      volumes:
+      - name: config-volume
+        configMap:
+          name: backend-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: aichat
+spec:
+  selector:
+    app: backend
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP # 内部访问即可
+---
+# 2. 管理端 (Backweb)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backweb
+  namespace: aichat
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backweb
+  template:
+    metadata:
+      labels:
+        app: backweb
+    spec:
+      containers:
+      - name: backweb
+        image: 7as0nch/aichat-backweb:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backweb
+  namespace: aichat
+spec:
+  selector:
+    app: backweb
+  ports:
+  - name: http
+    port: 8081
+    targetPort: 80
+  type: ClusterIP
+---
+# 3. 客户端 (Litechat)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litechat
+  namespace: aichat
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: litechat
+  template:
+    metadata:
+      labels:
+        app: litechat
+    spec:
+      containers:
+      - name: litechat
+        image: 7as0nch/aichat-litechat:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litechat
+  namespace: aichat
+spec:
+  selector:
+    app: litechat
+  ports:
+  - name: http
+    port: 8082
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kuboard-v3-service
+  namespace: kuboard
+spec:
+  selector:
+    k8s.kuboard.cn/name: kuboard-v3
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kuboard-proxy-svc
+  namespace: aichat   # 必须在 aichat 空间，Ingress 才能看见它
+spec:
+  type: ExternalName
+  # 指向 kuboard 空间里的真实 Service 域名
+  externalName: kuboard-v3-service.kuboard.svc.cluster.local 
+  ports:
+  - port: 80
+---
+# 4. 统一 Ingress 入口
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aichat-ingress
+  namespace: aichat
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # 增加大文件上传限制（如果需要）
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: chat.aihelper.chat
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: litechat
+            port:
+              number: 8082
+  - host: admin.aihelper.chat
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backweb
+            port:
+              number: 8081
+  - host: api.aihelper.chat
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8000
+  # 4. Kuboard 本身访问 (确保 DNS hk.aihelper.chat 已指向此 IP)
+  - host: hk.aihelper.chat
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            # 这里必须填你在 aichat 命名空间下建立的代理 Service 名
+            name: kuboard-proxy-svc 
+            port:
+              number: 80

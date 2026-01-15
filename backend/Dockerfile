@@ -1,33 +1,32 @@
-FROM golang:1.24 AS builder
+FROM golang:1.24-alpine AS builder
 
-COPY . /src
 WORKDIR /src
 
-RUN GOPROXY=https://goproxy.cn make build
+# Pre-download dependencies to leverage Docker cache
+COPY go.mod go.sum ./
+RUN go mod download
 
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 make build
+COPY . .
 
-FROM debian:stable-slim
+# Build with optimizations
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /app/backend ./cmd/backend
 
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-# 		ca-certificates  \
-#         netbase \
-#         && rm -rf /var/lib/apt/lists/ \
-#         && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
-#         && echo Asia/Shanghai > /etc/timezone \
-#         && apt-get autoremove -y && apt-get autoclean -y
+FROM alpine:latest
 
-RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
-        && echo Asia/Shanghai > /etc/timezone \
-        && apt-get autoremove -y && apt-get autoclean -y
-
-COPY --from=builder /src/bin /app
+# Install basic dependencies and set timezone
+RUN apk add --no-cache ca-certificates tzdata && \
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo "Asia/Shanghai" > /etc/timezone
 
 WORKDIR /app
 
+# Copy binary
+COPY --from=builder /app/backend .
+
 EXPOSE 8000
 EXPOSE 9000
-VOLUME /data/conf
-VOLUME /app/logs
 
-CMD ["./backend", "-conf", "/data/conf/config.yaml"]
+VOLUME ["/data/conf", "/app/logs"]
+
+ENTRYPOINT ["./backend"]
+CMD ["-conf", "/data/conf/config.yaml"]

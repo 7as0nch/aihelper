@@ -3,7 +3,7 @@ import { useChatStore } from '../../stores/chat';
 import MessageItem from './MessageItem.vue';
 import { storeToRefs } from 'pinia';
 import { onUpdated, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { Bot, ArrowDown, Check } from 'lucide-vue-next';
+import { ArrowDown, Check } from 'lucide-vue-next';
 
 const emit = defineEmits<{
   (e: 'quote', messageId: string, content: string): void;
@@ -129,10 +129,7 @@ defineExpose({
       </MessageItem>
       
       <!-- Thinking Indicator -->
-      <div v-if="store.isThinking" class="flex gap-4 max-w-3xl mx-auto w-full p-4 animate-fade-in">
-        <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/30 flex items-center justify-center shrink-0">
-          <Bot class="w-5 h-5" />
-        </div>
+      <div v-if="store.isThinking" class="flex gap-4 max-w-3xl mx-auto w-full px-4 py-2 animate-fade-in">
         <div class="flex items-center">
           <div class="flex space-x-1">
             <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>

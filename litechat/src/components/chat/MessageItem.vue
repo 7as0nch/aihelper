@@ -3,7 +3,7 @@ import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import type { Message, Attachment } from '../../stores/chat';
 import type { CallingTool } from '../../api/chat';
 import { useChatStore } from '../../stores/chat';
-import { User, Bot, Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight, Copy } from 'lucide-vue-next';
+import { Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight, Copy } from 'lucide-vue-next';
 import { formatMessageTime } from '../../utils/time';
 import MarkdownRenderer from '../common/MarkdownRenderer.vue';
 import MessageActions from './MessageActions.vue';
@@ -141,22 +141,9 @@ onUnmounted(() => {
 
 <template>
   <div 
-    class="flex gap-4 max-w-3xl mx-auto w-full p-4 animate-fade-in"
+    class="flex gap-4 max-w-3xl mx-auto w-full px-4 py-2 animate-fade-in"
     :class="[message.role === 'user' ? 'flex-row-reverse' : 'flex-row']"
   >
-    <!-- Avatar -->
-    <div 
-      class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-      :class="[
-        message.role === 'user' 
-          ? 'bg-blue-100 text-primary dark:bg-blue-900/30' 
-          : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30'
-      ]"
-    >
-      <User v-if="message.role === 'user'" class="w-5 h-5" />
-      <Bot v-else class="w-5 h-5" />
-    </div>
-
     <!-- Content -->
     <div 
       class="flex-1 min-w-0 overflow-visible"
