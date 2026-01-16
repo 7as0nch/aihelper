@@ -237,7 +237,7 @@ export const useChatStore = defineStore('chat', () => {
         
         // User message
         const userMessage: Message = {
-            id: Date.now().toString(),
+            id: '0',
             role: 'user',
             content,
             timestamp: Date.now(),

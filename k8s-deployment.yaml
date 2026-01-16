@@ -62,7 +62,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: 7as0nch/aichat-backend:v1.0.2
+        image: 7as0nch/aichat-backend:v1.0.3
         # 增加健康检查，配合滚动更新防止流量进入未启动成功的容器
         readinessProbe:
           httpGet:
@@ -186,7 +186,7 @@ spec:
     spec:
       containers:
       - name: litechat
-        image: 7as0nch/aichat-litechat:v1.0.2
+        image: 7as0nch/aichat-litechat:v1.0.3
         readinessProbe:
           httpGet:
             path: /
@@ -219,6 +219,7 @@ metadata:
 spec:
   selector:
     app: backend
+  sessionAffinity: ClientIP # 在 Service 层也开启 IP 亲和性，作为二级保险
   ports:
   - name: http
     port: 8000
@@ -278,18 +279,14 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     
     # 【核心配置】针对 AI 流式输出 (SSE) 的优化
-    # 1. 禁用代理缓冲：Nginx 不会等待凑够一定数据才发送，实现真正的逐字即时蹦出
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    # 2. 超时保活：长连接防止 AI 思考时间过长导致被 Nginx 强行断开（10分钟）
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
     
-    # 【高可用配置】会话亲和性 (Sticky Sessions)
-    # 作用：通过 Cookie 确保同一用户的刷新/重连请求始终落到同一个后端 Pod 上
-    # 理由：后端 activeStreams 缓存在 Pod 内存中，不跨节点共享，此配置保证了“断点续传”的一致性
-    nginx.ingress.kubernetes.io/affinity: "cookie"
-    nginx.ingress.kubernetes.io/session-cookie-name: "route"
-    nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+    # 【负载均衡优化】基于 IP 的会话亲和性
+    # 理由：不同子域下 Cookie 方案易受浏览器策略干扰，IP 哈希更稳定
+    # 确保同一客户端 IP 的请求始终路由到同一台后端 Pod，保证内存中 activeStreams 的命中率
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$binary_remote_addr"
 spec:
   ingressClassName: nginx
   rules:

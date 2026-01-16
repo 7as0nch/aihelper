@@ -132,7 +132,25 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 
 // initAndStartStream 初始化数据库占位符并开启 AI 协程
 func (s *ChatService) initAndStartStream(ctx context.Context, sessionID int64, req *pb.SendStreamRequest, ss *sessionStream) {
-	// 【即时入库】立即保存用户消息和 AI 占位消息，确保刷新后可见
+	// 【防御性优化】如果是续传请求（ID > 0），尝试关联已有消息，防止重复创建
+	if req.CurMessage.Id > 0 {
+		messages, err := s.uc.GetSessionMessages(ctx, sessionID)
+		if err == nil {
+			for i, m := range messages {
+				// 找到用户发出的那条消息，其下一条通常就是对应的 AI 回复占位符
+				if m.ID == req.CurMessage.Id && i+1 < len(messages) {
+					nextMsg := messages[i+1]
+					if nextMsg.Role == model.RoleAssistant {
+						ss.aiMsgID = nextMsg.ID
+						s.startAIStream(ctx, sessionID, req, ss)
+						return
+					}
+				}
+			}
+		}
+	}
+
+	// 以下是正常新消息入库流程
 	userMsg := s.uc.NewMessage(sessionID, model.RoleUser, req.CurMessage.Content)
 	userMsg.QuoteId = req.CurMessage.QuoteId
 	userMsg.QuoteContent = req.CurMessage.QuoteContent
@@ -152,16 +170,16 @@ func (s *ChatService) initAndStartStream(ctx context.Context, sessionID int64, r
 	userMsg.New()
 	aiMsg.New()
 
-	// 使用传入的 ctx (包含用户信息)，确保 beforeCreate 钩子能获取到 userID
 	if err := s.uc.BatchSaveMessages(ctx, []*model.AIChatMessage{userMsg, aiMsg}); err != nil {
 		s.log.Error("Initial DB save failed", zap.Error(err))
 	}
 
 	ss.aiMsgID = aiMsg.ID
+	s.startAIStream(ctx, sessionID, req, ss)
+}
 
-	// 透传 Auth 状态启动后台协程
-	// 注意：不能直接使用 ctx，因为它是请求相关的，请求结束会被 cancel
-	// 我们需要创建一个携带用户信息的背景 Context
+// 提取启动协程的逻辑
+func (s *ChatService) startAIStream(ctx context.Context, sessionID int64, req *pb.SendStreamRequest, ss *sessionStream) {
 	userID := auth.GetUserId(ctx)
 	bgCtx := context.WithValue(context.Background(), auth.UserId, userID)
 	go s.runAIStream(bgCtx, sessionID, req, ss)
