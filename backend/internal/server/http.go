@@ -106,6 +106,13 @@ func NewHTTPServer(c *conf.Server,
 	basepb.RegisterTrackerHTTPServer(srv, tracker)
 	aipb.RegisterAIHTTPServer(srv, aiServ)
 
+	// 健康检查接口
+	srv.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		log.Info("health check")
+		w.Write([]byte("ok"))
+	})
+
 	// SSEHandler 手动注册，并手动注入用户信息到 Context（解决 HandleFunc 绕过中间件导致 Context 丢失的问题）
 	srv.HandleFunc("/chat/send", func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")

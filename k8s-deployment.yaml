@@ -47,6 +47,11 @@ metadata:
   namespace: aichat
 spec:
   replicas: 2 # 基础副本数为 2，保证在一个 Pod 重启时服务不中断（高可用）
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0 # 更新期间不准停止任何旧副本，确保流量不中断
+      maxSurge: 1       # 更新时允许额外多出一个新副本，实现平滑过渡
   selector:
     matchLabels:
       app: backend
@@ -58,6 +63,19 @@ spec:
       containers:
       - name: backend
         image: 7as0nch/aichat-backend:v1.0.2
+        # 增加健康检查，配合滚动更新防止流量进入未启动成功的容器
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
         resources:
           # 在 4C4G 机器上，合理分配资源是关键
           requests: # 容器启动时保证分配的最小资源，K8s 调度依据
@@ -106,6 +124,11 @@ metadata:
   namespace: aichat
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: backweb
@@ -117,6 +140,18 @@ spec:
       containers:
       - name: backweb
         image: 7as0nch/aichat-backweb:v1.0.2
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 20
         resources:
           # 网页服务非常轻量，仅需极少资源
           requests:
@@ -136,6 +171,11 @@ metadata:
   namespace: aichat
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: litechat
@@ -147,6 +187,18 @@ spec:
       containers:
       - name: litechat
         image: 7as0nch/aichat-litechat:v1.0.2
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 20
         resources:
           requests:
             cpu: "50m"
