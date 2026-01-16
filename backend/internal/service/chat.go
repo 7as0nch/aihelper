@@ -96,7 +96,7 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sessionID := req.CurSessionID
-	// 【核心优化】使用 SessionID 作为唯一 Key，彻底解决刷新导致的重复消息问题
+	// 使用 SessionID 作为唯一 Key，彻底解决刷新导致的重复消息问题
 	streamObj, loaded := s.activeStreams.LoadOrStore(sessionID, &sessionStream{
 		clients:   make(map[chan *pb.Message]struct{}),
 		done:      make(chan struct{}),
