@@ -63,13 +63,18 @@ spec:
       containers:
       - name: backend
         image: 7as0nch/aichat-backend:v1.0.3
-        # 增加健康检查，配合滚动更新防止流量进入未启动成功的容器
+        # 【就绪检查】决定 Pod 是否可以接收流量
+        # 如果失败，Pod 将从 Service 的负载均衡列表中移除，不会有流量进入
+        # 常用于：应用启动加载中、或压力过大暂时无法处理请求时
         readinessProbe:
           httpGet:
             path: /health
             port: 8000
           initialDelaySeconds: 5
           periodSeconds: 10
+        # 【存活检查】决定 Pod 是否“活着”
+        # 如果失败，K8s 会强制杀掉并重启该容器
+        # 常用于：捕获应用死锁、崩溃等无法自我恢复的假死状态
         livenessProbe:
           httpGet:
             path: /health
@@ -140,12 +145,14 @@ spec:
       containers:
       - name: backweb
         image: 7as0nch/aichat-backweb:v1.0.2
+        # 【就绪检查】流量入口控制
         readinessProbe:
           httpGet:
             path: /
             port: 80
           initialDelaySeconds: 3
           periodSeconds: 10
+        # 【存活检查】故障自动重启
         livenessProbe:
           httpGet:
             path: /
@@ -187,12 +194,14 @@ spec:
       containers:
       - name: litechat
         image: 7as0nch/aichat-litechat:v1.0.3
+        # 【就绪检查】流量入口控制
         readinessProbe:
           httpGet:
             path: /
             port: 80
           initialDelaySeconds: 3
           periodSeconds: 10
+        # 【存活检查】故障自动重启
         livenessProbe:
           httpGet:
             path: /
