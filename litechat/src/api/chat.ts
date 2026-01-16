@@ -44,6 +44,7 @@ export interface Message {
     };
     callingTools?: CallingTool[]; // agent工具调用情况。
     attachments?: Attachment[]; // 生成或者发送的附件/图片。
+    isStreaming?: boolean; // 是否正在流式输出
 }
 
 export interface SendMessageParams {
@@ -250,34 +251,56 @@ async function streamBackend(
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+    let buffer = '';
+    let currentEvent = 'delta'; // 默认事件类型
 
     while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value, { stream: true });
+        
+        const lines = buffer.split('\n');
+        // Keep the last partial line in the buffer
+        buffer = lines.pop() || '';
 
-        if (chunk.startsWith('data: ')) {
-            const lines = chunk.split('\n');
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    const dataStr = line.slice(6).trim();
-                    if (dataStr === '[DONE]') return;
-                    try {
-                        if (dataStr.startsWith('{')) {
-                            const json = JSON.parse(dataStr);
-                            // Pass the full object (or partial) directly
-                            onChunk(json);
-                        } else {
-                            onChunk({ content: dataStr });
-                        }
-                    } catch {
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) continue;
+
+            // 处理事件类型行
+            if (trimmedLine.startsWith('event: ')) {
+                currentEvent = trimmedLine.slice(7).trim();
+                continue;
+            }
+
+            // 处理数据行
+            if (trimmedLine.startsWith('data: ')) {
+                const dataStr = trimmedLine.slice(6).trim();
+                
+                // 处理完成事件
+                if (currentEvent === 'done' || dataStr === '[DONE]') return;
+
+                try {
+                    const json = JSON.parse(dataStr);
+                    
+                    // 如果是错误事件，抛出异常或进行错误处理
+                    if (currentEvent === 'error') {
+                        throw new Error(json.message || 'Backend stream error');
+                    }
+
+                    // 正常增量数据处理
+                    onChunk(json);
+                } catch (e) {
+                    console.error('Failed to parse SSE data:', dataStr, e);
+                    // 容错处理：如果解析失败且不是已知结构，尝试当作纯文本
+                    if (currentEvent !== 'error') {
                         onChunk({ content: dataStr });
                     }
                 }
+                
+                // 注意：根据规范，event 会持续到下一个 event 出现，这里可以不重置
             }
-        } else {
-            onChunk({ content: chunk });
         }
     }
 }

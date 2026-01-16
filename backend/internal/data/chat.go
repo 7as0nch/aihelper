@@ -79,6 +79,18 @@ func (r *chatRepo) BatchCreateMessages(ctx context.Context, messages []*model.AI
 	return r.data.DB(ctx).Create(&messages).Error
 }
 
+// UpdateMessage implements biz.ChatRepo
+func (r *chatRepo) UpdateMessage(ctx context.Context, message *model.AIChatMessage) error {
+	return r.data.DB(ctx).Save(message).Error
+}
+
+// GetMessage implements biz.ChatRepo
+func (r *chatRepo) GetMessage(ctx context.Context, id int64) (*model.AIChatMessage, error) {
+	var msg model.AIChatMessage
+	err := r.data.DB(ctx).First(&msg, id).Error
+	return &msg, err
+}
+
 // CreateMessage implements biz.ChatRepo
 func (r *chatRepo) CreateMessage(ctx context.Context, message *model.AIChatMessage) (*model.AIChatMessage, error) {
 	if err := r.data.DB(ctx).Create(message).Error; err != nil {

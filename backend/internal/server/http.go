@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	basepb "github.com/example/aichat/backend/api/base"
 	aipb "github.com/example/aichat/backend/api/ai"
+	basepb "github.com/example/aichat/backend/api/base"
 	chatv1 "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/service"
@@ -105,7 +105,20 @@ func NewHTTPServer(c *conf.Server,
 	basepb.RegisterSystemHTTPServer(srv, system)
 	basepb.RegisterTrackerHTTPServer(srv, tracker)
 	aipb.RegisterAIHTTPServer(srv, aiServ)
-	srv.HandleFunc("/chat/send", chat.SSEHandler)
+
+	// SSEHandler 手动注册，并手动注入用户信息到 Context（解决 HandleFunc 绕过中间件导致 Context 丢失的问题）
+	srv.HandleFunc("/chat/send", func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		if token != "" {
+			// 如果有 token，手动校验一次并注入 Context
+			if claims, err := authRepo.CheckToken(r.Context(), token); err == nil && claims != nil {
+				ctx := context.WithValue(r.Context(), auth.UserId, int64(claims.UserId))
+				r = r.WithContext(ctx)
+			}
+		}
+		chat.SSEHandler(w, r)
+	})
+
 	srv.HandlePrefix("/q/", openapiv2.NewHandler())
 	return srv
 }

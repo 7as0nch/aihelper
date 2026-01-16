@@ -2,7 +2,7 @@
 
 # --- 配置区域 ---
 DOCKERHUB_USER="7as0nch"
-VERSION="v1.0.1"  # 统一版本号，后续手动在此修改
+VERSION="v1.0.2"  # 统一版本号，后续手动在此修改
 PLATFORM="linux/amd64" # 统一指定构建平台，例如 linux/amd64, linux/arm64
 
 # --- 脚本逻辑 ---

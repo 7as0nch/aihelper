@@ -107,13 +107,70 @@ export const useChatStore = defineStore('chat', () => {
         }
     };
 
+    const lastLoadRequestId = ref(0);
+
     const loadChatHistory = async (chatId: string) => {
+        // 先中止之前的生成（如果正在进行）
+        stopGeneration();
+        
+        const requestId = ++lastLoadRequestId.value;
         currentChatId.value = chatId;
+        messages.value = []; // 先清空，防止看到旧会话消息
+        
         try {
-            messages.value = await chatApi.getHistoryMsg(chatId);
+            const history = await chatApi.getHistoryMsg(chatId);
+            
+            // 检查：如果在请求过程中 chatId 已经变了，或者有更新的请求进来了，则丢弃这次结果
+            if (currentChatId.value !== chatId || requestId !== lastLoadRequestId.value) return;
+            
+            messages.value = history;
+            
+            // 【自动续传】检查最后一条消息是否正在流式传输中
+            const lastMsg = messages.value[messages.value.length - 1];
+            if (lastMsg && lastMsg.role === 'assistant' && lastMsg.isStreaming) {
+                console.log('Detecting active stream, resuming...');
+                const userMsg = messages.value[messages.value.length - 2];
+                if (userMsg && userMsg.role === 'user') {
+                    resumeStream(userMsg);
+                }
+            }
         } catch (e) {
             console.error('Failed to load chat history', e);
-            messages.value = [];
+            if (currentChatId.value === chatId && requestId === lastLoadRequestId.value) {
+                messages.value = [];
+            }
+        }
+    };
+
+    // 新增：恢复流式传输
+    const resumeStream = async (userMessage: Message) => {
+        // 确保先中止之前的生成
+        stopGeneration();
+        
+        isLoading.value = true;
+        isThinking.value = false; // 既然是续传，说明已经思考过了
+        
+        abortController.value = new AbortController();
+        const signal = abortController.value.signal;
+
+        try {
+            await sendMessageStream(
+                {
+                    history: messages.value.slice(0, messages.value.length - 2), 
+                    curMessage: userMessage,
+                    curSessionID: currentChatId.value || '',
+                },
+                (data) => {
+                    // 更新最后一条消息（即那条 marked 为 isStreaming 的消息）
+                    updateLastMessage(data);
+                },
+                signal
+            );
+        } catch (error) {
+            console.error('Resume stream error:', error);
+        } finally {
+            isLoading.value = false;
+            abortController.value = null;
         }
     };
 
@@ -125,15 +182,13 @@ export const useChatStore = defineStore('chat', () => {
     const deleteChat = async (id: string) => {
         try {
             await chatApi.deleteChat(id);
-            // Immediately remove from local state for instant feedback
-            historyItems.value = historyItems.value.filter(item => item.id !== id);
-            historyTotal.value = Math.max(0, historyTotal.value - 1);
+            // 简单处理：删除后直接清空列表并重新获取第一页，避免分页逻辑错乱
+            clearHistoryList();
+            fetchHistoryList(false);
             
             if (currentChatId.value === id) {
                 clearMessages();
             }
-            // Optionally refetch to ensure pagination state is correct
-            // fetchHistoryList(); 
         } catch (e) {
             console.error('Failed to delete chat', e);
         }
@@ -177,6 +232,9 @@ export const useChatStore = defineStore('chat', () => {
     };
 
     const sendMessage = async (content: string, attachments: Attachment[] = [], quote?: { quoteId: string; quoteContent: string }) => {
+        // 先中止之前的生成
+        stopGeneration();
+        
         // User message
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -302,6 +360,7 @@ export const useChatStore = defineStore('chat', () => {
         thinkingMode,
         searchByWeb,
         sendMessage,
+        resumeStream,
         loadChatHistory,
         clearMessages,
         deleteChat,

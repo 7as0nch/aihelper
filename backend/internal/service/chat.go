@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
+
 	pb "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/biz"
 	"github.com/example/aichat/backend/internal/biz/ai"
@@ -18,11 +20,35 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// sessionStream 封装了单个 AI 生成任务的状态
+type sessionStream struct {
+	mu        sync.Mutex
+	history   []*pb.Message                 // 内存缓冲区，用于支持刷新后的“断点续传”
+	clients   map[chan *pb.Message]struct{} // 订阅该任务的所有客户端连接
+	done      chan struct{}                 // 信号：AI 生成完成
+	aiMsgID   int64                         // 数据库中预留的 AI 消息 ID
+	startTime time.Time                     // 任务启动时间，用于耗时统计
+}
+
+// broadcast 向所有已连接的客户端广播消息片段
+func (ss *sessionStream) broadcast(msg *pb.Message) {
+	ss.mu.Lock()
+	defer ss.mu.Unlock()
+	ss.history = append(ss.history, msg)
+	for client := range ss.clients {
+		select {
+		case client <- msg:
+		default: // 避免个别慢连接阻塞全局生成速度
+		}
+	}
+}
+
 type ChatService struct {
 	pb.UnimplementedChatServer
-	uc    *biz.ChatUsecase
-	agent *ai.AIUsecase
-	log   *zap.Logger
+	uc            *biz.ChatUsecase
+	agent         *ai.AIUsecase
+	log           *zap.Logger
+	activeStreams sync.Map // Key: SessionID (int64) -> Value: *sessionStream
 }
 
 func NewChatService(uc *biz.ChatUsecase, agent *ai.AIUsecase, logger *zap.Logger) *ChatService {
@@ -33,6 +59,288 @@ func NewChatService(uc *biz.ChatUsecase, agent *ai.AIUsecase, logger *zap.Logger
 	}
 }
 
+// HistoryById 获取会话消息详情，并智能标记流式状态
+func (s *ChatService) HistoryById(ctx context.Context, req *pb.HistoryRequest) (*pb.MessagesReply, error) {
+	messages, err := s.uc.GetSessionMessages(ctx, req.SessionId)
+	if err != nil {
+		return nil, err
+	}
+
+	pbMessages := s.convertToPbMessages(messages)
+
+	// 【优化】通过 SessionID 检查内存中是否有正在进行的任务，并标记最后一条 AI 消息
+	if len(pbMessages) > 0 {
+		lastMsg := pbMessages[len(pbMessages)-1]
+		if lastMsg.Role == "assistant" {
+			if _, running := s.activeStreams.Load(req.SessionId); running {
+				lastMsg.IsStreaming = true
+			}
+		}
+	}
+
+	return &pb.MessagesReply{
+		Messages: pbMessages,
+		Total:    int32(len(messages)),
+	}, nil
+}
+
+// SSEHandler 流式对话处理核心入口
+func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
+	s.setupSSEHeaders(w)
+	flusher := w.(http.Flusher)
+
+	req, err := s.parseStreamRequest(r)
+	if err != nil {
+		s.log.Error("Parse request failed", zap.Error(err))
+		return
+	}
+
+	sessionID := req.CurSessionID
+	// 【核心优化】使用 SessionID 作为唯一 Key，彻底解决刷新导致的重复消息问题
+	streamObj, loaded := s.activeStreams.LoadOrStore(sessionID, &sessionStream{
+		clients:   make(map[chan *pb.Message]struct{}),
+		done:      make(chan struct{}),
+		startTime: time.Now(),
+	})
+	ss := streamObj.(*sessionStream)
+
+	clientChan := make(chan *pb.Message, 100)
+
+	// 如果是新任务（非刷新重连），执行初始化逻辑
+	if !loaded {
+		s.initAndStartStream(r.Context(), sessionID, req, ss)
+	}
+
+	// 1. 自动补发已生成的历史数据（解决“断点续传”）
+	s.replayStreamHistory(w, flusher, ss)
+
+	// 2. 注册当前连接到广播列表
+	ss.mu.Lock()
+	ss.clients[clientChan] = struct{}{}
+	ss.mu.Unlock()
+
+	defer func() {
+		ss.mu.Lock()
+		delete(ss.clients, clientChan)
+		close(clientChan)
+		ss.mu.Unlock()
+	}()
+
+	// 3. 进入监听循环，保持连接直到任务结束
+	s.listenAndServe(w, flusher, r.Context(), ss, clientChan)
+}
+
+// initAndStartStream 初始化数据库占位符并开启 AI 协程
+func (s *ChatService) initAndStartStream(ctx context.Context, sessionID int64, req *pb.SendStreamRequest, ss *sessionStream) {
+	// 【即时入库】立即保存用户消息和 AI 占位消息，确保刷新后可见
+	userMsg := s.uc.NewMessage(sessionID, model.RoleUser, req.CurMessage.Content)
+	userMsg.QuoteId = req.CurMessage.QuoteId
+	userMsg.QuoteContent = req.CurMessage.QuoteContent
+
+	aiMsg := &model.AIChatMessage{
+		Role:      model.RoleAssistant,
+		SessionID: sessionID,
+		Content:   "",
+	}
+	if req.CurMessage.AiModel != nil {
+		aiMsg.AIModel = &model.UseAIModel{
+			ID:        req.CurMessage.AiModel.Id,
+			ModelName: req.CurMessage.AiModel.ModelName,
+		}
+	}
+
+	userMsg.New()
+	aiMsg.New()
+
+	// 使用传入的 ctx (包含用户信息)，确保 beforeCreate 钩子能获取到 userID
+	if err := s.uc.BatchSaveMessages(ctx, []*model.AIChatMessage{userMsg, aiMsg}); err != nil {
+		s.log.Error("Initial DB save failed", zap.Error(err))
+	}
+
+	ss.aiMsgID = aiMsg.ID
+
+	// 透传 Auth 状态启动后台协程
+	// 注意：不能直接使用 ctx，因为它是请求相关的，请求结束会被 cancel
+	// 我们需要创建一个携带用户信息的背景 Context
+	userID := auth.GetUserId(ctx)
+	bgCtx := context.WithValue(context.Background(), auth.UserId, userID)
+	go s.runAIStream(bgCtx, sessionID, req, ss)
+}
+
+// runAIStream AI 生成流水线协程
+func (s *ChatService) runAIStream(ctx context.Context, sessionID int64, req *pb.SendStreamRequest, ss *sessionStream) {
+	defer func() {
+		s.activeStreams.Delete(sessionID)
+		close(ss.done)
+	}()
+
+	aiStream, err := s.agent.Stream(ctx, s.buildAIRequest(req))
+	if err != nil {
+		s.broadcastError(ss, err)
+		return
+	}
+
+	var contentBuilder, reasoningBuilder strings.Builder
+	for msg := range aiStream {
+		if msg.Error != nil {
+			s.log.Error("AI Stream Error", zap.Error(msg.Error))
+			s.broadcastError(ss, msg.Error)
+			break
+		}
+		if msg.Message == nil {
+			continue
+		}
+
+		pbMsg := s.pkgaiToPb(msg.Message)
+		ss.broadcast(pbMsg)
+
+		contentBuilder.WriteString(msg.Message.Content)
+		reasoningBuilder.WriteString(msg.Message.ReasoningContent)
+	}
+
+	// 任务结束，更新数据库中的占位符内容
+	// 使用 GetMessage 获取完整记录，避免覆盖其他字段，并确保上下文透传以触发 beforeUpdate 钩子
+	aiMsg, err := s.uc.GetMessage(ctx, ss.aiMsgID)
+	if err != nil {
+		s.log.Error("Get message for update failed", zap.Error(err), zap.Int64("id", ss.aiMsgID))
+		return
+	}
+
+	aiMsg.Content = contentBuilder.String()
+	aiMsg.ReasoningContent = reasoningBuilder.String()
+	aiMsg.GenerateTime = time.Since(ss.startTime).String()
+
+	if err := s.uc.UpdateMessage(ctx, aiMsg); err != nil {
+		s.log.Error("Final DB update failed", zap.Error(err))
+	}
+}
+
+// --- 辅助工具方法 ---
+
+func (s *ChatService) setupSSEHeaders(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+}
+
+func (s *ChatService) parseStreamRequest(r *http.Request) (*pb.SendStreamRequest, error) {
+	var req pb.SendStreamRequest
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return &req, err
+	}
+	err = protojson.Unmarshal(body, &req)
+	return &req, err
+}
+
+func (s *ChatService) replayStreamHistory(w http.ResponseWriter, flusher http.Flusher, ss *sessionStream) {
+	ss.mu.Lock()
+	defer ss.mu.Unlock()
+	for _, msg := range ss.history {
+		jsonMsg, _ := protojson.Marshal(msg)
+		fmt.Fprintf(w, "event: delta\ndata: %s\n\n", jsonMsg)
+	}
+	flusher.Flush()
+}
+
+func (s *ChatService) listenAndServe(w http.ResponseWriter, flusher http.Flusher, ctx context.Context, ss *sessionStream, clientChan chan *pb.Message) {
+	heartbeat := time.NewTicker(15 * time.Second)
+	defer heartbeat.Stop()
+
+	for {
+		select {
+		case <-ctx.Done(): // 客户端断开连接
+			return
+		case <-heartbeat.C: // 发送心跳保持 Ingress 长连接
+			w.Write([]byte(": keepalive\n\n"))
+			flusher.Flush()
+		case msg, ok := <-clientChan: // 收到新 AI 内容
+			if !ok {
+				return
+			}
+			jsonMsg, _ := protojson.Marshal(msg)
+			fmt.Fprintf(w, "event: delta\ndata: %s\n\n", jsonMsg)
+			flusher.Flush()
+		case <-ss.done: // 后台协程生成完毕
+			// 排空最后的消息
+			for len(clientChan) > 0 {
+				msg := <-clientChan
+				jsonMsg, _ := protojson.Marshal(msg)
+				fmt.Fprintf(w, "event: delta\ndata: %s\n\n", jsonMsg)
+			}
+			fmt.Fprintf(w, "event: done\ndata: {}\n\n")
+			flusher.Flush()
+			return
+		}
+	}
+}
+
+func (s *ChatService) broadcastError(ss *sessionStream, err error) {
+	s.log.Error("AI Stream Error", zap.Error(err))
+	ss.broadcast(&pb.Message{
+		Role:    "assistant",
+		Content: fmt.Sprintf("\n[生成出错]: %v", err),
+	})
+}
+
+// --- 数据模型转换 ---
+
+func (s *ChatService) convertToPbMessages(msgs []*model.AIChatMessage) []*pb.Message {
+	var res []*pb.Message
+	for _, m := range msgs {
+		pbMsg := &pb.Message{
+			Id:               m.ID,
+			Role:             string(m.Role),
+			Content:          m.Content,
+			ReasoningContent: m.ReasoningContent,
+			Timestamp:        m.CreatedAt.Unix(),
+			QuoteId:          m.QuoteId,
+			QuoteContent:     m.QuoteContent,
+		}
+		if m.AIModel != nil {
+			pbMsg.AiModel = &pb.AIModel{
+				Id:        m.AIModel.ID,
+				ModelName: m.AIModel.ModelName,
+			}
+		}
+		res = append(res, pbMsg)
+	}
+	return res
+}
+
+func (s *ChatService) pkgaiToPb(m *pkgai.Message) *pb.Message {
+	pbMsg := &pb.Message{
+		Role:             string(m.Role),
+		Content:          m.Content,
+		ReasoningContent: m.ReasoningContent,
+	}
+	if m.TokenUsage != nil {
+		pbMsg.TokenUsage = &pb.TokenUsage{
+			CurrentTokens: m.TokenUsage.CurrentTokens,
+			TotalTokens:   m.TokenUsage.TotalTokens,
+		}
+	}
+	return pbMsg
+}
+
+func (s *ChatService) buildAIRequest(req *pb.SendStreamRequest) pkgai.Request {
+	var history []*pkgai.Message
+	for _, m := range req.History {
+		history = append(history, &pkgai.Message{Role: pkgai.RoleType(m.Role), Content: m.Content})
+	}
+	return pkgai.Request{
+		History: history,
+		Message: &pkgai.Message{
+			Role:         pkgai.RoleType(req.CurMessage.Role),
+			Content:      req.CurMessage.Content,
+			QuoteId:      req.CurMessage.QuoteId,
+			QuoteContent: req.CurMessage.QuoteContent,
+		},
+	}
+}
+
+// --- gRPC 接口实现占位 (保持兼容性) ---
 func (s *ChatService) History(ctx context.Context, req *pb.HistoryRequest) (*pb.HistoryReply, error) {
 	userId := auth.GetUserId(ctx)
 	sessions, total, err := s.uc.ListSessions(ctx, userId, int(req.Page), int(req.PageSize))
@@ -42,278 +350,35 @@ func (s *ChatService) History(ctx context.Context, req *pb.HistoryRequest) (*pb.
 	var pbSessions []*pb.HistorySession
 	for _, session := range sessions {
 		pbSessions = append(pbSessions, &pb.HistorySession{
-			Id:         session.ID,
-			Title:      session.Title,
-			UpdateTime: session.UpdatedAt.Unix(),
+			Id: session.ID, Title: session.Title, UpdateTime: session.UpdatedAt.Unix(),
 		})
 	}
-	return &pb.HistoryReply{
-		Sessions: pbSessions,
-		Total:    int32(total),
-	}, nil
+	return &pb.HistoryReply{Sessions: pbSessions, Total: int32(total)}, nil
 }
-
-func (s *ChatService) HistoryById(ctx context.Context, req *pb.HistoryRequest) (*pb.MessagesReply, error) {
-	messages, err := s.uc.GetSessionMessages(ctx, req.SessionId)
-	if err != nil {
-		return nil, err
-	}
-	var pbMessages []*pb.Message
-	for _, msg := range messages {
-		pbMsg := &pb.Message{
-			Id:               msg.ID,
-			Role:             string(msg.Role),
-			Content:          msg.Content,
-			ReasoningContent: msg.ReasoningContent,
-			Timestamp:        msg.CreatedAt.Unix(),
-			QuoteId:          msg.QuoteId,
-			QuoteContent:     msg.QuoteContent,
-		}
-
-		if msg.AIModel != nil {
-			pbMsg.AiModel = &pb.AIModel{
-				Id:           msg.AIModel.ID,
-				ModelName:    msg.AIModel.ModelName,
-				ThinkingMode: string(msg.AIModel.ThinkingMode),
-			}
-		}
-		if len(msg.QuoteSearchLinks) > 0 {
-			var links []*pb.QuoteSearchLink
-			for _, link := range msg.QuoteSearchLinks {
-				links = append(links, &pb.QuoteSearchLink{
-					Url:       link.Url,
-					Title:     link.Title,
-					Content:   link.Content,
-					Highlight: link.Highlight,
-				})
-			}
-			pbMsg.QuoteSearchLinks = links
-		}
-		if msg.TokenUsage != nil {
-			pbMsg.TokenUsage = &pb.TokenUsage{
-				CurrentTokens: msg.TokenUsage.CurrentTokens,
-				TotalTokens:   msg.TokenUsage.TotalTokens,
-			}
-		}
-		if len(msg.CallingTools) > 0 {
-			var tools []*pb.CallingTool
-			for _, tool := range msg.CallingTools {
-				tools = append(tools, &pb.CallingTool{
-					Name:         tool.Name,
-					Description:  tool.Description,
-					FunctionName: tool.FunctionName,
-				})
-			}
-			pbMsg.CallingTools = tools
-		}
-		if len(msg.Attachments) > 0 {
-			var attachments []*pb.Attachment
-			for _, att := range msg.Attachments {
-				attachments = append(attachments, &pb.Attachment{
-					Id:   att.ID,
-					Type: att.Type,
-					Name: att.Name,
-					Url:  att.Url,
-				})
-			}
-			pbMsg.Attachments = attachments
-		}
-		pbMessages = append(pbMessages, pbMsg)
-	}
-	return &pb.MessagesReply{
-		Messages: pbMessages,
-		Total:    int32(len(messages)),
-	}, nil
-}
-
 func (s *ChatService) HistoryRenameById(ctx context.Context, req *pb.HistoryRequest) (*emptypb.Empty, error) {
 	err := s.uc.RenameSession(ctx, req.SessionId, req.Name)
 	return &emptypb.Empty{}, err
 }
-
 func (s *ChatService) HistoryDeleteById(ctx context.Context, req *pb.HistoryRequest) (*emptypb.Empty, error) {
 	err := s.uc.DeleteSession(ctx, req.SessionId)
 	return &emptypb.Empty{}, err
 }
-
 func (s *ChatService) CreateSession(ctx context.Context, req *pb.CreateSessionRequest) (*pb.HistorySession, error) {
 	userId := auth.GetUserId(ctx)
 	session, err := s.uc.CreateSession(ctx, userId, req.Title)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.HistorySession{
-		Id:         session.ID,
-		Title:      session.Title,
-		UpdateTime: session.UpdatedAt.Unix(),
-	}, nil
+	return &pb.HistorySession{Id: session.ID, Title: session.Title, UpdateTime: session.UpdatedAt.Unix()}, nil
 }
-
 func (s *ChatService) CreateMessage(ctx context.Context, req *pb.CreateMessageRequest) (*pb.Message, error) {
 	msg := s.uc.NewMessage(req.SessionId, model.RoleType(req.Role), req.Content)
-	savedMsg, err := s.uc.SaveMessage(ctx, msg)
+	saved, err := s.uc.SaveMessage(ctx, msg)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.Message{
-		Id:               savedMsg.ID,
-		Role:             string(savedMsg.Role),
-		Content:          savedMsg.Content,
-		ReasoningContent: savedMsg.ReasoningContent,
-		Timestamp:        savedMsg.CreatedAt.Unix(),
-		QuoteId:          savedMsg.QuoteId,
-		QuoteContent:     savedMsg.QuoteContent,
-	}, nil
+	return &pb.Message{Id: saved.ID, Role: string(saved.Role), Content: saved.Content, Timestamp: saved.CreatedAt.Unix()}, nil
 }
-
 func (s *ChatService) SendStream(req *pb.SendStreamRequest, conn pb.Chat_SendStreamServer) error {
-	// Not implemented for gRPC stream, using SSEHandler
 	return nil
-}
-
-
-func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		s.log.Error("Read body error:", zap.Error(err))
-		return
-	}
-	defer r.Body.Close()
-
-	var req pb.SendStreamRequest
-	if err = protojson.Unmarshal(body, &req); err != nil {
-		s.log.Error("Unmarshal body error:", zap.Error(err))
-		return
-	}
-
-	ctx := r.Context()
-	var sessionID int64 = req.CurSessionID
-	// If sessionID is 0, create new session
-	if sessionID == 0 {
-		s.log.Error("Session ID is required for SSE chat")
-		return
-	}
-
-	// Use the abstract Agent interface
-	// var agent chat.Agent[*pb.SendStreamRequest, *pb.Message] = s.agent
-	var history []*pkgai.Message
-	for _, msg := range req.History {
-		history = append(history, &pkgai.Message{
-			Role:             pkgai.RoleType(msg.Role),
-			ReasoningContent: msg.ReasoningContent,
-			Content:          msg.Content,
-		})
-	}
-	stream, err := s.agent.Stream(r.Context(), pkgai.Request{
-		History: history,
-		Message: &pkgai.Message{
-			Role:         pkgai.RoleType(req.CurMessage.Role),
-			Content:      req.CurMessage.Content,
-			QuoteId:      req.CurMessage.QuoteId,
-			QuoteContent: req.CurMessage.QuoteContent,
-		},
-	})
-	if err != nil {
-		s.log.Error("Stream failed:", zap.Error(err))
-		return
-	}
-
-	marshaler := protojson.MarshalOptions{
-		EmitUnpopulated: true,
-		UseProtoNames:   false,
-	}
-
-	// Accumulate AI response for saving
-	var aiContentBuilder strings.Builder
-	var aiReasoningBuilder strings.Builder
-	var aiMsg = &model.AIChatMessage{}
-	var startTime = time.Now()
-	for msg := range stream {
-		if msg.Error != nil {
-			s.log.Error("Stream error:", zap.Error(msg.Error))
-			return
-		}
-		if msg.Message == nil {
-			s.log.Error("Stream message is nil")
-			continue
-		}
-		// Accumulate content
-		aiContentBuilder.WriteString(msg.Message.Content)
-		aiReasoningBuilder.WriteString(msg.Message.ReasoningContent)
-		pbMsg := &pb.Message{
-			Role:             string(msg.Message.Role),
-			Content:          msg.Message.Content,
-			ReasoningContent: msg.Message.ReasoningContent,
-		}
-		if msg.Message.TokenUsage != nil {
-			aiMsg.TokenUsage = &model.TokenUsage{
-				CurrentTokens: msg.Message.TokenUsage.CurrentTokens,
-				TotalTokens:   msg.Message.TokenUsage.TotalTokens,
-			}
-			pbMsg.TokenUsage = &pb.TokenUsage{
-				CurrentTokens: msg.Message.TokenUsage.CurrentTokens,
-				TotalTokens:   msg.Message.TokenUsage.TotalTokens,
-			}
-		}
-		for _, t := range msg.Message.CallingTools {
-			pbMsg.CallingTools = append(pbMsg.CallingTools, &pb.CallingTool{
-				Name:         t.Name,
-				FunctionName: t.FunctionName,
-			})
-			aiMsg.CallingTools = append(aiMsg.CallingTools, &model.CallingTool{
-				Name:         t.Name,
-				FunctionName: t.FunctionName,
-			})
-		}
-		jsonMsg, err := marshaler.Marshal(pbMsg)
-		if err != nil {
-			s.log.Error("Marshal message error:", zap.Error(err))
-			return
-		}
-		event := fmt.Sprintf("data: %v\n\n", string(jsonMsg))
-		if _, err := w.Write([]byte(event)); err != nil {
-			s.log.Error("Write error:", zap.Error(err))
-			return
-		}
-		flusher.Flush()
-	}
-
-	// Save User Message
-	userMsg := s.uc.NewMessage(sessionID, model.RoleUser, req.CurMessage.Content)
-	userMsg.New()
-	userMsg.QuoteId = req.CurMessage.QuoteId
-	userMsg.QuoteContent = req.CurMessage.QuoteContent
-	// Save AI Message
-	aiMsg.Role = model.RoleAssistant
-	aiMsg.SessionID = sessionID
-	aiMsg.AIModel = &model.UseAIModel{
-		ID:           req.CurMessage.AiModel.Id,
-		ModelName:    req.CurMessage.AiModel.ModelName,
-		ThinkingMode: model.AIModel_ThinkingMode(req.CurMessage.AiModel.ThinkingMode),
-		SearchByWeb:  model.AIModel_SearchByWeb_Bool(req.CurMessage.AiModel.SearchByWeb),
-	}
-	aiMsg.Content = aiContentBuilder.String()
-	aiMsg.ReasoningContent = aiReasoningBuilder.String()
-	aiMsg.GenerateTime = fmt.Sprintf("%v", time.Since(startTime).String())
-	aiMsg.New()
-	// TODO: Save other fields like TokenUsage, etc. if available in the last message or accumulated
-	if err := s.uc.BatchSaveMessages(ctx, []*model.AIChatMessage{userMsg, aiMsg}); err != nil {
-		s.log.Error("Save AI message error:", zap.Error(err))
-	}
-
-	// Send DONE event
-	if _, err := w.Write([]byte("data: [DONE]\n\n")); err != nil {
-		s.log.Error("Write error:", zap.Error(err))
-	}
-	flusher.Flush()
 }

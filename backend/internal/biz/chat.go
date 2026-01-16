@@ -18,6 +18,8 @@ type ChatRepo interface {
 	// Message
 	CreateMessage(ctx context.Context, message *model.AIChatMessage) (*model.AIChatMessage, error)
 	BatchCreateMessages(ctx context.Context, messages []*model.AIChatMessage) error
+	UpdateMessage(ctx context.Context, message *model.AIChatMessage) error
+	GetMessage(ctx context.Context, id int64) (*model.AIChatMessage, error)
 	ListMessages(ctx context.Context, sessionId int64) ([]*model.AIChatMessage, error)
 	DeleteMessagesBySessionID(ctx context.Context, sessionId int64) error
 }
@@ -54,6 +56,14 @@ func (uc *ChatUsecase) SaveMessage(ctx context.Context, msg *model.AIChatMessage
 
 func (uc *ChatUsecase) BatchSaveMessages(ctx context.Context, msgs []*model.AIChatMessage) error {
 	return uc.repo.BatchCreateMessages(ctx, msgs)
+}
+
+func (uc *ChatUsecase) UpdateMessage(ctx context.Context, msg *model.AIChatMessage) error {
+	return uc.repo.UpdateMessage(ctx, msg)
+}
+
+func (uc *ChatUsecase) GetMessage(ctx context.Context, id int64) (*model.AIChatMessage, error) {
+	return uc.repo.GetMessage(ctx, id)
 }
 
 func (uc *ChatUsecase) RenameSession(ctx context.Context, id int64, title string) error {
