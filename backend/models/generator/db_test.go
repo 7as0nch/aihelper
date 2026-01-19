@@ -81,11 +81,13 @@ func TestMigrate(t *testing.T) {
 	// gormdb.Migrator().AutoMigrate(&model.SysMenu{})
 	// var modelInterface ModelInterface = &model.SysMenu{}
 
-	err := gormdb.Migrator().AutoMigrate(model.AIAgent{},
-		model.AITool{},
-		model.AIToolAgentBind{},
-		model.AIModel{},
-		model.AIPromptTemplate{},
+	err := gormdb.Migrator().AutoMigrate(
+		// model.AIAgent{},
+		// model.AITool{},
+		// model.AIToolAgentBind{},
+		// model.AIModel{},
+		// model.AIPromptTemplate{},
+		model.AIWorkflow{},
 		model.AIApplication{},)
 	if err != nil {
 		t.Logf("迁移失败: %v", err)

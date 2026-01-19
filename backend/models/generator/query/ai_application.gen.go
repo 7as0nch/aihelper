@@ -44,10 +44,6 @@ func newAIApplication(db *gorm.DB, opts ...gen.DOOption) aIApplication {
 	_aIApplication.Status = field.NewUint8(tableName, "status")
 	_aIApplication.Type = field.NewUint8(tableName, "type")
 	_aIApplication.Scope = field.NewUint8(tableName, "scope")
-	_aIApplication.GuestConfig = field.NewField(tableName, "guest_config")
-	_aIApplication.UserConfig = field.NewField(tableName, "user_config")
-	_aIApplication.AdminConfig = field.NewField(tableName, "admin_config")
-	_aIApplication.SelfAgent = field.NewField(tableName, "self_agent")
 
 	_aIApplication.fillFieldMap()
 
@@ -74,10 +70,6 @@ type aIApplication struct {
 	Status      field.Uint8  // '状态'
 	Type        field.Uint8  // '程序类型'
 	Scope       field.Uint8  // '作用粒度'
-	GuestConfig field.Field  // '游客配置'
-	UserConfig  field.Field  // '普通用户配置'
-	AdminConfig field.Field  // '管理员配置'
-	SelfAgent   field.Field  // '自定义 Agent'
 
 	fieldMap map[string]field.Expr
 }
@@ -110,10 +102,6 @@ func (a *aIApplication) updateTableName(table string) *aIApplication {
 	a.Status = field.NewUint8(table, "status")
 	a.Type = field.NewUint8(table, "type")
 	a.Scope = field.NewUint8(table, "scope")
-	a.GuestConfig = field.NewField(table, "guest_config")
-	a.UserConfig = field.NewField(table, "user_config")
-	a.AdminConfig = field.NewField(table, "admin_config")
-	a.SelfAgent = field.NewField(table, "self_agent")
 
 	a.fillFieldMap()
 
@@ -130,7 +118,7 @@ func (a *aIApplication) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (a *aIApplication) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 20)
+	a.fieldMap = make(map[string]field.Expr, 16)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["created_by"] = a.CreatedBy
@@ -147,10 +135,6 @@ func (a *aIApplication) fillFieldMap() {
 	a.fieldMap["status"] = a.Status
 	a.fieldMap["type"] = a.Type
 	a.fieldMap["scope"] = a.Scope
-	a.fieldMap["guest_config"] = a.GuestConfig
-	a.fieldMap["user_config"] = a.UserConfig
-	a.fieldMap["admin_config"] = a.AdminConfig
-	a.fieldMap["self_agent"] = a.SelfAgent
 }
 
 func (a aIApplication) clone(db *gorm.DB) aIApplication {

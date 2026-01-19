@@ -11,7 +11,6 @@ import (
 	"errors"
 
 	"github.com/example/aichat/backend/models"
-	"github.com/example/aichat/backend/pkg/ai"
 )
 
 type AIAgent struct {
@@ -21,7 +20,7 @@ type AIAgent struct {
 	Description        string            `json:"description" gorm:"size:500"`                          // agent prompt
 	AdapterType        AdapterType       `json:"adapter_type" gorm:"size:50;default:2"`                // adk, deepadk 等
 	AIModelID          int64             `json:"ai_model_id" gorm:"type:bigint;not null"`              // 关联的 AI 模型 ID: 原始model ID：追溯引用的模型配置。
-	AIModel            *AIModel           `json:"ai_model" gorm:"foreignKey:AIModelID"`                 // model副本，后续通过该获取model配置。
+	AIModel            *AIModel          `json:"ai_model" gorm:"type:text;comment:'模型配置'"`             // model副本，后续通过该获取model配置。
 	MaxIteration       int               `json:"max_iteration" gorm:"default:10;comment:'最大迭代次数'"`     // 最大迭代次数
 	SystemPrompt       string            `json:"system_prompt" gorm:"type:text;comment:'系统提示词'"`       // 系统提示词
 	UserInputPrompt    string            `json:"user_input_prompt" gorm:"type:text;comment:'用户提示词'"`   // 用户提示词
@@ -61,7 +60,7 @@ func (m *AIAgent) Scan(value interface{}) error {
 }
 
 func (a AIAgent) Value() (driver.Value, error) {
-	return json.Marshal(a)
+	return json.Marshal(a) // 直接序列化整个结构体
 }
 
 type AdapterType uint8
@@ -81,23 +80,50 @@ const (
 	AgentType_Sub            // 子 Agent
 )
 
+// Scan 实现 sql.Scanner 接口，用于从数据库读取 JSON 数据
+func (m *AIModel) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return errors.New("type assertion to []byte or string failed")
+	}
+	if len(bytes) == 0 || string(bytes) == "null" {
+		if m != nil {
+			*m = AIModel{}
+		}
+		return nil
+	}
+	if m == nil {
+		// 如果接收者是 nil，无法赋值，这不应该发生
+		// 但为了安全，我们返回错误
+		return errors.New("cannot scan into nil *AIModel")
+	}
+	return json.Unmarshal(bytes, m)
+}
+
+// Value 实现 driver.Valuer 接口，用于将数据写入数据库
+func (m AIModel) Value() (driver.Value, error) {
+	return json.Marshal(m) // 直接序列化整个结构体
+}
+
 type AIApplication struct { // AI Application (原 AIAgentProgram 升级)
 	models.Model
 	Name        string        `json:"name" gorm:"type:varchar(100);comment:'名称'"`             // 名称
 	Code        string        `json:"code" gorm:"uniqueIndex;type:varchar(100);comment:'编码'"` // 编码
 	Description string        `json:"description" gorm:"size:500;comment:'描述'"`
 	Version     string        `json:"version" gorm:"size:20;default:'1.0.0';comment:'版本号'"`
-	Mode        ProgramMode   `json:"mode" gorm:"default:2;comment:'模式'"`    // 模式：1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
-	Status      models.Status `json:"status" gorm:"default:1;comment:'状态'"`  // 2: 禁用, 1: 启用
-	Type        ProgramType   `json:"type" gorm:"default:1;comment:'程序类型'"`  // 1. 预定义，2. 自定义
-	Scope       Scope         `json:"scope" gorm:"default:1;comment:'作用粒度'"` // 作用粒度：1.所有人，2.指定角色，3.指定用户
-
-	// 针对不同角色的配置
-	GuestConfig *ai.AppConfig `json:"guest_config" gorm:"type:text;comment:'游客配置'"`
-	UserConfig  *ai.AppConfig `json:"user_config" gorm:"type:text;comment:'普通用户配置'"`
-	AdminConfig *ai.AppConfig `json:"admin_config" gorm:"type:text;comment:'管理员配置'"`
-
-	SelfAgent *AIAgent `json:"self_agent" gorm:"type:json;comment:'自定义 Agent'"` // 自定义 Agent
+	Mode        ProgramMode   `json:"mode" gorm:"default:2;comment:'模式'"`              // 模式：1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
+	Status      models.Status `json:"status" gorm:"default:1;comment:'状态'"`            // 2: 禁用, 1: 启用
+	Type        ProgramType   `json:"type" gorm:"default:1;comment:'程序类型'"`            // 1. 预定义，2. 自定义
+	Scope       Scope         `json:"scope" gorm:"default:1;comment:'作用粒度'"`           // 作用粒度：1.所有人，2.指定角色，3.指定用户
+	SelfAgent   *AIAgent      `json:"self_agent" gorm:"type:json;comment:'自定义 Agent'"` // 自定义 Agent
 }
 
 func (AIApplication) TableName() string {

@@ -41,6 +41,7 @@ func newAIAgent(db *gorm.DB, opts ...gen.DOOption) aIAgent {
 	_aIAgent.Description = field.NewString(tableName, "description")
 	_aIAgent.AdapterType = field.NewUint8(tableName, "adapter_type")
 	_aIAgent.AIModelID = field.NewInt64(tableName, "ai_model_id")
+	_aIAgent.AIModel = field.NewField(tableName, "ai_model")
 	_aIAgent.MaxIteration = field.NewInt(tableName, "max_iteration")
 	_aIAgent.SystemPrompt = field.NewString(tableName, "system_prompt")
 	_aIAgent.UserInputPrompt = field.NewString(tableName, "user_input_prompt")
@@ -50,11 +51,6 @@ func newAIAgent(db *gorm.DB, opts ...gen.DOOption) aIAgent {
 	_aIAgent.WithWriteTODOs = field.NewBool(tableName, "with_write_tod_os")
 	_aIAgent.WithWebSearchAgent = field.NewBool(tableName, "with_web_search_agent")
 	_aIAgent.SystemType = field.NewUint8(tableName, "system_type")
-	_aIAgent.AIModel = aIAgentBelongsToAIModel{
-		db: db.Session(&gorm.Session{}),
-
-		RelationField: field.NewRelation("AIModel", "model.AIModel"),
-	}
 
 	_aIAgent.fillFieldMap()
 
@@ -78,6 +74,7 @@ type aIAgent struct {
 	Description        field.String
 	AdapterType        field.Uint8
 	AIModelID          field.Int64
+	AIModel            field.Field  // '模型配置'
 	MaxIteration       field.Int    // '最大迭代次数'
 	SystemPrompt       field.String // '系统提示词'
 	UserInputPrompt    field.String // '用户提示词'
@@ -87,7 +84,6 @@ type aIAgent struct {
 	WithWriteTODOs     field.Bool
 	WithWebSearchAgent field.Bool
 	SystemType         field.Uint8
-	AIModel            aIAgentBelongsToAIModel
 
 	fieldMap map[string]field.Expr
 }
@@ -117,6 +113,7 @@ func (a *aIAgent) updateTableName(table string) *aIAgent {
 	a.Description = field.NewString(table, "description")
 	a.AdapterType = field.NewUint8(table, "adapter_type")
 	a.AIModelID = field.NewInt64(table, "ai_model_id")
+	a.AIModel = field.NewField(table, "ai_model")
 	a.MaxIteration = field.NewInt(table, "max_iteration")
 	a.SystemPrompt = field.NewString(table, "system_prompt")
 	a.UserInputPrompt = field.NewString(table, "user_input_prompt")
@@ -156,6 +153,7 @@ func (a *aIAgent) fillFieldMap() {
 	a.fieldMap["description"] = a.Description
 	a.fieldMap["adapter_type"] = a.AdapterType
 	a.fieldMap["ai_model_id"] = a.AIModelID
+	a.fieldMap["ai_model"] = a.AIModel
 	a.fieldMap["max_iteration"] = a.MaxIteration
 	a.fieldMap["system_prompt"] = a.SystemPrompt
 	a.fieldMap["user_input_prompt"] = a.UserInputPrompt
@@ -165,101 +163,16 @@ func (a *aIAgent) fillFieldMap() {
 	a.fieldMap["with_write_tod_os"] = a.WithWriteTODOs
 	a.fieldMap["with_web_search_agent"] = a.WithWebSearchAgent
 	a.fieldMap["system_type"] = a.SystemType
-
 }
 
 func (a aIAgent) clone(db *gorm.DB) aIAgent {
 	a.aIAgentDo.ReplaceConnPool(db.Statement.ConnPool)
-	a.AIModel.db = db.Session(&gorm.Session{Initialized: true})
-	a.AIModel.db.Statement.ConnPool = db.Statement.ConnPool
 	return a
 }
 
 func (a aIAgent) replaceDB(db *gorm.DB) aIAgent {
 	a.aIAgentDo.ReplaceDB(db)
-	a.AIModel.db = db.Session(&gorm.Session{})
 	return a
-}
-
-type aIAgentBelongsToAIModel struct {
-	db *gorm.DB
-
-	field.RelationField
-}
-
-func (a aIAgentBelongsToAIModel) Where(conds ...field.Expr) *aIAgentBelongsToAIModel {
-	if len(conds) == 0 {
-		return &a
-	}
-
-	exprs := make([]clause.Expression, 0, len(conds))
-	for _, cond := range conds {
-		exprs = append(exprs, cond.BeCond().(clause.Expression))
-	}
-	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
-	return &a
-}
-
-func (a aIAgentBelongsToAIModel) WithContext(ctx context.Context) *aIAgentBelongsToAIModel {
-	a.db = a.db.WithContext(ctx)
-	return &a
-}
-
-func (a aIAgentBelongsToAIModel) Session(session *gorm.Session) *aIAgentBelongsToAIModel {
-	a.db = a.db.Session(session)
-	return &a
-}
-
-func (a aIAgentBelongsToAIModel) Model(m *model.AIAgent) *aIAgentBelongsToAIModelTx {
-	return &aIAgentBelongsToAIModelTx{a.db.Model(m).Association(a.Name())}
-}
-
-func (a aIAgentBelongsToAIModel) Unscoped() *aIAgentBelongsToAIModel {
-	a.db = a.db.Unscoped()
-	return &a
-}
-
-type aIAgentBelongsToAIModelTx struct{ tx *gorm.Association }
-
-func (a aIAgentBelongsToAIModelTx) Find() (result *model.AIModel, err error) {
-	return result, a.tx.Find(&result)
-}
-
-func (a aIAgentBelongsToAIModelTx) Append(values ...*model.AIModel) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Append(targetValues...)
-}
-
-func (a aIAgentBelongsToAIModelTx) Replace(values ...*model.AIModel) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Replace(targetValues...)
-}
-
-func (a aIAgentBelongsToAIModelTx) Delete(values ...*model.AIModel) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Delete(targetValues...)
-}
-
-func (a aIAgentBelongsToAIModelTx) Clear() error {
-	return a.tx.Clear()
-}
-
-func (a aIAgentBelongsToAIModelTx) Count() int64 {
-	return a.tx.Count()
-}
-
-func (a aIAgentBelongsToAIModelTx) Unscoped() *aIAgentBelongsToAIModelTx {
-	a.tx = a.tx.Unscoped()
-	return &a
 }
 
 type aIAgentDo struct{ gen.DO }

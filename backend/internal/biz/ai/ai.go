@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/example/aichat/backend/models"
 	"github.com/example/aichat/backend/models/generator/model"
 	pkgai "github.com/example/aichat/backend/pkg/ai"
 	"github.com/example/aichat/backend/pkg/ai/adapter"
@@ -53,44 +54,26 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		return nil, fmt.Errorf("failed to get application: %w", err)
 	}
 
-	// 2. 根据用户角色选择配置 (此处逻辑需结合 Auth 模块，暂时模拟为 User)
-	role := "user" // admin, user, guest
-	var appConfig *pkgai.AppConfig
-	switch role {
-	case "admin":
-		appConfig = app.AdminConfig
-	case "user":
-		appConfig = app.UserConfig
-	default:
-		appConfig = app.GuestConfig
+	// 2. 检查应用状态
+	if app.Status != models.Status_Enabled {
+		return nil, fmt.Errorf("application is disabled")
 	}
 
-	if appConfig == nil {
-		return nil, fmt.Errorf("no application config found for role: %s", role)
-	}
-
-	// 3. 构建 AgentConfig
+	// 3. 根据应用类型构建 AgentConfig
 	var agentConfig *pkgai.AgentConfig
-	if appConfig.ActiveType == pkgai.ActiveTypeWorkflow {
-		// 工作流模式
-		wf, err := uc.wfUC.GetByCode(ctx, appConfig.TargetCode)
-		if err != nil {
-			return nil, err
+	if app.Type == model.ProgramType_Custom {
+		// 自定义类型：直接使用 SelfAgent
+		if app.SelfAgent == nil {
+			return nil, fmt.Errorf("self agent is not configured")
 		}
-		agentConfig, err = uc.buildWorkflowConfig(ctx, wf)
+		agentConfig, err = uc.buildAgentConfigFromSelfAgent(ctx, app.SelfAgent)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to build agent config from self agent: %w", err)
 		}
 	} else {
-		// 普通 Agent 模式
-		agentModel, err := uc.agentUC.GetByCode(ctx, appConfig.TargetCode)
-		if err != nil {
-			return nil, err
-		}
-		agentConfig, err = uc.buildAgentConfig(ctx, agentModel)
-		if err != nil {
-			return nil, err
-		}
+		// 预定义类型：需要通过 bind 关系获取（TODO: 实现 bind 关系查询）
+		// 目前暂时返回错误，提示需要实现 bind 关系
+		return nil, fmt.Errorf("predefined type requires agent bind relationship, not implemented yet")
 	}
 
 	// 4. 创建 Agent
@@ -124,6 +107,56 @@ func (uc *AIUsecase) buildAgentConfig(ctx context.Context, m *model.AIAgent) (*p
 			Thinking:  true,
 			TopP:      0.9,
 		},
+	}, nil
+}
+
+// buildAgentConfigFromSelfAgent 从 SelfAgent 构建 AgentConfig
+// SelfAgent 中可能已经包含了 AIModel 的副本（通过 AIModel 字段）
+func (uc *AIUsecase) buildAgentConfigFromSelfAgent(ctx context.Context, m *model.AIAgent) (*pkgai.AgentConfig, error) {
+	var modelConfig pkgai.ModelConfig
+
+	// 优先使用 SelfAgent 中的 AIModel 副本
+	if m.AIModel != nil {
+		// 使用 SelfAgent 中存储的 AIModel 副本
+		aiModel := m.AIModel
+		modelConfig = pkgai.ModelConfig{
+			ModelType:   string(aiModel.ModelType),
+			ModelName:   aiModel.ModelName,
+			APIKey:      aiModel.APIKey,
+			BaseURL:     aiModel.BaseURL,
+			MaxTokens:   aiModel.MaxTokens,
+			Temperature: aiModel.Temperature,
+			TopP:        aiModel.TopP,
+			Thinking:    true,
+		}
+	} else if m.AIModelID > 0 {
+		// 如果没有 AIModel 副本，通过 AIModelID 获取
+		aiModel, err := uc.modelUC.GetByID(ctx, m.AIModelID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get model by id %d: %w", m.AIModelID, err)
+		}
+		modelConfig = pkgai.ModelConfig{
+			ModelType:   string(aiModel.ModelType),
+			ModelName:   aiModel.ModelName,
+			APIKey:      aiModel.APIKey,
+			BaseURL:     aiModel.BaseURL,
+			MaxTokens:   aiModel.MaxTokens,
+			Temperature: aiModel.Temperature,
+			TopP:        aiModel.TopP,
+			Thinking:    true,
+		}
+	} else {
+		return nil, fmt.Errorf("no model configuration found in self agent")
+	}
+
+	return &pkgai.AgentConfig{
+		Name:               m.Name,
+		Description:        m.Description,
+		AdapterType:        uc.toPkgAdapterType(m.AdapterType),
+		MaxIteration:       m.MaxIteration,
+		WithWebSearchAgent: m.WithWebSearchAgent,
+		WithWriteTODOs:     m.WithWriteTODOs,
+		ModelConfig:        modelConfig,
 	}, nil
 }
 

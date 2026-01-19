@@ -1,0 +1,13 @@
+//registry.npmjs.org/:_authToken=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
+registry=https://registry.npmjs.org/
+
+# Network retry settings to handle connection issues
+fetch-retries=10
+fetch-retry-mintimeout=20000
+fetch-retry-maxtimeout=120000
+fetch-timeout=600000
+network-timeout=600000
+
+# Reduce concurrency to avoid overwhelming the connection
+network-concurrency=3
+prefer-frozen-lockfile=false

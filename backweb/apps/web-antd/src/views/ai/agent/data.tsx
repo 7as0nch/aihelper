@@ -5,6 +5,7 @@ import { DictEnum } from '@vben/constants';
 
 import { Tag } from 'ant-design-vue';
 
+import { modelList } from '#/api/ai/model';
 import { renderDict } from '#/utils/render';
 import { formatMessageTime } from '#/utils/time';
 
@@ -74,15 +75,29 @@ export const columns: VxeGridProps['columns'] = [
     minWidth: 200,
   },
   {
-    title: '注册类型',
+    title: '适配器类型',
     field: 'adapterType',
-    width: 120,
+    width: 130,
     slots: {
       default: ({ row }) => {
         const found = adapterTypeOptions.find(
           (item) => item.value === row.adapterType,
         );
         return <Tag color="blue">{found?.label ?? row.adapterType}</Tag>;
+      },
+    },
+  },
+  {
+    title: '模型 ID',
+    field: 'aiModelId',
+    width: 100,
+    slots: {
+      default: ({ row }) => {
+        return row.aiModelId ? (
+          <Tag color="purple">{row.aiModelId}</Tag>
+        ) : (
+          <span class="text-gray-400">-</span>
+        );
       },
     },
   },
@@ -137,6 +152,16 @@ export const drawerSchema: FormSchemaGetter = () => [
     fieldName: 'id',
     label: 'ID',
   },
+  // ========== 基本信息 ==========
+  {
+    component: 'Divider',
+    componentProps: {
+      orientation: 'left',
+    },
+    fieldName: 'basicInfo',
+    formItemClass: 'col-span-2',
+    label: '基本信息',
+  },
   {
     component: 'Input',
     fieldName: 'name',
@@ -146,8 +171,11 @@ export const drawerSchema: FormSchemaGetter = () => [
   {
     component: 'Input',
     fieldName: 'code',
-    label: '代码',
+    label: '编码',
     rules: 'required',
+    componentProps: {
+      placeholder: '请输入唯一编码',
+    },
   },
   {
     component: 'Textarea',
@@ -156,49 +184,81 @@ export const drawerSchema: FormSchemaGetter = () => [
     label: '描述',
     componentProps: {
       maxlength: 200,
+      placeholder: '请输入 Agent 描述信息',
       showCount: true,
     },
+  },
+  // ========== 配置信息 ==========
+  {
+    component: 'Divider',
+    componentProps: {
+      orientation: 'left',
+    },
+    fieldName: 'configInfo',
+    formItemClass: 'col-span-2',
+    label: '配置信息',
   },
   {
     component: 'Select',
     componentProps: {
       allowClear: false,
       options: adapterTypeOptions,
+      placeholder: '请选择适配器类型',
     },
     defaultValue: 1,
     fieldName: 'adapterType',
     label: '适配器类型',
   },
   {
-    component: 'InputNumber',
+    component: 'ApiSelect',
+    componentProps: {
+      api: modelList,
+      immediate: true,
+      allowClear: true,
+      placeholder: '请选择 AI 模型',
+      showSearch: true,
+      afterFetch: (data: any) => {
+        const models = data?.list || data || [];
+        return models.map((item: any) => ({
+          label: `${item.modelName} (${item.modelType})`,
+          value: item.id,
+        }));
+      },
+      onError: (error: any) => {
+        console.error('获取模型列表失败:', error);
+      },
+    },
     fieldName: 'aiModelId',
-    label: '模型 ID',
+    label: 'AI 模型',
   },
   {
     component: 'InputNumber',
     componentProps: {
       min: 1,
       max: 100,
+      placeholder: '请输入最大迭代次数',
     },
     defaultValue: 10,
     fieldName: 'maxIteration',
-    label: '最大迭代',
+    label: '最大迭代次数',
   },
   {
     component: 'Select',
     componentProps: {
       allowClear: false,
       options: agentTypeOptions,
+      placeholder: '请选择 Agent 类型',
     },
     defaultValue: 1,
     fieldName: 'type',
-    label: '类型',
+    label: 'Agent 类型',
   },
   {
     component: 'Select',
     componentProps: {
       allowClear: false,
       options: agentStatusOptions,
+      placeholder: '请选择状态',
     },
     defaultValue: 1,
     fieldName: 'status',
@@ -206,21 +266,53 @@ export const drawerSchema: FormSchemaGetter = () => [
   },
   {
     component: 'InputNumber',
+    componentProps: {
+      min: 0,
+      placeholder: '请输入排序值',
+    },
     defaultValue: 0,
     fieldName: 'order',
     label: '排序',
   },
+  // ========== 功能开关 ==========
   {
-    component: 'Switch',
-    defaultValue: false,
-    fieldName: 'withWriteTodos',
-    label: '开启 Todos',
+    component: 'Divider',
+    componentProps: {
+      orientation: 'left',
+    },
+    fieldName: 'featureSwitch',
+    formItemClass: 'col-span-2',
+    label: '功能开关',
   },
   {
     component: 'Switch',
+    componentProps: {
+      checkedChildren: '开启',
+      unCheckedChildren: '关闭',
+    },
+    defaultValue: false,
+    fieldName: 'withWriteTodos',
+    label: '启用 Todos 功能',
+  },
+  {
+    component: 'Switch',
+    componentProps: {
+      checkedChildren: '开启',
+      unCheckedChildren: '关闭',
+    },
     defaultValue: false,
     fieldName: 'withWebSearchAgent',
-    label: '网络搜索',
+    label: '启用网络搜索',
+  },
+  // ========== 提示词配置 ==========
+  {
+    component: 'Divider',
+    componentProps: {
+      orientation: 'left',
+    },
+    fieldName: 'promptConfig',
+    formItemClass: 'col-span-2',
+    label: '提示词配置',
   },
   {
     component: 'Textarea',
@@ -229,15 +321,21 @@ export const drawerSchema: FormSchemaGetter = () => [
     label: '系统提示词',
     componentProps: {
       rows: 4,
+      placeholder: '请输入系统提示词，用于指导 Agent 的行为',
+      showCount: true,
+      maxlength: 2000,
     },
   },
   {
     component: 'Textarea',
     fieldName: 'userInputPrompt',
     formItemClass: 'col-span-2',
-    label: '用户输入提示',
+    label: '用户输入提示词',
     componentProps: {
       rows: 4,
+      placeholder: '请输入用户输入提示词，用于格式化用户输入',
+      showCount: true,
+      maxlength: 2000,
     },
   },
 ];
