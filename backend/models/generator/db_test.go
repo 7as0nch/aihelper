@@ -57,11 +57,12 @@ func TestDb(t *testing.T) {
 		model.AIChat{},
 		model.AIChatMessage{},
 		model.AIAgent{},
-		model.AgentBind{},
 		model.AITool{},
 		model.AIToolAgentBind{},
 		model.AIModel{},
 		model.AIPromptTemplate{},
+		model.AIWorkflow{},
+		model.AIApplication{},
 	}
 	g.ApplyBasic(models...)
 	g.ApplyInterface(func(Querier) {}, models...)
@@ -81,11 +82,11 @@ func TestMigrate(t *testing.T) {
 	// var modelInterface ModelInterface = &model.SysMenu{}
 
 	err := gormdb.Migrator().AutoMigrate(model.AIAgent{},
-		model.AgentBind{},
 		model.AITool{},
 		model.AIToolAgentBind{},
 		model.AIModel{},
-		model.AIPromptTemplate{},)
+		model.AIPromptTemplate{},
+		model.AIApplication{},)
 	if err != nil {
 		t.Logf("迁移失败: %v", err)
 		return

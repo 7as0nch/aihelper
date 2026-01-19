@@ -11,6 +11,7 @@ import (
 	"errors"
 
 	"github.com/example/aichat/backend/models"
+	"github.com/example/aichat/backend/pkg/ai"
 )
 
 type AIAgent struct {
@@ -19,7 +20,8 @@ type AIAgent struct {
 	Code               string            `json:"code" gorm:"uniqueIndex;size:100"`                     // EnName
 	Description        string            `json:"description" gorm:"size:500"`                          // agent prompt
 	AdapterType        AdapterType       `json:"adapter_type" gorm:"size:50;default:2"`                // adk, deepadk 等
-	AIModelID          int64             `json:"ai_model_id" gorm:"type:bigint;not null"`              // 关联的 AI 模型 ID
+	AIModelID          int64             `json:"ai_model_id" gorm:"type:bigint;not null"`              // 关联的 AI 模型 ID: 原始model ID：追溯引用的模型配置。
+	AIModel            *AIModel           `json:"ai_model" gorm:"foreignKey:AIModelID"`                 // model副本，后续通过该获取model配置。
 	MaxIteration       int               `json:"max_iteration" gorm:"default:10;comment:'最大迭代次数'"`     // 最大迭代次数
 	SystemPrompt       string            `json:"system_prompt" gorm:"type:text;comment:'系统提示词'"`       // 系统提示词
 	UserInputPrompt    string            `json:"user_input_prompt" gorm:"type:text;comment:'用户提示词'"`   // 用户提示词
@@ -65,9 +67,10 @@ func (a AIAgent) Value() (driver.Value, error) {
 type AdapterType uint8
 
 const (
-	_                   AdapterType = iota
-	AdapterType_ADK                 // 普通 ADK 适配器
-	AdapterType_DeepADK             // 深度 ADK 适配器
+	_                    AdapterType = iota
+	AdapterType_ADK                  // 普通 ADK 适配器
+	AdapterType_DeepADK              // 深度 ADK 适配器
+	AdapterType_Workflow             // 工作流适配器
 )
 
 type AgentType uint8
@@ -78,30 +81,27 @@ const (
 	AgentType_Sub            // 子 Agent
 )
 
-type AgentBind struct {
+type AIApplication struct { // AI Application (原 AIAgentProgram 升级)
 	models.Model
-	ProgramID  int64 `json:"program_id" gorm:"type:bigint;not null"`   // 关联的 AI Agent (方案) 程序 ID
-	AgentID    int64 `json:"agent_id" gorm:"type:bigint;not null"`     // 关联的 AI Agent ID
-	SubAgentID int64 `json:"sub_agent_id" gorm:"type:bigint;not null"` // 关联的子 Agent ID
+	Name        string        `json:"name" gorm:"type:varchar(100);comment:'名称'"`             // 名称
+	Code        string        `json:"code" gorm:"uniqueIndex;type:varchar(100);comment:'编码'"` // 编码
+	Description string        `json:"description" gorm:"size:500;comment:'描述'"`
+	Version     string        `json:"version" gorm:"size:20;default:'1.0.0';comment:'版本号'"`
+	Mode        ProgramMode   `json:"mode" gorm:"default:2;comment:'模式'"`    // 模式：1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
+	Status      models.Status `json:"status" gorm:"default:1;comment:'状态'"`  // 2: 禁用, 1: 启用
+	Type        ProgramType   `json:"type" gorm:"default:1;comment:'程序类型'"`  // 1. 预定义，2. 自定义
+	Scope       Scope         `json:"scope" gorm:"default:1;comment:'作用粒度'"` // 作用粒度：1.所有人，2.指定角色，3.指定用户
+
+	// 针对不同角色的配置
+	GuestConfig *ai.AppConfig `json:"guest_config" gorm:"type:text;comment:'游客配置'"`
+	UserConfig  *ai.AppConfig `json:"user_config" gorm:"type:text;comment:'普通用户配置'"`
+	AdminConfig *ai.AppConfig `json:"admin_config" gorm:"type:text;comment:'管理员配置'"`
+
+	SelfAgent *AIAgent `json:"self_agent" gorm:"type:json;comment:'自定义 Agent'"` // 自定义 Agent
 }
 
-func (AgentBind) TableName() string {
-	return "ai_agent_bind"
-}
-
-type AIAgentProgram struct { // AI Agent (方案) 程序
-	models.Model
-	Name      string        `json:"name" gorm:"type:varchar(100);comment:'名称'"`      // 名称
-	Code      string        `json:"code" gorm:"type:varchar(100);comment:'编码'"`      // 编码
-	Mode      ProgramMode   `json:"mode" gorm:"default:2;comment:'模式'"`              // 模式：1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
-	Status    models.Status `json:"status" gorm:"default:1;comment:'状态'"`            // 2: 禁用, 1: 启用
-	Type      ProgramType   `json:"type" gorm:"default:1;comment:'程序类型'"`            // 1. 预定义，2. 自定义
-	Scope     Scope         `json:"scope" gorm:"default:1;comment:'作用粒度'"`           // 作用粒度：1.所有人，2.指定角色，3.指定用户
-	SelfAgent *AIAgent      `json:"self_agent" gorm:"type:json;comment:'自定义 Agent'"` // 自定义 Agent
-}
-
-func (AIAgentProgram) TableName() string {
-	return "ai_program"
+func (AIApplication) TableName() string {
+	return "ai_application"
 }
 
 // 程序类型：1. 预定义，2. 自定义

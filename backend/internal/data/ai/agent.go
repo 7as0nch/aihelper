@@ -10,10 +10,8 @@ import (
 
 	bizai "github.com/example/aichat/backend/internal/biz/ai"
 	"github.com/example/aichat/backend/internal/db"
-	"github.com/example/aichat/backend/models"
 	"github.com/example/aichat/backend/models/generator/model"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type aiAgentRepo struct {
@@ -90,42 +88,3 @@ func (r *aiAgentRepo) Delete(ctx context.Context, id int64) error {
 	return r.db.DB(ctx).Delete(&model.AIAgent{}, id).Error
 }
 
-// GetSubAgentIDs 获取子 Agent IDs
-func (r *aiAgentRepo) GetSubAgentIDs(ctx context.Context, agentID int64) ([]int64, error) {
-	var binds []model.AgentBind
-	if err := r.db.DB(ctx).Where("agent_id = ?", agentID).Find(&binds).Error; err != nil {
-		return nil, err
-	}
-	ids := make([]int64, len(binds))
-	for i, b := range binds {
-		ids[i] = b.SubAgentID
-	}
-	return ids, nil
-}
-
-// BatchBindSubAgents 批量绑定子 Agent
-func (r *aiAgentRepo) BatchBindSubAgents(ctx context.Context, agentID int64, subAgentIDs []int64) error {
-	if len(subAgentIDs) == 0 {
-		return nil
-	}
-	binds := make([]*model.AgentBind, len(subAgentIDs))
-	for i, subID := range subAgentIDs {
-		binds[i] = &model.AgentBind{
-			Model:      models.Model{},
-			AgentID:    agentID,
-			SubAgentID: subID,
-		}
-		binds[i].New()
-	}
-	return r.db.DB(ctx).Create(&binds).Error
-}
-
-// DeleteSubAgentBinds 删除子 Agent 绑定
-func (r *aiAgentRepo) DeleteSubAgentBinds(ctx context.Context, agentID int64) error {
-	return r.db.DB(ctx).Where("agent_id = ?", agentID).Delete(&model.AgentBind{}).Error
-}
-
-// AutoMigrate 自动迁移表结构
-func (r *aiAgentRepo) AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(&model.AIAgent{}, &model.AgentBind{})
-}

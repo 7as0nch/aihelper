@@ -20,6 +20,8 @@ var ProviderSet = wire.NewSet(
 	NewTrackerRepo,
 	NewChatRepo,
 	ai.NewAIAgentRepo,
+	ai.NewAIApplicationRepo,
+	ai.NewAIWorkflowRepo,
 	ai.NewAIModelRepo,
 	ai.NewAIPromptRepo,
 	ai.NewAIToolRepo,

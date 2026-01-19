@@ -27,8 +27,7 @@ func (s *AIService) ListAgents(ctx context.Context, req *pb.ListAgentsRequest) (
 	list := make([]*pb.AgentInfo, 0, len(agents))
 	for _, a := range agents {
 		// 获取子 Agent IDs
-		subIDs, _ := s.agentUC.GetSubAgentIDs(ctx, a.ID)
-		list = append(list, toAgentInfo(a, subIDs))
+		list = append(list, toAgentInfo(a, nil))
 	}
 
 	return &pb.ListAgentsReply{
@@ -43,18 +42,31 @@ func (s *AIService) GetAgent(ctx context.Context, req *pb.IdRequest) (*pb.AgentI
 	if err != nil {
 		return nil, err
 	}
-	subIDs, _ := s.agentUC.GetSubAgentIDs(ctx, agent.ID)
-	return toAgentInfo(agent, subIDs), nil
+	return toAgentInfo(agent, nil), nil
 }
 
 // CreateAgent 创建 Agent
 func (s *AIService) CreateAgent(ctx context.Context, req *pb.CreateAgentRequest) (*pb.AgentInfo, error) {
 	agent := &model.AIAgent{
-		Name:               req.Name,
-		Code:               req.Code,
-		Description:        req.Description,
-		AdapterType:        model.AdapterType(req.AdapterType),
-		AIModelID:          req.AiModelId,
+		Name:        req.Name,
+		Code:        req.Code,
+		Description: req.Description,
+		AdapterType: model.AdapterType(req.AdapterType),
+		AIModelID:   req.AiModelId,
+		// AIModel: &model.AIModel{
+		// 	Category:    model.AIModel_Category(req.Category),
+		// 	ModelType:   model.ModelType(req.ModelType),
+		// 	ModelName:   req.ModelName,
+		// 	APIKey:      req.ApiKey,
+		// 	BaseURL:     req.BaseUrl,
+		// 	MaxTokens:   int(req.MaxTokens),
+		// 	Temperature: req.Temperature,
+		// 	TopP:        req.TopP,
+		// 	PriceType:   model.AIModel_PriceType(req.PriceType),
+		// 	Price:       req.Price,
+		// 	Supplier:    req.Supplier,
+		// 	Description: req.Description,
+		// },
 		MaxIteration:       int(req.MaxIteration),
 		SystemPrompt:       req.SystemPrompt,
 		UserInputPrompt:    req.UserInputPrompt,
@@ -66,17 +78,11 @@ func (s *AIService) CreateAgent(ctx context.Context, req *pb.CreateAgentRequest)
 	}
 	agent.New()
 
-	if len(req.SubAgentIds) > 0 {
-		if err := s.agentUC.CreateWithSubAgents(ctx, agent, req.SubAgentIds); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := s.agentUC.Create(ctx, agent); err != nil {
-			return nil, err
-		}
+	if err := s.agentUC.Create(ctx, agent); err != nil {
+		return nil, err
 	}
 
-	return toAgentInfo(agent, req.SubAgentIds), nil
+	return toAgentInfo(agent, nil), nil
 }
 
 // UpdateAgent 更新 Agent
@@ -98,7 +104,7 @@ func (s *AIService) UpdateAgent(ctx context.Context, req *pb.UpdateAgentRequest)
 	}
 	agent.ID = req.Id
 
-	if err := s.agentUC.UpdateWithSubAgents(ctx, agent, req.SubAgentIds); err != nil {
+	if err := s.agentUC.Update(ctx, agent); err != nil {
 		return nil, err
 	}
 	return &emptypb.Empty{}, nil
@@ -114,8 +120,6 @@ func (s *AIService) DeleteAgent(ctx context.Context, req *pb.IdRequest) (*emptyp
 
 // BatchBindSubAgents 批量绑定子 Agent
 func (s *AIService) BatchBindSubAgents(ctx context.Context, req *pb.BatchBindSubAgentsRequest) (*emptypb.Empty, error) {
-	if err := s.agentUC.BatchBindSubAgents(ctx, req.AgentId, req.SubAgentIds); err != nil {
-		return nil, err
-	}
+	
 	return &emptypb.Empty{}, nil
 }

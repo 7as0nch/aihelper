@@ -5,15 +5,22 @@
  */
 package ai
 
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+)
+
 // AgentConfig 定义 Agent 的配置
 type AgentConfig struct {
-	Name               string      `json:"name" gorm:"uniqueIndex;size:100"`
-	Description        string      `json:"description" gorm:"size:500"`              // agent prompt
-	AdapterType        AdapterType `json:"adapter_type" gorm:"size:50;default:eino"` // adk, deepadk 等
-	ModelConfig        ModelConfig `json:"model_config" gorm:"foreignKey:AgentID"`
-	MaxIteration       int         `json:"max_iteration" gorm:"default:10"`
-	IsMaster           bool        `json:"is_master" gorm:"default:false"`
-	Status             int         `json:"status" gorm:"default:1"` // 0: 禁用, 1: 启用
+	Name               string          `json:"name" gorm:"uniqueIndex;size:100"`
+	Description        string          `json:"description" gorm:"size:500"`              // agent prompt
+	AdapterType        AdapterType     `json:"adapter_type" gorm:"size:50;default:eino"` // adk, deepadk 等
+	ModelConfig        ModelConfig     `json:"model_config" gorm:"foreignKey:AgentID"`
+	WorkflowConfig     *WorkflowConfig `json:"workflow_config"`
+	MaxIteration       int             `json:"max_iteration" gorm:"default:10"`
+	IsMaster           bool            `json:"is_master" gorm:"default:false"`
+	Status             int             `json:"status" gorm:"default:1"` // 0: 禁用, 1: 启用
 	ParentID           int64
 	Order              int
 	WithWriteTODOs     bool
@@ -26,7 +33,56 @@ const (
 	AdapterTypeEino    AdapterType = "adk"
 	AdapterTypeDeepAdk AdapterType = "deepadk"
 	AdapterTypeHost    AdapterType = "host"
+	AdapterTypeGraph   AdapterType = "graph"
 )
+
+// AppConfig 应用层面的角色配置
+type AppConfig struct {
+	ActiveType  ActiveType  `json:"active_type"`  // agent | workflow
+	AdapterType AdapterType `json:"adapter_type"` // adk | deepadk | graph
+	TargetCode  string      `json:"target_code"`  // AIAgent.Code or AIWorkflow.Code
+	Config      interface{} `json:"config"`       // 额外配置覆盖
+}
+
+type ActiveType string
+
+const (
+	ActiveTypeAgent    ActiveType = "agent"
+	ActiveTypeWorkflow ActiveType = "workflow"
+)
+
+// WorkflowConfig 定义工作流配置
+type WorkflowConfig struct {
+	Nodes []NodeConfig `json:"nodes"`
+	Edges []EdgeConfig `json:"edges"`
+}
+
+// NodeConfig 定义工作流节点
+type NodeConfig struct {
+	ID     string      `json:"id"`
+	Name   string      `json:"name"`
+	Type   NodeType    `json:"type"`
+	Config interface{} `json:"config"` // 根据 Type 不同而不同
+}
+
+type NodeType string
+
+const (
+	NodeTypeStart    NodeType = "start"
+	NodeTypeEnd      NodeType = "end"
+	NodeTypeModel    NodeType = "model"
+	NodeTypePrompt   NodeType = "prompt"
+	NodeTypeTool     NodeType = "tool"
+	NodeTypeAgent    NodeType = "agent"
+	NodeTypeWorkflow NodeType = "workflow"
+	NodeTypeLambda   NodeType = "lambda"
+)
+
+// EdgeConfig 定义工作流边
+type EdgeConfig struct {
+	Source string `json:"source"`
+	Target string `json:"target"`
+}
 
 // ModelConfig 模型配置
 type ModelConfig struct {
@@ -63,4 +119,48 @@ type AIAgentConfig struct {
 	PromptConfig PromptConfig    `json:"prompt_config"`
 	Tools        []ToolConfig    `json:"tools"`
 	SubAgents    []AIAgentConfig `json:"sub_agents"`
+}
+
+// Scan implements the sql.Scanner interface for AppConfig
+func (c *AppConfig) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return fmt.Errorf("failed to unmarshal JSON value: %v", value)
+	}
+	return json.Unmarshal(bytes, c)
+}
+
+// Value implements the driver.Valuer interface for AppConfig
+func (c AppConfig) Value() (driver.Value, error) {
+	return json.Marshal(c)
+}
+
+// Scan implements the sql.Scanner interface for WorkflowConfig
+func (c *WorkflowConfig) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return fmt.Errorf("failed to unmarshal JSON value: %v", value)
+	}
+	return json.Unmarshal(bytes, c)
+}
+
+// Value implements the driver.Valuer interface for WorkflowConfig
+func (c WorkflowConfig) Value() (driver.Value, error) {
+	return json.Marshal(c)
 }

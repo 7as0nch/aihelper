@@ -18,13 +18,14 @@ import (
 var (
 	Q                = new(Query)
 	AIAgent          *aIAgent
+	AIApplication    *aIApplication
 	AIChat           *aIChat
 	AIChatMessage    *aIChatMessage
 	AIModel          *aIModel
 	AIPromptTemplate *aIPromptTemplate
 	AITool           *aITool
 	AIToolAgentBind  *aIToolAgentBind
-	AgentBind        *agentBind
+	AIWorkflow       *aIWorkflow
 	SysDict          *sysDict
 	SysDictType      *sysDictType
 	SysMenu          *sysMenu
@@ -35,13 +36,14 @@ var (
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	AIAgent = &Q.AIAgent
+	AIApplication = &Q.AIApplication
 	AIChat = &Q.AIChat
 	AIChatMessage = &Q.AIChatMessage
 	AIModel = &Q.AIModel
 	AIPromptTemplate = &Q.AIPromptTemplate
 	AITool = &Q.AITool
 	AIToolAgentBind = &Q.AIToolAgentBind
-	AgentBind = &Q.AgentBind
+	AIWorkflow = &Q.AIWorkflow
 	SysDict = &Q.SysDict
 	SysDictType = &Q.SysDictType
 	SysMenu = &Q.SysMenu
@@ -53,13 +55,14 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:               db,
 		AIAgent:          newAIAgent(db, opts...),
+		AIApplication:    newAIApplication(db, opts...),
 		AIChat:           newAIChat(db, opts...),
 		AIChatMessage:    newAIChatMessage(db, opts...),
 		AIModel:          newAIModel(db, opts...),
 		AIPromptTemplate: newAIPromptTemplate(db, opts...),
 		AITool:           newAITool(db, opts...),
 		AIToolAgentBind:  newAIToolAgentBind(db, opts...),
-		AgentBind:        newAgentBind(db, opts...),
+		AIWorkflow:       newAIWorkflow(db, opts...),
 		SysDict:          newSysDict(db, opts...),
 		SysDictType:      newSysDictType(db, opts...),
 		SysMenu:          newSysMenu(db, opts...),
@@ -72,13 +75,14 @@ type Query struct {
 	db *gorm.DB
 
 	AIAgent          aIAgent
+	AIApplication    aIApplication
 	AIChat           aIChat
 	AIChatMessage    aIChatMessage
 	AIModel          aIModel
 	AIPromptTemplate aIPromptTemplate
 	AITool           aITool
 	AIToolAgentBind  aIToolAgentBind
-	AgentBind        agentBind
+	AIWorkflow       aIWorkflow
 	SysDict          sysDict
 	SysDictType      sysDictType
 	SysMenu          sysMenu
@@ -92,13 +96,14 @@ func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:               db,
 		AIAgent:          q.AIAgent.clone(db),
+		AIApplication:    q.AIApplication.clone(db),
 		AIChat:           q.AIChat.clone(db),
 		AIChatMessage:    q.AIChatMessage.clone(db),
 		AIModel:          q.AIModel.clone(db),
 		AIPromptTemplate: q.AIPromptTemplate.clone(db),
 		AITool:           q.AITool.clone(db),
 		AIToolAgentBind:  q.AIToolAgentBind.clone(db),
-		AgentBind:        q.AgentBind.clone(db),
+		AIWorkflow:       q.AIWorkflow.clone(db),
 		SysDict:          q.SysDict.clone(db),
 		SysDictType:      q.SysDictType.clone(db),
 		SysMenu:          q.SysMenu.clone(db),
@@ -119,13 +124,14 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:               db,
 		AIAgent:          q.AIAgent.replaceDB(db),
+		AIApplication:    q.AIApplication.replaceDB(db),
 		AIChat:           q.AIChat.replaceDB(db),
 		AIChatMessage:    q.AIChatMessage.replaceDB(db),
 		AIModel:          q.AIModel.replaceDB(db),
 		AIPromptTemplate: q.AIPromptTemplate.replaceDB(db),
 		AITool:           q.AITool.replaceDB(db),
 		AIToolAgentBind:  q.AIToolAgentBind.replaceDB(db),
-		AgentBind:        q.AgentBind.replaceDB(db),
+		AIWorkflow:       q.AIWorkflow.replaceDB(db),
 		SysDict:          q.SysDict.replaceDB(db),
 		SysDictType:      q.SysDictType.replaceDB(db),
 		SysMenu:          q.SysMenu.replaceDB(db),
@@ -136,13 +142,14 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 
 type queryCtx struct {
 	AIAgent          IAIAgentDo
+	AIApplication    IAIApplicationDo
 	AIChat           IAIChatDo
 	AIChatMessage    IAIChatMessageDo
 	AIModel          IAIModelDo
 	AIPromptTemplate IAIPromptTemplateDo
 	AITool           IAIToolDo
 	AIToolAgentBind  IAIToolAgentBindDo
-	AgentBind        IAgentBindDo
+	AIWorkflow       IAIWorkflowDo
 	SysDict          ISysDictDo
 	SysDictType      ISysDictTypeDo
 	SysMenu          ISysMenuDo
@@ -153,13 +160,14 @@ type queryCtx struct {
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		AIAgent:          q.AIAgent.WithContext(ctx),
+		AIApplication:    q.AIApplication.WithContext(ctx),
 		AIChat:           q.AIChat.WithContext(ctx),
 		AIChatMessage:    q.AIChatMessage.WithContext(ctx),
 		AIModel:          q.AIModel.WithContext(ctx),
 		AIPromptTemplate: q.AIPromptTemplate.WithContext(ctx),
 		AITool:           q.AITool.WithContext(ctx),
 		AIToolAgentBind:  q.AIToolAgentBind.WithContext(ctx),
-		AgentBind:        q.AgentBind.WithContext(ctx),
+		AIWorkflow:       q.AIWorkflow.WithContext(ctx),
 		SysDict:          q.SysDict.WithContext(ctx),
 		SysDictType:      q.SysDictType.WithContext(ctx),
 		SysMenu:          q.SysMenu.WithContext(ctx),
