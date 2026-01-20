@@ -1,13 +1,24 @@
 /**
  * Agent 类型定义
  */
+export interface AgentModel {
+  category: number;
+  modelType: string;
+  modelName: string;
+  apiKey: string;
+  baseUrl: string;
+  temperature: number;
+  topP: number;
+}
+
 export interface AgentInfo {
   id: number;
   name: string;
   code: string;
   description: string;
   adapterType: number; // 适配器类型 1. adk, 2. deepadk
-  aiModelId: number;
+  originalModelId: number; // 来源ai模型id: 原始model ID：追溯引用的模型配置。
+  aiModel?: AgentModel; // 通过original_model_id获取的模型配置，支持修改。
   maxIteration: number;
   systemPrompt: string;
   userInputPrompt: string;
@@ -34,7 +45,8 @@ export interface CreateAgentRequest {
   code: string;
   description?: string;
   adapterType?: number;
-  aiModelId?: number;
+  originalModelId?: number; // 来源ai模型id: 原始model ID：追溯引用的模型配置。
+  aiModel?: AgentModel; // 通过original_model_id获取的模型配置，支持修改。
   maxIteration?: number;
   systemPrompt?: string;
   userInputPrompt?: string;

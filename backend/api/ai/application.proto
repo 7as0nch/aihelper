@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package ai;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+option go_package = "backend/api/ai;ai";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.ai";
+option java_outer_classname = "AiProto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "api/ai/agent.proto";
+
+// Name        string        `json:"name" gorm:"type:varchar(100);comment:'名称'"`             // 名称
+// Code        string        `json:"code" gorm:"uniqueIndex;type:varchar(100);comment:'编码'"` // 编码
+// Description string        `json:"description" gorm:"size:500;comment:'描述'"`
+// Version     string        `json:"version" gorm:"size:20;default:'1.0.0';comment:'版本号'"`
+// Mode        ProgramMode   `json:"mode" gorm:"default:2;comment:'模式'"`              // 模式：1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
+// Status      models.Status `json:"status" gorm:"default:1;comment:'状态'"`            // 2: 禁用, 1: 启用
+// Type        ProgramType   `json:"type" gorm:"default:1;comment:'程序类型'"`            // 1. 预定义，2. 自定义
+// Scope       Scope         `json:"scope" gorm:"default:1;comment:'作用粒度'"`           // 作用粒度：1.所有人，2.指定角色，3.指定用户
+// SelfAgent   *AIAgent      `json:"self_agent" gorm:"type:json;comment:'自定义 Agent'"` // 自定义 Agent(通过agent列表获取，重新自定义)
+message ApplicationInfo {
+    int64 id = 1;
+    string name = 2; // 名称
+    string code = 3; // 编码
+    string description = 4; // 描述
+    string version = 5; // 版本号
+    int32 mode = 6; // 模式 1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
+    int32 status = 7; // 状态 2: 禁用, 1: 启用
+    int32 type = 8; // 程序类型 1. 预定义，2. 自定义
+    int32 scope = 9; // 作用粒度 1.所有人，2.指定角色，3.指定用户
+    AppAgent self_agent = 10; // 自定义 Agent (通过agent列表获取，支持重新自定义)
+    int64 created_at = 11; // 创建时间
+    string schema = 12; // 拖拽页面布局存档。
+}
+
+message ListApplicationsRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+    string name = 3;
+    int32 status = 4;
+    int32 type = 5;
+    int32 scope = 6;
+}
+
+message ListApplicationsReply {
+    repeated ApplicationInfo list = 1;
+    int64 total = 2;
+}
+
+message CreateApplicationRequest {
+    string name = 2; // 名称
+    string code = 3; // 编码
+    string description = 4; // 描述
+    string version = 5; // 版本号
+    int32 mode = 6; // 模式 1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
+    int32 status = 7; // 状态 2: 禁用, 1: 启用
+    int32 type = 8; // 程序类型 1. 预定义，2. 自定义
+    int32 scope = 9; // 作用粒度 1.所有人，2.指定角色，3.指定用户
+    AppAgent self_agent = 10; // 自定义 Agent (通过agent列表获取，支持重新自定义)
+    string schema = 11; // 拖拽页面布局存档。
+}
+
+message UpdateApplicationRequest {
+    int64 id = 1;
+    string name = 2; // 名称
+    string code = 3; // 编码
+    string description = 4; // 描述
+    string version = 5; // 版本号
+    int32 mode = 6; // 模式 1.单agent模式（只有一个agent，采用Ark原理，支持adk或者普通enio）2. 多agent模式（就是deepadk或者adk）
+    int32 status = 7; // 状态 2: 禁用, 1: 启用
+    int32 type = 8; // 程序类型 1. 预定义，2. 自定义
+    int32 scope = 9; // 作用粒度 1.所有人，2.指定角色，3.指定用户
+    AppAgent self_agent = 10; // 自定义 Agent (通过agent列表获取，支持重新自定义)
+    string schema = 11; // 拖拽页面布局存档。
+}
+
+message DeleteApplicationRequest {
+    int64 id = 1;
+}
+
+message AppAgent {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 adapter_type = 5;
+    int64 original_model_id = 6; // 来源ai模型id: 原始model ID：追溯引用的模型配置。
+    AgentModel ai_model = 7; // 通过original_model_id获取的模型配置，支持修改。
+    int32 max_iteration = 8;
+    string system_prompt = 9; // 引用模版提示
+    string user_input_prompt = 10; // 引用模版提示
+    int32 status = 11; // 2: 禁用, 1: 启用
+    int32 type = 12; // 1 根 Agent, 2 子 Agent
+    bool with_write_todos = 13;
+    bool with_web_search_agent = 14;
+    int32 system_type = 15; // 1-系统内置(不可删除), 2-用户自定义
+    int64 created_at = 16;
+    repeated AppAgent sub_agents = 17; // 子 Agent 列表
+}

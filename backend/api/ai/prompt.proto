@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package ai;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+option go_package = "backend/api/ai;ai";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.ai";
+option java_outer_classname = "AiProto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// ========== Prompt Messages ==========
+message PromptInfo {
+    int64 id = 1;
+    int32 type = 2;
+    string name = 3;
+    string description = 4;
+    string text = 5;
+    int64 created_at = 6;
+}
+
+message ListPromptsRequest { 
+    int32 page = 1; 
+    int32 page_size = 2; 
+    string name = 3; 
+    int32 type = 4;
+}
+
+message ListPromptsReply { 
+    repeated PromptInfo list = 1; 
+    int64 total = 2; 
+}
+
+message CreatePromptRequest {
+    int32 type = 1;
+    string name = 2;
+    string description = 3;
+    string text = 4;
+}
+
+message UpdatePromptRequest {
+    int64 id = 1;
+    int32 type = 2;
+    string name = 3;
+    string description = 4;
+    string text = 5;
+}

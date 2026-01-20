@@ -44,6 +44,8 @@ func newAIApplication(db *gorm.DB, opts ...gen.DOOption) aIApplication {
 	_aIApplication.Status = field.NewUint8(tableName, "status")
 	_aIApplication.Type = field.NewUint8(tableName, "type")
 	_aIApplication.Scope = field.NewUint8(tableName, "scope")
+	_aIApplication.Schema = field.NewString(tableName, "schema")
+	_aIApplication.SelfAgent = field.NewField(tableName, "self_agent")
 
 	_aIApplication.fillFieldMap()
 
@@ -70,6 +72,8 @@ type aIApplication struct {
 	Status      field.Uint8  // '状态'
 	Type        field.Uint8  // '程序类型'
 	Scope       field.Uint8  // '作用粒度'
+	Schema      field.String // 'schema'
+	SelfAgent   field.Field  // '自定义 Agent'
 
 	fieldMap map[string]field.Expr
 }
@@ -102,6 +106,8 @@ func (a *aIApplication) updateTableName(table string) *aIApplication {
 	a.Status = field.NewUint8(table, "status")
 	a.Type = field.NewUint8(table, "type")
 	a.Scope = field.NewUint8(table, "scope")
+	a.Schema = field.NewString(table, "schema")
+	a.SelfAgent = field.NewField(table, "self_agent")
 
 	a.fillFieldMap()
 
@@ -118,7 +124,7 @@ func (a *aIApplication) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (a *aIApplication) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 16)
+	a.fieldMap = make(map[string]field.Expr, 18)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["created_by"] = a.CreatedBy
@@ -135,6 +141,8 @@ func (a *aIApplication) fillFieldMap() {
 	a.fieldMap["status"] = a.Status
 	a.fieldMap["type"] = a.Type
 	a.fieldMap["scope"] = a.Scope
+	a.fieldMap["schema"] = a.Schema
+	a.fieldMap["self_agent"] = a.SelfAgent
 }
 
 func (a aIApplication) clone(db *gorm.DB) aIApplication {

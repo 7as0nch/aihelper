@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package ai;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+option go_package = "backend/api/ai;ai";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.ai";
+option java_outer_classname = "AiProto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// ========== Tool Messages ==========
+message ToolParam { 
+    string param_name = 1; 
+    string param_type = 2; 
+    string default_value = 3; 
+}
+
+message ToolInfo {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 sys_type = 5;
+    int32 type = 6;
+    int32 status = 7;
+    repeated ToolParam params = 8;
+    string mcp_url = 9;
+    string mcp_token = 10;
+    int64 created_at = 11;
+}
+
+message ListToolsRequest { 
+    int32 page = 1; 
+    int32 page_size = 2; 
+    string name = 3; 
+    int32 type = 4;
+    int32 status = 5;
+}
+
+message ListToolsReply { 
+    repeated ToolInfo list = 1; 
+    int64 total = 2; 
+}
+
+message CreateToolRequest {
+    string name = 1;
+    string code = 2;
+    string description = 3;
+    int32 type = 4;
+    int32 status = 5;
+    repeated ToolParam params = 6;
+    string mcp_url = 7;
+    string mcp_token = 8;
+}
+
+message UpdateToolRequest {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 type = 5;
+    int32 status = 6;
+    repeated ToolParam params = 7;
+    string mcp_url = 8;
+    string mcp_token = 9;
+}
+
+message BatchBindToolsRequest { 
+    int64 agent_id = 1; 
+    repeated string tool_codes = 2; 
+}

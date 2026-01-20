@@ -2,8 +2,6 @@ module github.com/example/aichat/backend
 
 go 1.24.7
 
-toolchain go1.24.10
-
 require (
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/cloudwego/eino v0.7.11

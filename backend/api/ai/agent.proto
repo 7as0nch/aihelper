@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package ai;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+option go_package = "backend/api/ai;ai";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.ai";
+option java_outer_classname = "AiProto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+
+// ========== Agent Messages ==========
+message AgentModel {
+    // Category    AIModel_Category `json:"category" gorm:"type:smallint;default:0"` // 模型类别
+    int32 category = 1;
+	// ModelType   ModelType         `json:"model_type" gorm:"type:varchar(50);not null"`
+    string model_type = 2;
+	// ModelName   string           `json:"model_name" gorm:"type:varchar(100);not null"`
+    string model_name = 3;
+	// APIKey      string           `json:"api_key" gorm:"type:varchar(255)"` // 建议加密存储
+    string api_key = 4;
+	// BaseURL     string           `json:"base_url" gorm:"type:varchar(255)"`
+    string base_url = 5;
+	// Temperature float32          `json:"temperature" gorm:"type:float;default:0.7"`
+    float temperature = 6;
+	// TopP        float32          `json:"top_p" gorm:"type:float;default:0.9"`
+    float top_p = 7;
+}
+message AgentInfo {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 adapter_type = 5;
+    int64 original_model_id = 6; // 来源ai模型id: 原始model ID：追溯引用的模型配置。
+    AgentModel ai_model = 7; // 通过original_model_id获取的模型配置，支持修改。
+    int32 max_iteration = 8;
+    string system_prompt = 9; // 引用模版提示
+    string user_input_prompt = 10; // 引用模版提示
+    int32 status = 11; // 2: 禁用, 1: 启用
+    int32 type = 12; // 1 根 Agent, 2 子 Agent
+    bool with_write_todos = 13;
+    bool with_web_search_agent = 14;
+    int32 system_type = 15; // 1-系统内置(不可删除), 2-用户自定义
+    int64 created_at = 16;
+}
+
+message ListAgentsRequest { 
+    int32 page = 1; 
+    int32 page_size = 2; 
+    string name = 3; 
+    int32 status = 4; 
+    int32 type = 5;
+}
+
+message ListAgentsReply { 
+    repeated AgentInfo list = 1; 
+    int64 total = 2; 
+}
+
+message CreateAgentRequest {
+    string name = 1;
+    string code = 2;
+    string description = 3;
+    int32 adapter_type = 4;
+    int64 original_model_id = 5; // 来源ai模型id: 原始model ID：追溯引用的模型配置。
+    AgentModel ai_model = 6; // 通过original_model_id获取的模型配置，支持修改。
+    int32 max_iteration = 7; // 最大迭代次数
+    string system_prompt = 8; // 引用模版提示
+    string user_input_prompt = 9; // 引用模版提示
+    int32 status = 10; // 2: 禁用, 1: 启用
+    int32 type = 11; // 1 根 Agent, 2 子 Agent
+    bool with_write_todos = 12;
+    bool with_web_search_agent = 13;
+}
+
+message UpdateAgentRequest {
+    int64 id = 1;
+    string name = 2;
+    string code = 3;
+    string description = 4;
+    int32 adapter_type = 5;
+    int64 original_model_id = 6; // 来源ai模型id: 原始model ID：追溯引用的模型配置。
+    AgentModel ai_model = 7; // 通过original_model_id获取的模型配置，支持修改。
+    int32 max_iteration = 8; // 最大迭代次数
+    string system_prompt = 9; // 引用模版提示
+    string user_input_prompt = 10; // 引用模版提示
+    int32 status = 11; // 2: 禁用, 1: 启用
+    int32 type = 12; // 1 根 Agent, 2 子 Agent
+    bool with_write_todos = 13;
+    bool with_web_search_agent = 14;
+}

@@ -75,15 +75,34 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		// 目前暂时返回错误，提示需要实现 bind 关系
 		return nil, fmt.Errorf("predefined type requires agent bind relationship, not implemented yet")
 	}
-
+	if agentConfig == nil {
+		return nil, fmt.Errorf("agent config is nil")
+	}
 	// 4. 创建 Agent
 	// 注意：此处如果需要子 Agent，还需要根据业务逻辑获取并构建
-	agent, err := uc.factory.Create(ctx, agentConfig)
-	if err != nil {
-		uc.log.Error("Failed to get agent", zap.Error(err))
-		return nil, fmt.Errorf("failed to get agent: %w", err)
+	if app.Mode == model.ProgramMode_Single {
+		agent, err := uc.factory.Create(ctx, agentConfig)
+		if err != nil {
+			uc.log.Error("Failed to get agent", zap.Error(err))
+			return nil, fmt.Errorf("failed to get agent: %w", err)
+		}
+		return agent, nil
+	} else {
+		// 多 Agent 模式：需要根据业务逻辑获取并构建
+		subAgentConfigs := make([]*pkgai.AgentConfig, len(app.SelfAgent.SubAIAgents))
+		for i, subAgent := range app.SelfAgent.SubAIAgents {
+			subAgentConfig, err := uc.buildAgentConfig(ctx, subAgent)
+			if err != nil {
+				return nil, fmt.Errorf("failed to build sub agent config: %w", err)
+			}
+			subAgentConfigs[i] = subAgentConfig
+		}
+		agent, err := uc.factory.CreateWithSubAgents(ctx, agentConfig, subAgentConfigs)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create agent with sub agents: %w", err)
+		}
+		return agent, nil
 	}
-	return agent, nil
 }
 
 func (uc *AIUsecase) buildAgentConfig(ctx context.Context, m *model.AIAgent) (*pkgai.AgentConfig, error) {
@@ -124,7 +143,6 @@ func (uc *AIUsecase) buildAgentConfigFromSelfAgent(ctx context.Context, m *model
 			ModelName:   aiModel.ModelName,
 			APIKey:      aiModel.APIKey,
 			BaseURL:     aiModel.BaseURL,
-			MaxTokens:   aiModel.MaxTokens,
 			Temperature: aiModel.Temperature,
 			TopP:        aiModel.TopP,
 			Thinking:    true,

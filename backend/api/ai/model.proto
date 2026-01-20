@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package ai;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+option go_package = "backend/api/ai;ai";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.ai";
+option java_outer_classname = "AiProto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// ========== Model Messages ==========
+message ModelInfo {
+    int64 id = 1;
+    int32 category = 2;
+    string model_type = 3;
+    string model_name = 4;
+    string api_key = 5;
+    string base_url = 6;
+    int32 max_tokens = 7;
+    float temperature = 8;
+    float top_p = 9;
+    int32 price_type = 10;
+    float price = 11;
+    string supplier = 12;
+    string description = 13;
+    int32 status = 14;
+    int32 is_default = 15;
+    int64 created_at = 16;
+}
+
+message ListModelsRequest { 
+    int32 page = 1; 
+    int32 page_size = 2; 
+    string model_name = 3; 
+    int32 status = 4;
+}
+
+message ListModelsReply { 
+    repeated ModelInfo list = 1; 
+    int64 total = 2; 
+}
+
+message CreateModelRequest {
+    int32 category = 1;
+    string model_type = 2;
+    string model_name = 3;
+    string api_key = 4;
+    string base_url = 5;
+    int32 max_tokens = 6;
+    float temperature = 7;
+    float top_p = 8;
+    int32 price_type = 9;
+    float price = 10;
+    string supplier = 11;
+    string description = 12;
+    int32 status = 13;
+    int32 is_default = 14;
+}
+
+message UpdateModelRequest {
+    int64 id = 1;
+    int32 category = 2;
+    string model_type = 3;
+    string model_name = 4;
+    string api_key = 5;
+    string base_url = 6;
+    int32 max_tokens = 7;
+    float temperature = 8;
+    float top_p = 9;
+    int32 price_type = 10;
+    float price = 11;
+    string supplier = 12;
+    string description = 13;
+    int32 status = 14;
+    int32 is_default = 15;
+}

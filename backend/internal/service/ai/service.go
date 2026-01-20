@@ -13,10 +13,11 @@ import (
 // AIService AI 管理服务
 type AIService struct {
 	pb.UnimplementedAIServer
-	agentUC  *bizai.AIAgentUseCase
-	modelUC  *bizai.AIModelUseCase
-	promptUC *bizai.AIPromptUseCase
-	toolUC   *bizai.AIToolUseCase
+	agentUC       *bizai.AIAgentUseCase
+	modelUC       *bizai.AIModelUseCase
+	promptUC      *bizai.AIPromptUseCase
+	toolUC        *bizai.AIToolUseCase
+	applicationUC *bizai.AIApplicationUseCase
 }
 
 // NewAIService 创建 AI 服务
@@ -25,11 +26,13 @@ func NewAIService(
 	modelUC *bizai.AIModelUseCase,
 	promptUC *bizai.AIPromptUseCase,
 	toolUC *bizai.AIToolUseCase,
+	applicationUC *bizai.AIApplicationUseCase,
 ) *AIService {
 	return &AIService{
-		agentUC:  agentUC,
-		modelUC:  modelUC,
-		promptUC: promptUC,
-		toolUC:   toolUC,
+		agentUC:       agentUC,
+		modelUC:       modelUC,
+		promptUC:      promptUC,
+		toolUC:        toolUC,
+		applicationUC: applicationUC,
 	}
 }

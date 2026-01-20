@@ -99,30 +99,6 @@ func (s *AIService) BatchBindTools(ctx context.Context, req *pb.BatchBindToolsRe
 	return &emptypb.Empty{}, nil
 }
 
-// ==================== 转换函数 ====================
-
-func toAgentInfo(a *model.AIAgent, subIDs []int64) *pb.AgentInfo {
-	return &pb.AgentInfo{
-		Id:                 a.ID,
-		Name:               a.Name,
-		Code:               a.Code,
-		Description:        a.Description,
-		AdapterType:        int32(a.AdapterType),
-		AiModelId:          a.AIModelID,
-		MaxIteration:       int32(a.MaxIteration),
-		SystemPrompt:       a.SystemPrompt,
-		UserInputPrompt:    a.UserInputPrompt,
-		Status:             int32(a.Status),
-		Type:               int32(a.Type),
-		Order:              int32(a.Order),
-		WithWriteTodos:     a.WithWriteTODOs,
-		WithWebSearchAgent: a.WithWebSearchAgent,
-		SystemType:         int32(a.SystemType),
-		CreatedAt:          a.CreatedAt.Unix(),
-		// ParentAgentId:      0,
-	}
-}
-
 func toModelInfo(m *model.AIModel) *pb.ModelInfo {
 	return &pb.ModelInfo{
 		Id:          m.ID,
