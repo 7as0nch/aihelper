@@ -91,7 +91,7 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		// 多 Agent 模式：需要根据业务逻辑获取并构建
 		subAgentConfigs := make([]*pkgai.AgentConfig, len(app.SelfAgent.SubAIAgents))
 		for i, subAgent := range app.SelfAgent.SubAIAgents {
-			subAgentConfig, err := uc.buildAgentConfig(ctx, subAgent)
+			subAgentConfig, err := uc.buildAgentConfigFromSelfAgent(ctx, subAgent)
 			if err != nil {
 				return nil, fmt.Errorf("failed to build sub agent config: %w", err)
 			}
@@ -103,30 +103,6 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		}
 		return agent, nil
 	}
-}
-
-func (uc *AIUsecase) buildAgentConfig(ctx context.Context, m *model.AIAgent) (*pkgai.AgentConfig, error) {
-	aiModel, err := uc.modelUC.GetByID(ctx, m.AIModelID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &pkgai.AgentConfig{
-		Name:               m.Name,
-		Description:        m.Description,
-		AdapterType:        uc.toPkgAdapterType(m.AdapterType),
-		MaxIteration:       m.MaxIteration,
-		WithWebSearchAgent: m.WithWebSearchAgent,
-		WithWriteTODOs:     m.WithWriteTODOs,
-		ModelConfig: pkgai.ModelConfig{
-			ModelType: string(aiModel.ModelType),
-			ModelName: aiModel.ModelName,
-			APIKey:    aiModel.APIKey,
-			BaseURL:   aiModel.BaseURL,
-			Thinking:  true,
-			TopP:      0.9,
-		},
-	}, nil
 }
 
 // buildAgentConfigFromSelfAgent 从 SelfAgent 构建 AgentConfig

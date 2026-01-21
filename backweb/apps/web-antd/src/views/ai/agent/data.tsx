@@ -88,20 +88,6 @@ export const columns: VxeGridProps['columns'] = [
     },
   },
   {
-    title: '模型 ID',
-    field: 'originalModelId',
-    width: 100,
-    slots: {
-      default: ({ row }) => {
-        return row.originalModelId ? (
-          <Tag color="purple">{row.originalModelId}</Tag>
-        ) : (
-          <span class="text-gray-400">-</span>
-        );
-      },
-    },
-  },
-  {
     title: '类型',
     field: 'type',
     width: 100,

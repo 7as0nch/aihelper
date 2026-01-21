@@ -109,7 +109,6 @@ func NewHTTPServer(c *conf.Server,
 	// 健康检查接口
 	srv.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		log.Info("health check")
 		w.Write([]byte("ok"))
 	})
 
