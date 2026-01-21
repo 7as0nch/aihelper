@@ -143,7 +143,9 @@ export const columns: VxeGridProps['columns'] = [
 ];
 
 // Agent 配置表单 Schema（用于中间面板，按分组返回）
-export const modelConfigSchema: FormSchemaGetter = () => [
+export const modelConfigSchema: (
+  onModelChange?: (value?: number | string) => void,
+) => ReturnType<FormSchemaGetter> = (onModelChange) => [
   {
     component: 'Input',
     dependencies: {
@@ -161,6 +163,9 @@ export const modelConfigSchema: FormSchemaGetter = () => [
       allowClear: true,
       placeholder: '请选择 AI 模型',
       showSearch: true,
+      onChange: (value: number | string | undefined) => {
+        onModelChange?.(value);
+      },
       afterFetch: (data: any) => {
         const models = data?.list || data || [];
         return models.map((item: any) => ({
@@ -175,6 +180,44 @@ export const modelConfigSchema: FormSchemaGetter = () => [
     fieldName: 'originalModelId',
     label: 'AI 模型',
     rules: 'required',
+  },
+  {
+    component: 'Input',
+    fieldName: 'aiModelBaseUrl',
+    label: 'Base URL',
+    componentProps: {
+      placeholder: '覆盖模型的 Base URL',
+    },
+  },
+  {
+    component: 'InputPassword',
+    fieldName: 'aiModelApiKey',
+    label: 'API Key',
+    componentProps: {
+      placeholder: '覆盖模型的 API Key',
+    },
+  },
+  {
+    component: 'InputNumber',
+    fieldName: 'aiModelTemperature',
+    label: 'Temperature',
+    componentProps: {
+      min: 0,
+      max: 2,
+      step: 0.1,
+      placeholder: '覆盖 Temperature',
+    },
+  },
+  {
+    component: 'InputNumber',
+    fieldName: 'aiModelTopP',
+    label: 'Top P',
+    componentProps: {
+      min: 0,
+      max: 1,
+      step: 0.1,
+      placeholder: '覆盖 Top P',
+    },
   },
 ];
 
@@ -265,23 +308,25 @@ export const agentConfigSchema: FormSchemaGetter = () => [
 
 export const featuresSchema: FormSchemaGetter = () => [
   {
-    component: 'Switch',
+    component: 'Checkbox',
     componentProps: {
-      checkedChildren: '开启',
-      unCheckedChildren: '关闭',
+      class: 'ml-auto',
     },
     defaultValue: false,
     fieldName: 'withWriteTodos',
-    label: '启用 Todos 功能',
+    formItemClass:
+      'col-span-1 flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-white shadow-sm',
+    label: '启用待办事项',
   },
   {
-    component: 'Switch',
+    component: 'Checkbox',
     componentProps: {
-      checkedChildren: '开启',
-      unCheckedChildren: '关闭',
+      class: 'ml-auto',
     },
     defaultValue: false,
     fieldName: 'withWebSearchAgent',
+    formItemClass:
+      'col-span-1 flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-white shadow-sm',
     label: '启用网络搜索',
   },
 ];

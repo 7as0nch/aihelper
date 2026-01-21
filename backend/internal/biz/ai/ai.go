@@ -49,7 +49,7 @@ func NewAIUsecase(appUC *AIApplicationUseCase, agentUC *AIAgentUseCase, wfUC *AI
 // GetAgent 获取 Agent（按需加载，带缓存）
 func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 	// 1. 获取应用配置 (实际应根据请求中的 appId 或 code 获取)
-	app, err := uc.appUC.GetByCode(ctx, "default_app") // 暂时写死 code
+	app, err := uc.appUC.GetByCode(ctx, "sys_app") // 暂时写死 code
 	if err != nil {
 		return nil, fmt.Errorf("failed to get application: %w", err)
 	}

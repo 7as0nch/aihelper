@@ -1,7 +1,24 @@
 <script setup lang="ts">
-import { ref, h } from 'vue';
-import { Input, Button, message } from 'ant-design-vue';
+import { ref, h, computed } from 'vue';
+import { Input, Button } from 'ant-design-vue';
 import { SendOutlined } from '@ant-design/icons-vue';
+
+const props = withDefaults(
+  defineProps<{
+    variant?: 'card' | 'plain';
+    showHeader?: boolean;
+  }>(),
+  {
+    variant: 'card',
+    showHeader: true,
+  },
+);
+
+const containerClass = computed(() =>
+  props.variant === 'card'
+    ? 'h-full flex flex-col bg-white rounded-xl border border-slate-200/60 shadow-lg shadow-slate-200/50 overflow-hidden'
+    : 'h-full flex flex-col',
+);
 
 const messages = ref<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
 const inputValue = ref('');
@@ -37,14 +54,22 @@ const handleKeyPress = (e: KeyboardEvent) => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-      <h3 class="text-sm font-medium text-gray-700">Agent 预览测试</h3>
-      <p class="text-xs text-gray-500 mt-1">测试当前 Agent 的对话能力</p>
+  <div :class="containerClass">
+    <div v-if="props.showHeader" class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-medium text-gray-700">Agent 预览测试</h3>
+          <p class="text-xs text-gray-500 mt-1">测试当前 Agent 的对话能力</p>
+        </div>
+        <span class="text-xs text-gray-400">仅本地模拟</span>
+      </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-4 space-y-4">
-      <div v-if="messages.length === 0" class="flex items-center justify-center h-full text-gray-400 text-sm">
+    <div class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50/30 to-white">
+      <div
+        v-if="messages.length === 0"
+        class="flex items-center justify-center h-full text-gray-400 text-sm"
+      >
         暂无对话记录，开始测试吧
       </div>
       <div
@@ -57,32 +82,33 @@ const handleKeyPress = (e: KeyboardEvent) => {
       >
         <div
           :class="[
-            'max-w-[80%] rounded-lg px-4 py-2',
+            'max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm',
             msg.role === 'user'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 text-gray-800',
+              ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+              : 'bg-white text-slate-800 border border-slate-200',
           ]"
         >
-          <div class="text-sm whitespace-pre-wrap break-words">
+          <div class="text-sm whitespace-pre-wrap break-words leading-relaxed">
             {{ msg.content }}
           </div>
         </div>
       </div>
       <div v-if="loading" class="flex justify-start">
-        <div class="bg-gray-100 rounded-lg px-4 py-2">
-          <div class="text-sm text-gray-500">思考中...</div>
+        <div class="bg-white rounded-2xl px-4 py-2 shadow-sm border border-slate-200">
+          <div class="text-sm text-slate-500">思考中...</div>
         </div>
       </div>
     </div>
 
-    <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+    <div class="px-4 py-4 border-t border-slate-100 bg-white">
       <div class="flex gap-2">
-        <Input.TextArea
-          v-model:value="inputValue"
-          :rows="2"
+        <Input
+          :value="inputValue"
           placeholder="输入消息进行测试..."
           @keypress="handleKeyPress"
+          @update:value="(val) => (inputValue = val)"
           :disabled="loading"
+          class="flex-1"
         />
         <Button
           type="primary"
@@ -90,6 +116,7 @@ const handleKeyPress = (e: KeyboardEvent) => {
           :loading="loading"
           @click="handleSend"
           :disabled="!inputValue.trim()"
+          class="shadow-lg shadow-blue-500/25"
         >
           发送
         </Button>

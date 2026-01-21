@@ -354,9 +354,9 @@ onClickOutside(containerRef, () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col w-full" ref="containerRef">
+  <div class="h-full flex flex-col w-full min-h-0" ref="containerRef">
       <!-- Editor Area -->
-      <div class="flex-1 flex flex-col bg-white rounded-lg border border-gray-300 overflow-hidden relative min-h-[500px]">
+      <div class="flex-1 min-h-0 flex flex-col bg-white rounded-lg border border-gray-300 overflow-hidden relative">
         <!-- Toolbar -->
         <div class="h-10 border-b border-gray-200 flex items-center px-4 justify-between bg-gray-50 z-10 w-full">
           <div class="flex items-center gap-4">
@@ -374,10 +374,10 @@ onClickOutside(containerRef, () => {
         </div>
 
         <!-- Editor Content -->
-        <div class="flex-1 overflow-y-auto p-4 cursor-text bg-white" @click="handleClick">
+        <div class="flex-1 min-h-0 overflow-y-auto p-4 cursor-text bg-white" @click="handleClick">
            <div 
              ref="editorRef"
-             class="prose max-w-none focus:outline-none min-h-[400px] text-gray-800 leading-relaxed outline-none"
+             class="prose max-w-none focus:outline-none text-gray-800 leading-relaxed outline-none min-h-0"
              contenteditable="true"
              spellcheck="false"
              @input="handleInputClick"

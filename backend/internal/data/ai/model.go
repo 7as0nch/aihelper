@@ -45,7 +45,9 @@ func (r *aiModelRepo) List(ctx context.Context, page, pageSize int32, modelName 
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-
+	if pageSize == 0 {
+		pageSize = 10
+	}
 	var models []*model.AIModel
 	if err := db.Offset(int(offset)).Limit(int(pageSize)).Order("created_at DESC").Find(&models).Error; err != nil {
 		return nil, 0, err
