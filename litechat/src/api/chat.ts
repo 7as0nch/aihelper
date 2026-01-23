@@ -45,6 +45,7 @@ export interface Message {
     callingTools?: CallingTool[]; // agent工具调用情况。
     attachments?: Attachment[]; // 生成或者发送的附件/图片。
     isStreaming?: boolean; // 是否正在流式输出
+    extra?: any; // 额外信息，如生成耗时等
 }
 
 export interface SendMessageParams {

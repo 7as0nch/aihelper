@@ -199,6 +199,12 @@ func (s *ChatService) runAIStream(ctx context.Context, sessionID int64, req *pb.
 	}
 
 	var contentBuilder, reasoningBuilder strings.Builder
+	var latestCallingTools []*pkgai.CallingTool
+	var latestQuoteSearchLinks []*pkgai.QuoteSearchLink
+	toolIndex := make(map[string]*pkgai.CallingTool)
+	toolOrder := make([]string, 0, 4)
+	linkIndex := make(map[string]*pkgai.QuoteSearchLink)
+	linkOrder := make([]string, 0, 6)
 	for msg := range aiStream {
 		if msg.Error != nil {
 			s.log.Error("AI Stream Error", zap.Error(msg.Error))
@@ -214,6 +220,34 @@ func (s *ChatService) runAIStream(ctx context.Context, sessionID int64, req *pb.
 
 		contentBuilder.WriteString(msg.Message.Content)
 		reasoningBuilder.WriteString(msg.Message.ReasoningContent)
+		if len(msg.Message.CallingTools) > 0 {
+			for _, tool := range msg.Message.CallingTools {
+				key := callingToolKey(tool)
+				if key == "" {
+					continue
+				}
+				if _, exists := toolIndex[key]; exists {
+					continue
+				}
+				toolIndex[key] = tool
+				toolOrder = append(toolOrder, key)
+			}
+			latestCallingTools = snapshotCallingTools(toolIndex, toolOrder)
+		}
+		if len(msg.Message.QuoteSearchLinks) > 0 {
+			for _, link := range msg.Message.QuoteSearchLinks {
+				key := quoteSearchLinkKey(link)
+				if key == "" {
+					continue
+				}
+				if _, exists := linkIndex[key]; exists {
+					continue
+				}
+				linkIndex[key] = link
+				linkOrder = append(linkOrder, key)
+			}
+			latestQuoteSearchLinks = snapshotQuoteSearchLinks(linkIndex, linkOrder)
+		}
 	}
 
 	// 任务结束，更新数据库中的占位符内容
@@ -227,6 +261,12 @@ func (s *ChatService) runAIStream(ctx context.Context, sessionID int64, req *pb.
 	aiMsg.Content = contentBuilder.String()
 	aiMsg.ReasoningContent = reasoningBuilder.String()
 	aiMsg.GenerateTime = time.Since(ss.startTime).String()
+	if len(latestCallingTools) > 0 {
+		aiMsg.CallingTools = convertCallingToolsPkgToModel(latestCallingTools)
+	}
+	if len(latestQuoteSearchLinks) > 0 {
+		aiMsg.QuoteSearchLinks = convertQuoteSearchLinksPkgToModel(latestQuoteSearchLinks)
+	}
 
 	if err := s.uc.UpdateMessage(ctx, aiMsg); err != nil {
 		s.log.Error("Final DB update failed", zap.Error(err))
@@ -315,6 +355,8 @@ func (s *ChatService) convertToPbMessages(msgs []*model.AIChatMessage) []*pb.Mes
 			Timestamp:        m.CreatedAt.Unix(),
 			QuoteId:          m.QuoteId,
 			QuoteContent:     m.QuoteContent,
+			QuoteSearchLinks: convertQuoteSearchLinksModelToPb(m.QuoteSearchLinks),
+			CallingTools:     convertCallingToolsModelToPb(m.CallingTools),
 		}
 		if m.AIModel != nil {
 			pbMsg.AiModel = &pb.AIModel{
@@ -332,6 +374,8 @@ func (s *ChatService) pkgaiToPb(m *pkgai.Message) *pb.Message {
 		Role:             string(m.Role),
 		Content:          m.Content,
 		ReasoningContent: m.ReasoningContent,
+		QuoteSearchLinks: convertQuoteSearchLinksPkgToPb(m.QuoteSearchLinks),
+		CallingTools:     convertCallingToolsPkgToPb(m.CallingTools),
 	}
 	if m.TokenUsage != nil {
 		pbMsg.TokenUsage = &pb.TokenUsage{
@@ -356,6 +400,213 @@ func (s *ChatService) buildAIRequest(req *pb.SendStreamRequest) pkgai.Request {
 			QuoteContent: req.CurMessage.QuoteContent,
 		},
 	}
+}
+
+func convertQuoteSearchLinksPkgToModel(links []*pkgai.QuoteSearchLink) model.QuoteSearchLinks {
+	if len(links) == 0 {
+		return nil
+	}
+	res := make(model.QuoteSearchLinks, 0, len(links))
+	for _, link := range links {
+		if link == nil {
+			continue
+		}
+		res = append(res, &model.QuoteSearchLink{
+			Url:       link.Url,
+			Title:     link.Title,
+			Content:   link.Content,
+			Highlight: link.Highlight,
+		})
+	}
+	return res
+}
+
+func convertCallingToolsPkgToModel(tools []*pkgai.CallingTool) model.CallingTools {
+	if len(tools) == 0 {
+		return nil
+	}
+	res := make(model.CallingTools, 0, len(tools))
+	for _, tool := range tools {
+		if tool == nil {
+			continue
+		}
+		res = append(res, &model.CallingTool{
+			Name:         tool.Name,
+			Description:  tool.Description,
+			FunctionName: tool.FunctionName,
+		})
+	}
+	return res
+}
+
+func convertQuoteSearchLinksPkgToPb(links []*pkgai.QuoteSearchLink) []*pb.QuoteSearchLink {
+	if len(links) == 0 {
+		return nil
+	}
+	seen := make(map[string]bool, len(links))
+	res := make([]*pb.QuoteSearchLink, 0, len(links))
+	for _, link := range links {
+		if link == nil {
+			continue
+		}
+		key := quoteSearchLinkKey(link)
+		if key != "" && seen[key] {
+			continue
+		}
+		if key != "" {
+			seen[key] = true
+		}
+		res = append(res, &pb.QuoteSearchLink{
+			Url:       link.Url,
+			Title:     link.Title,
+			Content:   link.Content,
+			Highlight: link.Highlight,
+		})
+	}
+	return res
+}
+
+func convertCallingToolsPkgToPb(tools []*pkgai.CallingTool) []*pb.CallingTool {
+	if len(tools) == 0 {
+		return nil
+	}
+	seen := make(map[string]bool, len(tools))
+	res := make([]*pb.CallingTool, 0, len(tools))
+	for _, tool := range tools {
+		if tool == nil {
+			continue
+		}
+		key := callingToolKey(tool)
+		if key != "" && seen[key] {
+			continue
+		}
+		if key != "" {
+			seen[key] = true
+		}
+		res = append(res, &pb.CallingTool{
+			Name:         tool.Name,
+			Description:  tool.Description,
+			FunctionName: tool.FunctionName,
+		})
+	}
+	return res
+}
+
+func convertQuoteSearchLinksModelToPb(links model.QuoteSearchLinks) []*pb.QuoteSearchLink {
+	if len(links) == 0 {
+		return nil
+	}
+	seen := make(map[string]bool, len(links))
+	res := make([]*pb.QuoteSearchLink, 0, len(links))
+	for _, link := range links {
+		if link == nil {
+			continue
+		}
+		key := quoteSearchLinkKey(&pkgai.QuoteSearchLink{
+			Url:       link.Url,
+			Title:     link.Title,
+			Content:   link.Content,
+			Highlight: link.Highlight,
+		})
+		if key != "" && seen[key] {
+			continue
+		}
+		if key != "" {
+			seen[key] = true
+		}
+		res = append(res, &pb.QuoteSearchLink{
+			Url:       link.Url,
+			Title:     link.Title,
+			Content:   link.Content,
+			Highlight: link.Highlight,
+		})
+	}
+	return res
+}
+
+func convertCallingToolsModelToPb(tools model.CallingTools) []*pb.CallingTool {
+	if len(tools) == 0 {
+		return nil
+	}
+	seen := make(map[string]bool, len(tools))
+	res := make([]*pb.CallingTool, 0, len(tools))
+	for _, tool := range tools {
+		if tool == nil {
+			continue
+		}
+		key := callingToolKey(&pkgai.CallingTool{
+			Name:         tool.Name,
+			Description:  tool.Description,
+			FunctionName: tool.FunctionName,
+		})
+		if key != "" && seen[key] {
+			continue
+		}
+		if key != "" {
+			seen[key] = true
+		}
+		res = append(res, &pb.CallingTool{
+			Name:         tool.Name,
+			Description:  tool.Description,
+			FunctionName: tool.FunctionName,
+		})
+	}
+	return res
+}
+
+func callingToolKey(tool *pkgai.CallingTool) string {
+	if tool == nil {
+		return ""
+	}
+	if tool.FunctionName != "" {
+		return "fn:" + tool.FunctionName
+	}
+	if tool.Name != "" {
+		return "name:" + tool.Name
+	}
+	if tool.Description != "" {
+		return "desc:" + tool.Description
+	}
+	return ""
+}
+
+func quoteSearchLinkKey(link *pkgai.QuoteSearchLink) string {
+	if link == nil {
+		return ""
+	}
+	if link.Url != "" {
+		return "url:" + link.Url
+	}
+	if link.Title != "" || link.Content != "" {
+		return "title:" + link.Title + "|content:" + link.Content
+	}
+	return ""
+}
+
+func snapshotCallingTools(index map[string]*pkgai.CallingTool, order []string) []*pkgai.CallingTool {
+	if len(order) == 0 {
+		return nil
+	}
+	res := make([]*pkgai.CallingTool, 0, len(order))
+	for _, key := range order {
+		if tool, ok := index[key]; ok {
+			res = append(res, tool)
+		}
+	}
+	return res
+}
+
+func snapshotQuoteSearchLinks(index map[string]*pkgai.QuoteSearchLink, order []string) []*pkgai.QuoteSearchLink {
+	if len(order) == 0 {
+		return nil
+	}
+	res := make([]*pkgai.QuoteSearchLink, 0, len(order))
+	for _, key := range order {
+		if link, ok := index[key]; ok {
+			res = append(res, link)
+		}
+	}
+	return res
 }
 
 // --- gRPC 接口实现占位 (保持兼容性) ---

@@ -1,32 +1,58 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
-import type { Message, Attachment } from '../../stores/chat';
+import type { Message, Attachment, QuoteSearchLink } from '../../stores/chat';
 import type { CallingTool } from '../../api/chat';
 import { useChatStore } from '../../stores/chat';
-import { Quote, FileText, Wrench, Link as LinkIcon, ChevronDown, ChevronRight, Copy } from 'lucide-vue-next';
+import { Quote, FileText, ChevronDown, ChevronRight, Copy, Search, Sparkles } from 'lucide-vue-next';
 import { formatMessageTime } from '../../utils/time';
 import MarkdownRenderer from '../common/MarkdownRenderer.vue';
 import MessageActions from './MessageActions.vue';
+import ExternalLinkModal from '../common/ExternalLinkModal.vue';
 
 const props = defineProps<{
   message: Message;
   isLastMessage: boolean;
 }>();
 
-// 添加一个 ref 来缓存 callingTools
+// 缓存 tools 和 searchLinks，防止流式输出时被覆盖
 const cachedCallingTools = ref<CallingTool[]>([]);
+const cachedQuoteSearchLinks = ref<QuoteSearchLink[]>([]);
 
-// 监听 message.callingTools 的变化，更新缓存
-watch(() => props.message.callingTools, (newCallingTools) => {
-  if (newCallingTools && newCallingTools.length > 0) {
-    cachedCallingTools.value = [...newCallingTools];
+watch(() => props.message.callingTools, (newTools) => {
+  if (newTools && newTools.length > 0) {
+    cachedCallingTools.value = [...newTools];
   }
 }, { immediate: true });
 
-// 创建一个计算属性来返回缓存的 callingTools
+watch(() => props.message.quoteSearchLinks, (newLinks) => {
+  if (newLinks && newLinks.length > 0) {
+    cachedQuoteSearchLinks.value = [...newLinks];
+  }
+}, { immediate: true });
+
 const displayCallingTools = computed(() => {
   return cachedCallingTools.value.length > 0 ? cachedCallingTools.value : (props.message.callingTools || []);
 });
+
+const displayQuoteSearchLinks = computed(() => {
+  return cachedQuoteSearchLinks.value.length > 0 ? cachedQuoteSearchLinks.value : (props.message.quoteSearchLinks || []);
+});
+
+const linkModalVisible = ref(false);
+const pendingUrl = ref('');
+
+const openExternalLink = (url: string) => {
+  pendingUrl.value = url;
+  linkModalVisible.value = true;
+};
+
+const confirmLinkJump = () => {
+  if (pendingUrl.value) {
+    window.open(pendingUrl.value, '_blank', 'noopener noreferrer');
+  }
+  linkModalVisible.value = false;
+  pendingUrl.value = '';
+};
 
 const emit = defineEmits<{
   (e: 'quote', id: string, content: string): void;
@@ -37,6 +63,7 @@ const emit = defineEmits<{
 
 const chatStore = useChatStore();
 const isReasoningCollapsed = ref(false);
+const isSourcesCollapsed = ref(true);
 
 // Auto-collapse reasoning when content starts generating
 watch(() => props.message.content, (newContent, oldContent) => {
@@ -107,10 +134,21 @@ const handleSelection = () => {
   const range = selection.getRangeAt(0);
   const rect = range.getBoundingClientRect();
   
+  const btnWidth = 67; // Approximated width of the button
+  const padding = 16;
+  let left = rect.left + (rect.width / 2) - (btnWidth / 2);
+  
+  // Boundary detection
+  if (left < padding) {
+    left = padding;
+  } else if (left + btnWidth > window.innerWidth - padding) {
+    left = window.innerWidth - btnWidth - padding;
+  }
+
   selectedText.value = text;
   quoteBtnPosition.value = {
     top: rect.top - 40, // Position above selection
-    left: rect.left + (rect.width / 2) - 200 // Center horizontally
+    left: left
   };
   showQuoteBtn.value = true;
 };
@@ -123,19 +161,27 @@ const handleQuoteSelection = () => {
   }
 };
 
-// Close quote button on click outside
+// Close quote button on click outside or scroll
 const handleClickOutside = (e: MouseEvent) => {
   if (showQuoteBtn.value && !(e.target as HTMLElement).closest('button')) {
     showQuoteBtn.value = false;
   }
 };
 
+const handleScroll = () => {
+  if (showQuoteBtn.value) {
+    showQuoteBtn.value = false;
+  }
+};
+
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside);
+  window.addEventListener('scroll', handleScroll, true);
 });
 
 onUnmounted(() => {
   document.removeEventListener('mousedown', handleClickOutside);
+  window.removeEventListener('scroll', handleScroll, true);
 });
 </script>
 
@@ -159,26 +205,61 @@ onUnmounted(() => {
         :style="message.role === 'user' ? { backgroundColor: '#3b82f6', color: '#ffffff' } : {}"
         @mouseup="message.role === 'assistant' ? handleSelection() : null"
       >
-        <!-- Reasoning Content -->
-        <div v-if="message.reasoningContent" class="mb-4">
-          <div 
-            class="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
-          >
+        <!-- Reasoning & Tools (Search Results) -->
+        <div v-if="message.reasoningContent || (displayCallingTools && displayCallingTools.length > 0)" class="mb-4 space-y-3">
+          <!-- Search Results Header (Clickable Pill) -->
+          <div v-if="displayCallingTools && displayCallingTools.length > 0" class="flex flex-col gap-3">
+            <div class="flex items-center">
+              <button 
+                @click="isSourcesCollapsed = !isSourcesCollapsed"
+                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer group"
+                :class="{'animate-searching': isLastMessage && chatStore.isLoading && (displayQuoteSearchLinks.length > 0 || displayCallingTools.length > 0)}"
+              >
+                <Search class="w-3.5 h-3.5 text-blue-500" :class="{'animate-pulse-subtle': isLastMessage && chatStore.isLoading}" />
+                <span>已检索到 {{ displayQuoteSearchLinks.length || displayCallingTools.length }} 个网页</span>
+                <component :is="isSourcesCollapsed ? ChevronRight : ChevronDown" class="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-all" />
+              </button>
+            </div>
+
+            <!-- Expanded Sources List -->
+            <div v-show="!isSourcesCollapsed" class="grid grid-cols-1 md:grid-cols-2 gap-3 animate-fade-in pl-1">
+              <div 
+                v-for="(link, index) in displayQuoteSearchLinks" 
+                :key="index"
+                @click="openExternalLink(link.url)"
+                class="flex flex-col gap-1 p-2.5 rounded-xl bg-white dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all group shadow-sm cursor-pointer"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="shrink-0 text-[10px] font-bold text-gray-400 dark:text-gray-500 w-4 h-4 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-700 group-hover:bg-primary group-hover:text-white transition-colors">
+                    {{ index + 1 }}
+                  </span>
+                  <div class="text-xs font-medium text-gray-700 dark:text-gray-200 group-hover:text-primary truncate transition-colors">
+                    {{ link.title }}
+                  </div>
+                </div>
+                <div class="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
+                  {{ link.content }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deep Thinking Block -->
+          <div v-if="message.reasoningContent" class="group">
             <button 
               @click="isReasoningCollapsed = !isReasoningCollapsed"
-              class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200 hover:opacity-80 transition-opacity"
             >
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center">
-                  <span class="text-[10px]">R</span>
-                </div>
-                <span>深度思考过程</span>
+                <Sparkles class="w-4 h-4 text-purple-500 animate-pulse" v-if="isLastMessage && chatStore.isLoading && !message.content" />
+                <span>{{ isLastMessage && chatStore.isLoading && !message.content ? '正在深度思考中...' : '已深度思考' }}</span>
+                <span v-if="message.extra?.generateTime && !(isLastMessage && chatStore.isLoading)" class="text-xs font-normal text-gray-400">（用时 {{ message.extra.generateTime }}）</span>
               </div>
-              <component :is="isReasoningCollapsed ? ChevronRight : ChevronDown" class="w-4 h-4" />
+              <component :is="isReasoningCollapsed ? ChevronRight : ChevronDown" class="w-4 h-4 text-gray-400" />
             </button>
             
-            <div v-show="!isReasoningCollapsed" class="px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
-              <div class="prose dark:prose-invert max-w-none text-xs text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap font-mono">
+            <div v-show="!isReasoningCollapsed" class="relative pl-4 border-l-2 border-gray-200 dark:border-gray-700 py-1">
+              <div class="prose dark:prose-invert max-w-none text-[14px] text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap italic opacity-90">
                 {{ message.reasoningContent }}
               </div>
             </div>
@@ -203,6 +284,7 @@ onUnmounted(() => {
           v-else 
           :content="message.content" 
           :loading="isLastMessage && chatStore.isLoading"
+          :quote-search-links="displayQuoteSearchLinks"
         />
 
         <!-- Quote Display (for user messages with quotes) -->
@@ -252,53 +334,6 @@ onUnmounted(() => {
           </div>
         </div>
         
-        <!-- Calling Tools -->
-        <div v-if="displayCallingTools && displayCallingTools.length > 0" class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/50">
-          <div class="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
-            <Wrench class="w-3.5 h-3.5" />
-            <span>使用的工具</span>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <div 
-              v-for="(tool, index) in displayCallingTools" 
-              :key="index"
-              class="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md text-xs text-gray-600 dark:text-gray-300"
-            >
-              <span class="font-medium">{{ tool.name }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quote Search Links -->
-        <div v-if="message.quoteSearchLinks && message.quoteSearchLinks.length > 0" class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/50">
-          <div class="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
-            <LinkIcon class="w-3.5 h-3.5" />
-            <span>引用来源</span>
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <a 
-              v-for="(link, index) in message.quoteSearchLinks" 
-              :key="index"
-              :href="link.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex items-start gap-2 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
-            >
-              <div class="shrink-0 mt-0.5 text-gray-400 group-hover:text-primary transition-colors">
-                <span class="text-[10px] font-mono border border-current rounded px-1 flex items-center justify-center min-w-[18px] h-[18px]">{{ index + 1 }}</span>
-              </div>
-              <div class="min-w-0">
-                <div class="text-xs font-medium text-gray-700 dark:text-gray-200 group-hover:text-primary truncate transition-colors">
-                  {{ link.title }}
-                </div>
-                <div class="text-[10px] text-gray-400 truncate mt-0.5">
-                  {{ link.content }}
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-
         <!-- Streaming Cursor -->
         <span 
           v-if="isLastMessage && chatStore.isLoading" 
@@ -329,6 +364,47 @@ onUnmounted(() => {
           引用
         </button>
       </div>
+
+      <!-- External Link Confirmation Modal -->
+      <ExternalLinkModal 
+        :visible="linkModalVisible" 
+        :url="pendingUrl"
+        appName="LiteChat"
+        @close="linkModalVisible = false"
+        @confirm="confirmLinkJump"
+      />
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+.animate-searching {
+  background: linear-gradient(-45deg, #f3f4f6, #e0e7ff, #fdf2f8, #e0e7ff);
+  background-size: 400% 400%;
+  animation: gradient-flow 3s ease infinite;
+  border-color: #c7d2fe !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+}
+
+.dark .animate-searching {
+  background: linear-gradient(-45deg, #1f2937, #312e81, #312e81, #1f2937);
+  background-size: 400% 400%;
+  border-color: #3730a3 !important;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+</style>

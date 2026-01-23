@@ -5,9 +5,9 @@ DOCKERHUB_USER="7as0nch"
 PLATFORM="linux/amd64" # 统一指定构建平台
 
 # 各个服务的版本号独立管理
-VERSION_BACKEND="v1.0.4-beta.5"
+VERSION_BACKEND="v1.0.4-beta.6"
 VERSION_BACKWEB="v1.0.4-beta.1"
-VERSION_LITECHAT="v1.0.4-beta.1"
+VERSION_LITECHAT="v1.0.4-beta.3"
 
 # --- 脚本逻辑 ---
 SERVICE=$1  # 接收第一个参数作为指定服务名

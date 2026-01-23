@@ -14,10 +14,11 @@ import (
 
 func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err error)) {
 	log.Printf("name: %s\npath: %s", event.AgentName, event.RunPath)
+	toolTracker := newToolTracker()
 	if event.Output != nil && event.Output.MessageOutput != nil {
 		if m := event.Output.MessageOutput.Message; m != nil {
 			msg := &ai.Message{
-				Role:    ai.RoleType(schema.Assistant),
+				Role: ai.RoleType(schema.Assistant),
 			}
 			if len(m.Content) > 0 {
 				if m.Role == schema.Tool {
@@ -31,12 +32,14 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 				for _, tc := range m.ToolCalls {
 					log.Printf("\ntool name: %s", tc.Function.Name)
 					log.Printf("\narguments: %s", tc.Function.Arguments)
-					msg.CallingTools = append(msg.CallingTools, &ai.CallingTool{
-						Name:         tc.Function.Name,
-						FunctionName: tc.Function.Name,
-					})
+					toolTracker.UpsertToolCall(tc)
 				}
 			}
+			if m.Role == schema.Tool && m.Content != "" {
+				toolTracker.UpsertToolResult(m.ToolCallID, m.ToolName, m.Content)
+				msg.QuoteSearchLinks = parseSearchLinks(m.ToolName, m.Content)
+			}
+			msg.CallingTools = toolTracker.Snapshot()
 			handlerFn(msg, nil)
 		} else if s := event.Output.MessageOutput.MessageStream; s != nil {
 			toolMap := map[int][]*schema.Message{}
@@ -52,7 +55,7 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 					return
 				}
 				msg := &ai.Message{
-					Role:             ai.RoleType(chunk.Role),
+					Role: ai.RoleType(chunk.Role),
 				}
 				if chunk.Role != schema.Tool {
 					msg.ReasoningContent = chunk.ReasoningContent
@@ -100,21 +103,13 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 							},
 						})
 						if tc.Function.Name != "" {
-							tl := &ai.CallingTool{
-								Name:         tc.Function.Name,
-								FunctionName: tc.Function.Name,
-							}
-							msg.CallingTools = append(msg.CallingTools, tl)
-							if tc.Function.Arguments != "" {
-								var args map[string]interface{}
-								if err := json.Unmarshal([]byte(tc.Function.Arguments), &args); err != nil {
-									log.Fatalf("Unmarshal arguments failed: %v", err)
-									return
-								}
-								tl.Args = args
-							}
+							toolTracker.UpsertToolCall(tc)
 						}
 					}
+				}
+				if chunk.Role == schema.Tool && chunk.Content != "" {
+					toolTracker.UpsertToolResult(chunk.ToolCallID, chunk.ToolName, chunk.Content)
+					msg.QuoteSearchLinks = append(msg.QuoteSearchLinks, parseSearchLinks(chunk.ToolName, chunk.Content)...)
 				}
 				if chunk.ResponseMeta.FinishReason == "stop" {
 					if chunk.ResponseMeta.Usage != nil {
@@ -126,6 +121,7 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 						}
 					}
 				}
+				msg.CallingTools = toolTracker.Snapshot()
 				handlerFn(msg, nil)
 			}
 
@@ -156,4 +152,145 @@ func EventHandler(event *adk.AgentEvent, handlerFn func(msg *ai.Message, err err
 	if event.Err != nil {
 		handlerFn(nil, event.Err)
 	}
+}
+
+type toolTracker struct {
+	index map[string]*ai.CallingTool
+	order []string
+}
+
+func newToolTracker() *toolTracker {
+	return &toolTracker{
+		index: map[string]*ai.CallingTool{},
+		order: make([]string, 0, 4),
+	}
+}
+
+func (t *toolTracker) UpsertToolCall(tc schema.ToolCall) {
+	key := toolKey(tc.ID, tc.Function.Name, tc.Function.Arguments)
+	if key == "" {
+		return
+	}
+	if existing, ok := t.index[key]; ok {
+		if existing.Name == "" {
+			existing.Name = tc.Function.Name
+		}
+		if existing.FunctionName == "" {
+			existing.FunctionName = tc.Function.Name
+		}
+		if existing.Args == nil && tc.Function.Arguments != "" {
+			var args map[string]interface{}
+			if err := json.Unmarshal([]byte(tc.Function.Arguments), &args); err != nil {
+				log.Printf("Unmarshal arguments failed: %v", err)
+			} else {
+				existing.Args = args
+			}
+		}
+		return
+	}
+
+	tool := &ai.CallingTool{
+		Name:         tc.Function.Name,
+		FunctionName: tc.Function.Name,
+	}
+	if tc.Function.Arguments != "" {
+		var args map[string]interface{}
+		if err := json.Unmarshal([]byte(tc.Function.Arguments), &args); err != nil {
+			log.Printf("Unmarshal arguments failed: %v", err)
+		} else {
+			tool.Args = args
+		}
+	}
+	t.index[key] = tool
+	t.order = append(t.order, key)
+}
+
+func (t *toolTracker) UpsertToolResult(toolCallID, toolName, result string) {
+	key := toolKey(toolCallID, toolName, "")
+	if key == "" {
+		return
+	}
+	if existing, ok := t.index[key]; ok {
+		if existing.Result == nil && result != "" {
+			existing.Result = result
+		}
+		if existing.Name == "" {
+			existing.Name = toolName
+		}
+		if existing.FunctionName == "" {
+			existing.FunctionName = toolName
+		}
+		return
+	}
+	t.index[key] = &ai.CallingTool{
+		Name:         toolName,
+		FunctionName: toolName,
+		Result:       result,
+	}
+	t.order = append(t.order, key)
+}
+
+func (t *toolTracker) Snapshot() []*ai.CallingTool {
+	if len(t.order) == 0 {
+		return nil
+	}
+	tools := make([]*ai.CallingTool, 0, len(t.order))
+	for _, key := range t.order {
+		if tool, ok := t.index[key]; ok {
+			tools = append(tools, tool)
+		}
+	}
+	return tools
+}
+
+func toolKey(toolCallID, name, args string) string {
+	if toolCallID != "" {
+		return "id:" + toolCallID
+	}
+	if name == "" && args == "" {
+		return ""
+	}
+	if args != "" {
+		return "name:" + name + "|args:" + args
+	}
+	return "name:" + name
+}
+
+type searchResponse struct {
+	Message string `json:"message"`
+	Results []struct {
+		Title   string `json:"title"`
+		URL     string `json:"url"`
+		Summary string `json:"summary"`
+	} `json:"results"`
+}
+
+func parseSearchLinks(toolName, content string) []*ai.QuoteSearchLink {
+	if content == "" {
+		return nil
+	}
+	if toolName != "" && toolName != "duckduckgo_search" {
+		return nil
+	}
+	var resp searchResponse
+	if err := json.Unmarshal([]byte(content), &resp); err != nil {
+		return nil
+	}
+	if len(resp.Results) == 0 {
+		return nil
+	}
+	seen := map[string]bool{}
+	links := make([]*ai.QuoteSearchLink, 0, len(resp.Results))
+	for _, item := range resp.Results {
+		if item.URL == "" || seen[item.URL] {
+			continue
+		}
+		seen[item.URL] = true
+		links = append(links, &ai.QuoteSearchLink{
+			Url:     item.URL,
+			Title:   item.Title,
+			Content: item.Summary,
+		})
+	}
+	return links
 }

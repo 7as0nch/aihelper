@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { sendMessageStream, type Attachment, type Message, chatApi } from '../api/chat';
+import { sendMessageStream, type Attachment, type Message, type QuoteSearchLink, chatApi } from '../api/chat';
 import { getConfig } from '@/config';
 import { useStorage } from '@vueuse/core';
-export type { Attachment, Message };
+export type { Attachment, Message, QuoteSearchLink };
 
 
 
@@ -90,9 +90,26 @@ export const useChatStore = defineStore('chat', () => {
             }
             if (data.quoteId) lastMsg.quoteId = data.quoteId;
             if (data.quoteContent) lastMsg.quoteContent = data.quoteContent;
-            if (data.quoteSearchLinks) lastMsg.quoteSearchLinks = data.quoteSearchLinks;
-            if (data.callingTools) lastMsg.callingTools = data.callingTools;
+            if (data.quoteSearchLinks) {
+                const existingLinks = lastMsg.quoteSearchLinks || [];
+                const newLinks = data.quoteSearchLinks.filter(nl => 
+                    !existingLinks.some(el => el.url === nl.url && el.url !== '')
+                );
+                if (newLinks.length > 0) {
+                    lastMsg.quoteSearchLinks = [...existingLinks, ...newLinks];
+                }
+            }
+            if (data.callingTools) {
+                const existingTools = lastMsg.callingTools || [];
+                const newTools = data.callingTools.filter(nt => 
+                    !existingTools.some(et => (et.functionName === nt.functionName || et.name === nt.name) && (et.functionName !== '' || et.name !== ''))
+                );
+                if (newTools.length > 0) {
+                    lastMsg.callingTools = [...existingTools, ...newTools];
+                }
+            }
             if (data.aiModel) lastMsg.aiModel = { ...lastMsg.aiModel, ...data.aiModel };
+            if (data.extra) lastMsg.extra = { ...(lastMsg.extra || {}), ...data.extra };
 
             // Persist to LocalStorage in frontend mode
             if (currentChatId.value && getConfig('VITE_AI_TYPE') === 'frontend') {

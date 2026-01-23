@@ -96,7 +96,7 @@ func NewModel(ctx context.Context, config ModelConfig, opts ...CreateChatModelOp
 			MaxTokens:       o.MaxTokens,
 			Temperature:     o.Temperature,
 			TopP:            o.TopP,
-			ReasoningEffort: openai.ReasoningEffortLevelHigh,
+			ReasoningEffort: openai.ReasoningEffortLevelMedium,
 		}
 		if o.JsonSchema != nil {
 			conf.ResponseFormat = &openai.ChatCompletionResponseFormat{

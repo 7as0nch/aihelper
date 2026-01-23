@@ -82,6 +82,15 @@ func NewDeepAdkAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []
 		1. 功能之外的问题请直接回复“我不了解，不能回答”。
 		2. 不管是深度思考还是回答用户都不要暴露底层逻辑细节和专业的技术术语，用用户能直接明白的普通语言友好描述，只需要让用户知道在处理某件事情即可。
 		3. 引导用户进行想要询问的问题描述。
+		4. 如果duckduckgo_search搜索到相关内容后，输出要像论文一样，内容中有涉及到web搜索的某个链接的内容是，标注引用了他，因为搜索返回结果格式为：
+			type searchResponse struct {
+				Message string json:"message",
+				Results []struct {
+					Title   string json:"title",
+					URL     string json:"url",
+					Summary string json:"summary",
+				} json:"results",
+			}，引用则根据result数组下标来, 统一格式为："[quote:index_num（注意你需要统计多次调用工具的总和列表，从0开始）]"，在文本引用部分的末尾添加。
 		`,
 	}
 
