@@ -206,18 +206,18 @@ onUnmounted(() => {
         @mouseup="message.role === 'assistant' ? handleSelection() : null"
       >
         <!-- Reasoning & Tools (Search Results) -->
-        <div v-if="message.reasoningContent || (displayCallingTools && displayCallingTools.length > 0)" class="mb-4 space-y-3">
+        <div v-if="message.reasoningContent || displayQuoteSearchLinks.length > 0 || (isLastMessage && chatStore.isLoading && message.aiModel?.searchByWeb)" class="mb-4 space-y-3">
           <!-- Search Results Header (Clickable Pill) -->
-          <div v-if="displayCallingTools && displayCallingTools.length > 0" class="flex flex-col gap-3">
+          <div v-if="displayQuoteSearchLinks.length > 0 || (isLastMessage && chatStore.isLoading && message.aiModel?.searchByWeb)" class="flex flex-col gap-3">
             <div class="flex items-center">
               <button 
                 @click="isSourcesCollapsed = !isSourcesCollapsed"
                 class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer group"
-                :class="{'animate-searching': isLastMessage && chatStore.isLoading && (displayQuoteSearchLinks.length > 0 || displayCallingTools.length > 0)}"
+                :class="{'animate-searching': isLastMessage && chatStore.isLoading && message.aiModel?.searchByWeb}"
               >
-                <Search class="w-3.5 h-3.5 text-blue-500" :class="{'animate-pulse-subtle': isLastMessage && chatStore.isLoading}" />
-                <span>已检索到 {{ displayQuoteSearchLinks.length || displayCallingTools.length }} 个网页</span>
-                <component :is="isSourcesCollapsed ? ChevronRight : ChevronDown" class="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-all" />
+                <Search class="w-3.5 h-3.5 text-blue-500" :class="{'animate-pulse-subtle': isLastMessage && chatStore.isLoading && message.aiModel?.searchByWeb}" />
+                <span>{{ displayQuoteSearchLinks.length > 0 ? `已检索到 ${displayQuoteSearchLinks.length} 个网页` : '正在检索网页...' }}</span>
+                <component v-if="displayQuoteSearchLinks.length > 0" :is="isSourcesCollapsed ? ChevronRight : ChevronDown" class="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-all" />
               </button>
             </div>
 

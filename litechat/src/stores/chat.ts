@@ -100,13 +100,7 @@ export const useChatStore = defineStore('chat', () => {
                 }
             }
             if (data.callingTools) {
-                const existingTools = lastMsg.callingTools || [];
-                const newTools = data.callingTools.filter(nt => 
-                    !existingTools.some(et => (et.functionName === nt.functionName || et.name === nt.name) && (et.functionName !== '' || et.name !== ''))
-                );
-                if (newTools.length > 0) {
-                    lastMsg.callingTools = [...existingTools, ...newTools];
-                }
+                lastMsg.callingTools = data.callingTools;
             }
             if (data.aiModel) lastMsg.aiModel = { ...lastMsg.aiModel, ...data.aiModel };
             if (data.extra) lastMsg.extra = { ...(lastMsg.extra || {}), ...data.extra };
