@@ -98,6 +98,11 @@ func NewModel(ctx context.Context, config ModelConfig, opts ...CreateChatModelOp
 			TopP:            o.TopP,
 			ReasoningEffort: openai.ReasoningEffortLevelMedium,
 		}
+		if config.Thinking {
+			conf.ExtraFields = map[string]any{
+				"thinking": map[string]any{"type": "enabled"},
+			}
+		}
 		if o.JsonSchema != nil {
 			conf.ResponseFormat = &openai.ChatCompletionResponseFormat{
 				Type:       openai.ChatCompletionResponseFormatTypeJSONSchema,
