@@ -5,7 +5,7 @@ DOCKERHUB_USER="7as0nch"
 PLATFORM="linux/amd64" # 统一指定构建平台
 
 # 各个服务的版本号独立管理
-VERSION_BACKEND="v1.0.4-beta.2"
+VERSION_BACKEND="v1.0.4-beta.5"
 VERSION_BACKWEB="v1.0.4-beta.1"
 VERSION_LITECHAT="v1.0.4-beta.1"
 
@@ -30,10 +30,11 @@ build_and_push() {
     if [ $? -eq 0 ]; then
         echo "Successfully pushed $name"
         # 自动同步更新 k8s-deployment.yaml 中的版本号
+        # 使用更宽松的正则来匹配版本号（包括 beta, dots, dashes）
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s|7as0nch/aichat-$name:v[0-9.]*|7as0nch/aichat-$name:$version|g" k8s-deployment.yaml
+            sed -i '' "s|7as0nch/aichat-$name:[^[:space:]]*|7as0nch/aichat-$name:$version|g" k8s-deployment.yaml
         else
-            sed -i "s|7as0nch/aichat-$name:v[0-9.]*|7as0nch/aichat-$name:$version|g" k8s-deployment.yaml
+            sed -i "s|7as0nch/aichat-$name:[^[:space:]]*|7as0nch/aichat-$name:$version|g" k8s-deployment.yaml
         fi
         echo "K8s deployment sync done for $name"
     else
@@ -58,3 +59,9 @@ if [ -z "$SERVICE" ] || [ "$SERVICE" == "litechat" ]; then
 fi
 
 echo "Done! 所有选定服务已发布，K8s 配置已更新。"
+
+echo "将k8s-deployment.yaml增量同步到远程服务器"
+rsync -avz --delete k8s-deployment.yaml root@hk.aihelper.chat:/root/aichat/pipeline.yaml
+
+echo "远程执行命令：kubectl apply -f pipeline.yaml"
+ssh root@hk.aihelper.chat "kubectl apply -f /root/aichat/pipeline.yaml"

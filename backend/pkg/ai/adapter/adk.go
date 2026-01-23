@@ -15,6 +15,7 @@ import (
 	"github.com/example/aichat/backend/pkg/ai"
 	"github.com/example/aichat/backend/pkg/ai/chatmodel"
 	"github.com/example/aichat/backend/pkg/ai/prints"
+	"github.com/example/aichat/backend/pkg/ai/tool"
 )
 
 // EinoAdapter eino ChatModelAgent 适配器
@@ -52,6 +53,14 @@ func NewEinoAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []ai.
 			adkSubAgents = append(adkSubAgents, adapter.agent)
 		}
 	}
+	tools := agenttools.GetBussinessTools()
+	if config.WithWebSearchAgent {
+		webSearchTool, err := tool.GetWebSearchTool(ctx)
+		if err != nil {
+			return nil, err
+		}
+		tools = append(tools, webSearchTool)
+	}
 
 	// 创建 adk Agent
 	agentConfig := &adk.ChatModelAgentConfig{
@@ -60,7 +69,7 @@ func NewEinoAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []ai.
 		Model:       cm,
 		ToolsConfig: adk.ToolsConfig{
 			ToolsNodeConfig: compose.ToolsNodeConfig{
-				Tools: agenttools.GetBussinessTools(), // 工具可以后续扩展
+				Tools: tools, // 工具可以后续扩展
 			},
 		},
 // 		Instruction: `

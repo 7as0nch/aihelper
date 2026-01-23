@@ -14,7 +14,6 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/example/aichat/backend/pkg/ai"
-	"github.com/example/aichat/backend/pkg/ai/agent"
 	"github.com/example/aichat/backend/pkg/ai/chatmodel"
 	"github.com/example/aichat/backend/pkg/ai/prints"
 	"github.com/example/aichat/backend/pkg/ai/tool"
@@ -56,12 +55,13 @@ func NewDeepAdkAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []
 			adkSubAgents = append(adkSubAgents, adapter.GetInternalAgent())
 		}
 	}
+	tools := tool.GetGlobalTools()
 	if config.WithWebSearchAgent {
-		webSearchAgent, err := agent.NewWebSearchAgent(ctx, config)
+		webSearchTool, err := tool.GetWebSearchTool(ctx)
 		if err != nil {
 			return nil, err
 		}
-		adkSubAgents = append(adkSubAgents, webSearchAgent)
+		tools = append(tools, webSearchTool)
 	}
 
 	// 创建 deep Agent
@@ -72,7 +72,7 @@ func NewDeepAdkAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []
 		SubAgents:   adkSubAgents,
 		ToolsConfig: adk.ToolsConfig{
 			ToolsNodeConfig: compose.ToolsNodeConfig{
-				Tools: tool.GetGlobalTools(), // 工具可以后续扩展
+				Tools: tools, // 工具可以后续扩展
 			},
 		},
 		MaxIteration:           config.MaxIteration,
