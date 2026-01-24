@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import type { Message, Attachment, QuoteSearchLink } from '../../stores/chat';
 import { useChatStore } from '../../stores/chat';
 import { Quote, FileText, ChevronDown, ChevronRight, Copy, Search, Sparkles } from 'lucide-vue-next';
@@ -55,7 +55,7 @@ const isSourcesCollapsed = ref(true);
 const reasoningScrollRef = ref<HTMLElement | null>(null);
 
 // Auto-scroll reasoning content while generating
-watch(() => props.message.reasoningContent, (newVal) => {
+watch(() => props.message.reasoningContent, () => {
   if (props.isLastMessage && chatStore.isLoading && !props.message.content && reasoningScrollRef.value) {
     // 使用 requestAnimationFrame 或更频繁的 nextTick 确保滚动
     const scrollContainer = reasoningScrollRef.value;
