@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import type { Message, Attachment, QuoteSearchLink } from '../../stores/chat';
-import type { CallingTool } from '../../api/chat';
 import { useChatStore } from '../../stores/chat';
 import { Quote, FileText, ChevronDown, ChevronRight, Copy, Search, Sparkles } from 'lucide-vue-next';
 import { formatMessageTime } from '../../utils/time';
@@ -14,25 +13,14 @@ const props = defineProps<{
   isLastMessage: boolean;
 }>();
 
-// 缓存 tools 和 searchLinks，防止流式输出时被覆盖
-const cachedCallingTools = ref<CallingTool[]>([]);
+// 缓存 searchLinks，防止流式输出时被覆盖
 const cachedQuoteSearchLinks = ref<QuoteSearchLink[]>([]);
-
-watch(() => props.message.callingTools, (newTools) => {
-  if (newTools && newTools.length > 0) {
-    cachedCallingTools.value = [...newTools];
-  }
-}, { immediate: true });
 
 watch(() => props.message.quoteSearchLinks, (newLinks) => {
   if (newLinks && newLinks.length > 0) {
     cachedQuoteSearchLinks.value = [...newLinks];
   }
 }, { immediate: true });
-
-const displayCallingTools = computed(() => {
-  return cachedCallingTools.value.length > 0 ? cachedCallingTools.value : (props.message.callingTools || []);
-});
 
 const displayQuoteSearchLinks = computed(() => {
   return cachedQuoteSearchLinks.value.length > 0 ? cachedQuoteSearchLinks.value : (props.message.quoteSearchLinks || []);
@@ -64,6 +52,21 @@ const emit = defineEmits<{
 const chatStore = useChatStore();
 const isReasoningCollapsed = ref(false);
 const isSourcesCollapsed = ref(true);
+const reasoningScrollRef = ref<HTMLElement | null>(null);
+
+// Auto-scroll reasoning content while generating
+watch(() => props.message.reasoningContent, (newVal) => {
+  if (props.isLastMessage && chatStore.isLoading && !props.message.content && reasoningScrollRef.value) {
+    // 使用 requestAnimationFrame 或更频繁的 nextTick 确保滚动
+    const scrollContainer = reasoningScrollRef.value;
+    setTimeout(() => {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }, 10);
+  }
+}, { immediate: true });
 
 // Auto-collapse reasoning when content starts generating
 watch(() => props.message.content, (newContent, oldContent) => {
@@ -258,10 +261,27 @@ onUnmounted(() => {
               <component :is="isReasoningCollapsed ? ChevronRight : ChevronDown" class="w-4 h-4 text-gray-400" />
             </button>
             
-            <div v-show="!isReasoningCollapsed" class="relative pl-4 border-l-2 border-gray-200 dark:border-gray-700 py-1">
-              <div class="prose dark:prose-invert max-w-none text-[14px] text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap italic opacity-90">
-                {{ message.reasoningContent }}
+            <div v-show="!isReasoningCollapsed" class="relative group/reasoning">
+              <div 
+                ref="reasoningScrollRef"
+                class="relative pl-4 border-l-2 border-gray-200 dark:border-gray-700 py-1 transition-all duration-500 ease-in-out scroll-smooth"
+                :style="isLastMessage && chatStore.isLoading && !message.content ? { maxHeight: '160px', overflowY: 'auto' } : { maxHeight: 'none' }"
+                :class="[
+                  isLastMessage && chatStore.isLoading && !message.content 
+                    ? 'custom-scrollbar-thin' 
+                    : ''
+                ]"
+              >
+                <div class="prose dark:prose-invert max-w-none text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed whitespace-pre-wrap italic opacity-85">
+                  {{ message.reasoningContent }}
+                </div>
               </div>
+              
+              <!-- Gradient Masks for scrolling -->
+              <template v-if="props.isLastMessage && chatStore.isLoading && !message.content">
+                <div class="absolute top-0 left-4 right-0 h-8 bg-gradient-to-b from-[#ffffff]/40 dark:from-[#242424]/40 to-transparent pointer-events-none z-10"></div>
+                <div class="absolute bottom-0 left-4 right-0 h-8 bg-gradient-to-t from-[#ffffff]/40 dark:from-[#242424]/40 to-transparent pointer-events-none z-10"></div>
+              </template>
             </div>
           </div>
         </div>
@@ -390,21 +410,38 @@ onUnmounted(() => {
 }
 
 .animate-searching {
-  background: linear-gradient(-45deg, #f3f4f6, #e0e7ff, #fdf2f8, #e0e7ff);
+  background: linear-gradient(-45deg, rgba(243, 244, 246, 0.6), rgba(224, 231, 255, 0.6), rgba(253, 242, 248, 0.6), rgba(224, 231, 255, 0.6));
   background-size: 400% 400%;
   animation: gradient-flow 3s ease infinite;
-  border-color: #c7d2fe !important;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+  border-color: rgba(199, 210, 254, 0.5) !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.05);
 }
 
 .dark .animate-searching {
-  background: linear-gradient(-45deg, #1f2937, #312e81, #312e81, #1f2937);
+  background: linear-gradient(-45deg, rgba(31, 41, 55, 0.6), rgba(49, 46, 129, 0.6), rgba(49, 46, 129, 0.6), rgba(31, 41, 55, 0.6));
   background-size: 400% 400%;
-  border-color: #3730a3 !important;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+  border-color: rgba(55, 48, 163, 0.5) !important;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
 }
 
 .animate-pulse-subtle {
   animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.custom-scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+.dark .custom-scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #374151;
 }
 </style>

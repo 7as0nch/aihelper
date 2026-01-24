@@ -47,7 +47,7 @@ func NewAIUsecase(appUC *AIApplicationUseCase, agentUC *AIAgentUseCase, wfUC *AI
 }
 
 // GetAgent 获取 Agent（按需加载，带缓存）
-func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
+func (uc *AIUsecase) GetAgent(ctx context.Context, req pkgai.Request) (pkgai.Agent, error) {
 	// 1. 获取应用配置 (实际应根据请求中的 appId 或 code 获取)
 	app, err := uc.appUC.GetByCode(ctx, "sys_app") // 暂时写死 code
 	if err != nil {
@@ -66,7 +66,7 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		if app.SelfAgent == nil {
 			return nil, fmt.Errorf("self agent is not configured")
 		}
-		agentConfig, err = uc.buildAgentConfigFromSelfAgent(ctx, app.SelfAgent)
+		agentConfig, err = uc.buildAgentConfigFromSelfAgent(ctx, app.SelfAgent, req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to build agent config from self agent: %w", err)
 		}
@@ -91,7 +91,7 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 		// 多 Agent 模式：需要根据业务逻辑获取并构建
 		subAgentConfigs := make([]*pkgai.AgentConfig, len(app.SelfAgent.SubAIAgents))
 		for i, subAgent := range app.SelfAgent.SubAIAgents {
-			subAgentConfig, err := uc.buildAgentConfigFromSelfAgent(ctx, subAgent)
+			subAgentConfig, err := uc.buildAgentConfigFromSelfAgent(ctx, subAgent, req)
 			if err != nil {
 				return nil, fmt.Errorf("failed to build sub agent config: %w", err)
 			}
@@ -107,8 +107,18 @@ func (uc *AIUsecase) GetAgent(ctx context.Context) (pkgai.Agent, error) {
 
 // buildAgentConfigFromSelfAgent 从 SelfAgent 构建 AgentConfig
 // SelfAgent 中可能已经包含了 AIModel 的副本（通过 AIModel 字段）
-func (uc *AIUsecase) buildAgentConfigFromSelfAgent(ctx context.Context, m *model.AIAgent) (*pkgai.AgentConfig, error) {
+func (uc *AIUsecase) buildAgentConfigFromSelfAgent(ctx context.Context, m *model.AIAgent, req pkgai.Request) (*pkgai.AgentConfig, error) {
 	var modelConfig pkgai.ModelConfig
+
+	// 联网搜索和是否启用thinking从这里面 req pkgai.Request拿
+	withWebSearchAgent := m.WithWebSearchAgent
+	thinking := false
+	if req.Message != nil && req.Message.AIModel != nil {
+		withWebSearchAgent = req.Message.AIModel.SearchByWeb
+		if req.Message.AIModel.ThinkingMode != "quick" && req.Message.AIModel.ThinkingMode != "" {
+			thinking = true
+		}
+	}
 
 	// 优先使用 SelfAgent 中的 AIModel 副本
 	if m.AIModel != nil {
@@ -121,7 +131,7 @@ func (uc *AIUsecase) buildAgentConfigFromSelfAgent(ctx context.Context, m *model
 			BaseURL:     aiModel.BaseURL,
 			Temperature: aiModel.Temperature,
 			TopP:        aiModel.TopP,
-			Thinking:    true,
+			Thinking:    thinking,
 		}
 	} else if m.AIModelID > 0 {
 		// 如果没有 AIModel 副本，通过 AIModelID 获取
@@ -137,7 +147,7 @@ func (uc *AIUsecase) buildAgentConfigFromSelfAgent(ctx context.Context, m *model
 			MaxTokens:   aiModel.MaxTokens,
 			Temperature: aiModel.Temperature,
 			TopP:        aiModel.TopP,
-			Thinking:    true,
+			Thinking:    thinking,
 		}
 	} else {
 		return nil, fmt.Errorf("no model configuration found in self agent")
@@ -148,7 +158,7 @@ func (uc *AIUsecase) buildAgentConfigFromSelfAgent(ctx context.Context, m *model
 		Description:        m.Description,
 		AdapterType:        uc.toPkgAdapterType(m.AdapterType),
 		MaxIteration:       m.MaxIteration,
-		WithWebSearchAgent: m.WithWebSearchAgent,
+		WithWebSearchAgent: withWebSearchAgent,
 		WithWriteTODOs:     m.WithWriteTODOs,
 		ModelConfig:        modelConfig,
 	}, nil
@@ -181,7 +191,7 @@ func (uc *AIUsecase) toPkgAdapterType(t model.AdapterType) pkgai.AdapterType {
 
 // StreamChat 执行流式对话
 func (uc *AIUsecase) Stream(ctx context.Context, req pkgai.Request) (<-chan pkgai.Response, error) {
-	agent, err := uc.GetAgent(ctx)
+	agent, err := uc.GetAgent(ctx, req)
 	if err != nil {
 		return nil, err
 	}

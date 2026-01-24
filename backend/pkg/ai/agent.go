@@ -77,6 +77,7 @@ type AIModel struct {
 	ID           string `json:"id"`
 	ModelName    string `json:"modelName"`
 	ThinkingMode string `json:"thinkingMode"` // 'smart' | 'deep' | 'quick'
+	SearchByWeb  bool   `json:"searchByWeb"`
 }
 
 type QuoteSearchLink struct {

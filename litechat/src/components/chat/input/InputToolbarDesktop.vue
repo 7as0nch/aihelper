@@ -104,6 +104,21 @@ defineExpose({
       
       <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
 
+      <!-- Web Search Toggle (Moved outside dropdown) -->
+      <button 
+        @click="emit('toggle-web-search')"
+        class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+        :class="searchByWeb 
+          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30' 
+          : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'"
+        title="启用实时网络搜索"
+      >
+        <Globe class="w-4 h-4" :class="searchByWeb ? 'text-blue-500' : ''" />
+        <span class="hidden md:inline">联网搜索</span>
+      </button>
+
+      <div class="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
+
       <button 
         @click="emit('screenshot')"
         class="flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm"
@@ -125,27 +140,9 @@ defineExpose({
 
         <!-- More Menu -->
         <div 
-          v-if="isMoreDropdownOpen"
+          v-if="isMoreDropdownOpen && extButtons && extButtons.length > 0"
           class="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#242424] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-1"
         >
-          <!-- Web Search Toggle -->
-          <button 
-            @click="emit('toggle-web-search')"
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
-            :class="{ 'bg-blue-50 dark:bg-blue-900/20': searchByWeb }"
-          >
-            <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
-              <Globe class="w-4 h-4" :class="searchByWeb ? 'text-blue-500' : 'text-gray-500'" />
-            </div>
-            <div class="flex flex-col">
-              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">联网搜索</span>
-              <span class="text-xs text-gray-500">启用实时网络搜索</span>
-            </div>
-            <Check v-if="searchByWeb" class="w-4 h-4 text-primary ml-auto" />
-          </button>
-          
-          <div v-if="extButtons && extButtons.length > 0" class="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
-
           <!-- External Buttons -->
           <button 
             v-for="btn in extButtons"

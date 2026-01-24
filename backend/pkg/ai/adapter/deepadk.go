@@ -90,8 +90,12 @@ func NewDeepAdkAdapter(ctx context.Context, config *ai.AgentConfig, subAgents []
 					URL     string json:"url",
 					Summary string json:"summary",
 				} json:"results",
-			}，引用则根据result数组下标来, 统一格式为："[quote:index_num（注意你需要统计多次调用工具的总和列表，从0开始）]"，在文本引用部分的末尾添加。
-		`,
+			}，引用则根据result数组下标来, 统一格式为："[quote:index_num（注意你需要统计多次调用工具的总和列表，从0开始）]"，在文本引用部分的末尾添加,特别注意，每条回复的搜索要隔离，不要混合在一起。
+		## Notice:
+		1. Tool Calls argument must be a valid json.
+		2. Tool Calls argument should do not contains invalid suffix like ']<|FunctionCallEnd|>'. 
+		3. 如果需要调用tool，直接输出tool，不要输出文本.
+`,
 	}
 
 	deepAgent, err := deep.New(ctx, deepConfig)

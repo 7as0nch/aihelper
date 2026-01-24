@@ -311,6 +311,7 @@ export const useChatStore = defineStore('chat', () => {
                     id: 'gpt-4',
                     modelName: 'GPT-4',
                     thinkingMode: thinkingMode.value,
+                    searchByWeb: searchByWeb.value,
                 }
             });
 

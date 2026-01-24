@@ -391,6 +391,14 @@ func (s *ChatService) buildAIRequest(req *pb.SendStreamRequest) pkgai.Request {
 	for _, m := range req.History {
 		history = append(history, &pkgai.Message{Role: pkgai.RoleType(m.Role), Content: m.Content})
 	}
+	// 是否需要生成待办计划。 'smart' | 'need' | 'no'
+	needTODOPlan := pkgai.NeedTODOPlanSmart
+	switch req.NeedTODOPlan {
+	case "need":
+		needTODOPlan = pkgai.NeedTODOPlanNeed
+	case "no":
+		needTODOPlan = pkgai.NeedTODOPlanUnNeed
+	}
 	return pkgai.Request{
 		History: history,
 		Message: &pkgai.Message{
@@ -398,7 +406,14 @@ func (s *ChatService) buildAIRequest(req *pb.SendStreamRequest) pkgai.Request {
 			Content:      req.CurMessage.Content,
 			QuoteId:      req.CurMessage.QuoteId,
 			QuoteContent: req.CurMessage.QuoteContent,
+			AIModel: &pkgai.AIModel{
+				ID:           req.CurMessage.AiModel.Id,
+				ModelName:    req.CurMessage.AiModel.ModelName,
+				ThinkingMode: req.CurMessage.AiModel.ThinkingMode,
+				SearchByWeb:  req.CurMessage.AiModel.SearchByWeb,
+			},
 		},
+		NeedTODOPlan: needTODOPlan,
 	}
 }
 
