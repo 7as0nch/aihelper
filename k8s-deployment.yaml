@@ -62,7 +62,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: 7as0nch/aichat-backend:v1.0.4-beta.8
+        image: 7as0nch/aichat-backend:v1.0.4-beta.9
         # 【就绪检查】决定 Pod 是否可以接收流量
         # 如果失败，Pod 将从 Service 的负载均衡列表中移除，不会有流量进入
         # 常用于：应用启动加载中、或压力过大暂时无法处理请求时

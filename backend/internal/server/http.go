@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
+	_ "net/http/pprof" // 导入 pprof，自动注册 /debug/pprof/* 路由
 
 	aipb "github.com/example/aichat/backend/api/ai"
 	basepb "github.com/example/aichat/backend/api/base"
@@ -14,12 +15,13 @@ import (
 	"github.com/example/aichat/backend/pkg/auth"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
+	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/swagger-api/openapiv2"
-
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -58,6 +60,7 @@ func NewHTTPServer(c *conf.Server,
 
 	var opts = []kratoshttp.ServerOption{
 		kratoshttp.Middleware(
+			metrics.Server(), // 启用服务器端指标
 			recovery.Recovery(),
 			// 先提取 ClientID,这样后续的 logging.Server 可以记录它
 			selector.Server(
@@ -124,6 +127,16 @@ func NewHTTPServer(c *conf.Server,
 		}
 		chat.SSEHandler(w, r)
 	})
+	// Prometheus metrics 端点
+	srv.Handle("/metrics", promhttp.Handler())
+
+	// pprof 性能分析端点（通过导入 net/http/pprof 自动注册到 /debug/pprof/*）
+	// 访问示例：
+	// - http://api.aihelper.chat/debug/pprof/          # 概览页面
+	// - http://api.aihelper.chat/debug/pprof/heap    # 堆内存分析
+	// - http://api.aihelper.chat/debug/pprof/profile  # CPU 性能分析（30秒采样）
+	// - http://api.aihelper.chat/debug/pprof/goroutine # Goroutine 分析
+	srv.HandlePrefix("/debug/pprof/", http.DefaultServeMux)
 
 	srv.HandlePrefix("/q/", openapiv2.NewHandler())
 	return srv
