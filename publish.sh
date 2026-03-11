@@ -64,4 +64,4 @@ echo "将k8s-deployment.yaml增量同步到远程服务器"
 rsync -avz --delete k8s-deployment.yaml root@hk.aihelper.chat:/root/aichat/pipeline.yaml
 
 echo "远程执行命令：kubectl apply -f pipeline.yaml"
-ssh root@hk.aihelper.chat "kubectl apply -f /root/aichat/pipeline.yaml"
+ssh root@sshk.aihelper.chat "kubectl apply -f /root/aichat/pipeline.yaml"

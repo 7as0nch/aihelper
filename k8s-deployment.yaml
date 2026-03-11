@@ -291,15 +291,25 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-    
+
+    # 【重要】强制将 HTTP 跳转到 HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     # 【负载均衡优化】基于 IP 的会话亲和性
     # 理由：不同子域下 Cookie 方案易受浏览器策略干扰，IP 哈希更稳定
     # 确保同一客户端 IP 的请求始终路由到同一台后端 Pod，保证内存中 activeStreams 的命中率
     nginx.ingress.kubernetes.io/upstream-hash-by: "$binary_remote_addr"
 spec:
   ingressClassName: nginx
+  # 【新增】TLS 配置
+  tls:
+  - hosts:
+    - aihelper.chat
+    - admin.aihelper.chat
+    - api.aihelper.chat
+    - hk.aihelper.chat
+    secretName: cf-origin-tls
   rules:
-  - host: chat.aihelper.chat # 用户访问域名
+  - host: aihelper.chat # 用户访问域名
     http:
       paths:
       - path: /
