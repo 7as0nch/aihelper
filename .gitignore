@@ -75,7 +75,7 @@ __debug_bin*
 *.test
 *.out
 vendor/
-go.work
+# go.work
 *.o
 *.a
 *.so

@@ -1,0 +1,110 @@
+pipeline {
+    agent any
+    
+    // 定义构建参数，支持在 Jenkins 界面上手动选择
+    parameters {
+        choice(
+            name: 'SERVICE_TO_DEPLOY', 
+            choices: ['all', 'frontend', 'backend', 'admin'], 
+            description: '请选择需要部署的服务 (all: 部署所有, frontend: 前端, backend: 后端, admin: 管理端)'
+        )
+        string(
+            name: 'BRANCH_NAME', 
+            defaultValue: 'main', 
+            description: '请输入要构建的代码分支'
+        )
+        string(
+            name: 'IMAGE_TAG', 
+            defaultValue: 'latest', 
+            description: '请输入要构建的镜像版本 Tag (如 v1.0.0)'
+        )
+    }
+    
+    environment {
+        // 在这里定义全局环境变量，例如镜像仓库地址
+        DOCKER_REGISTRY = 'registry.cn-hangzhou.aliyuncs.com/your-namespace'
+    }
+    
+    stages {
+        stage('Checkout Code') {
+            steps {
+                echo "正在拉取代码，分支: ${params.BRANCH_NAME}"
+                // 如果配置了 SCM，这里会自动拉取代码。也可以手动指定 git 仓库：
+                // git branch: "${params.BRANCH_NAME}", url: 'https://github.com/your-repo/aichat.git'
+                checkout scm
+            }
+        }
+        
+        stage('Build & Deploy Frontend') {
+            // 当选择 frontend 或 all 时执行此阶段
+            when {
+                expression { params.SERVICE_TO_DEPLOY == 'frontend' || params.SERVICE_TO_DEPLOY == 'all' }
+            }
+            steps {
+                echo "================ 正在构建并部署 前端服务 (Frontend) ================"
+                // 示例：前端构建与部署命令
+                // sh '''
+                //     cd frontend
+                //     npm install
+                //     npm run build
+                //     docker build -t ${DOCKER_REGISTRY}/frontend:${IMAGE_TAG} .
+                //     docker push ${DOCKER_REGISTRY}/frontend:${IMAGE_TAG}
+                //     kubectl set image deployment/frontend-deployment frontend=${DOCKER_REGISTRY}/frontend:${IMAGE_TAG}
+                // '''
+            }
+        }
+        
+        stage('Build & Deploy Backend') {
+            // 当选择 backend 或 all 时执行此阶段
+            when {
+                expression { params.SERVICE_TO_DEPLOY == 'backend' || params.SERVICE_TO_DEPLOY == 'all' }
+            }
+            steps {
+                echo "================ 正在构建并部署 后端服务 (Backend) ================"
+                // 示例：后端构建与部署命令 (假设是 Go 项目)
+                // sh '''
+                //     cd backend
+                //     go build -o server main.go
+                //     docker build -t ${DOCKER_REGISTRY}/backend:${IMAGE_TAG} .
+                //     docker push ${DOCKER_REGISTRY}/backend:${IMAGE_TAG}
+                //     kubectl set image deployment/backend-deployment backend=${DOCKER_REGISTRY}/backend:${IMAGE_TAG}
+                // '''
+            }
+        }
+        
+        stage('Build & Deploy Admin') {
+            // 当选择 admin 或 all 时执行此阶段
+            when {
+                expression { params.SERVICE_TO_DEPLOY == 'admin' || params.SERVICE_TO_DEPLOY == 'all' }
+            }
+            steps {
+                echo "================ 正在构建并部署 管理端服务 (Admin) ================"
+                // 示例：管理端构建与部署命令
+                // sh '''
+                //     cd admin
+                //     npm install
+                //     npm run build
+                //     docker build -t ${DOCKER_REGISTRY}/admin:${IMAGE_TAG} .
+                //     docker push ${DOCKER_REGISTRY}/admin:${IMAGE_TAG}
+                //     kubectl set image deployment/admin-deployment admin=${DOCKER_REGISTRY}/admin:${IMAGE_TAG}
+                // '''
+            }
+        }
+    }
+    
+    // 构建后的操作
+    post {
+        always {
+            echo "流水线执行完毕。清理工作空间..."
+            cleanWs()
+        }
+        success {
+            echo "🎉 部署成功！服务: ${params.SERVICE_TO_DEPLOY}, 版本: ${params.IMAGE_TAG}"
+            // 可以在这里添加钉钉/企业微信/飞书的成功通知
+        }
+        failure {
+            echo "❌ 部署失败！请检查 Jenkins 构建日志。"
+            // 可以在这里添加失败通知
+        }
+    }
+}
