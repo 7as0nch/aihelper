@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../../stores/auth';
-import { X, QrCode, Smartphone, MessageCircle, Mail, User, ArrowLeft } from 'lucide-vue-next';
+import { X, QrCode, MessageCircle, Mail, User, ArrowLeft } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const view = ref<'login' | 'register'>('login');
@@ -54,10 +54,10 @@ const handleLogin = async () => {
     }
 
     if (!success) {
-      errorMessage.value = '登录失败，请检查凭证';
+      errorMessage.value = '登录失败，请检查账号密码';
     }
   } catch (e) {
-    errorMessage.value = '发生错误，请重试';
+    errorMessage.value = '登录失败，请稍后重试';
   } finally {
     isLoading.value = false;
   }
@@ -81,13 +81,26 @@ const handleRegister = async () => {
   try {
     const success = await authStore.register(username.value, password.value);
     if (!success) {
-      errorMessage.value = '注册失败，请重试';
+      errorMessage.value = '注册失败，请稍后重试';
     }
   } catch (e) {
-    errorMessage.value = '发生错误，请重试';
+    errorMessage.value = '发生未知错误，请重试';
   } finally {
     isLoading.value = false;
   }
+};
+
+const handleQQLogin = () => {
+  const redirect = `${window.location.origin}${window.location.pathname}`;
+  
+  // 如果是前端演示模式，直接跳转到 mock 页面
+  if (import.meta.env.VITE_AI_TYPE === 'demo' || import.meta.env.VITE_AI_TYPE === 'frontend') {
+    window.location.href = `/mock-qq-login?redirect=${encodeURIComponent(redirect)}`;
+    return;
+  }
+  
+  window.location.href = `/mock-qq-login?redirect=${encodeURIComponent(redirect)}`;
+  // window.location.href = `/api/auth/qq/login?redirect=${encodeURIComponent(redirect)}`;
 };
 </script>
 
@@ -107,8 +120,8 @@ const handleRegister = async () => {
         v-if="authStore.config.enableQrLogin && view === 'login'" 
         class="w-1/2 bg-gray-50 dark:bg-[#242424] p-8 flex flex-col items-center justify-center border-r border-gray-100 dark:border-gray-800 hidden md:flex"
       >
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">打开 App</h3>
-        <p class="text-sm text-gray-500 mb-8">在「我的页」右上角打开扫一扫</p>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">扫码登录 App</h3>
+        <p class="text-sm text-gray-500 mb-8">请使用微信或支付宝扫描下方二维码登录</p>
         
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4">
           <!-- Mock QR Code -->
@@ -124,7 +137,7 @@ const handleRegister = async () => {
         </div>
         
         <p class="text-sm text-gray-500 flex items-center gap-2">
-          其他扫码方式：微信
+          扫码登录更安全
         </p>
       </div>
       
@@ -140,7 +153,7 @@ const handleRegister = async () => {
           {{ view === 'register' ? '加入 AI Chat' : '欢迎回来' }}
         </h3>
         <p class="text-gray-500 dark:text-gray-400 max-w-xs">
-          {{ view === 'register' ? '注册账号以保存您的对话历史和偏好设置' : '登录以继续您的 AI 之旅' }}
+          {{ view === 'register' ? '注册以保存您的聊天记录和偏好设置。' : '登录以继续您的 AI 之旅。' }}
         </p>
       </div>
 
@@ -155,7 +168,7 @@ const handleRegister = async () => {
               :class="loginType === 'phone' ? 'text-primary' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
               @click="loginType = 'phone'"
             >
-              验证码登录
+              手机号登录
               <div v-if="loginType === 'phone'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"></div>
             </button>
             <button 
@@ -163,7 +176,7 @@ const handleRegister = async () => {
               :class="loginType === 'account' ? 'text-primary' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
               @click="loginType = 'account'"
             >
-              密码登录
+              账号密码登录
               <div v-if="loginType === 'account'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"></div>
             </button>
           </div>
@@ -173,11 +186,11 @@ const handleRegister = async () => {
             <template v-if="loginType === 'phone'">
               <div class="space-y-4">
                 <div class="flex items-center border-b border-gray-200 dark:border-gray-700 py-2">
-                  <span class="text-gray-500 mr-3 text-sm">中国 +86</span>
+                  <span class="text-gray-500 mr-3 text-sm">+86</span>
                   <input 
                     v-model="phone"
                     type="text" 
-                    placeholder="手机号" 
+                    placeholder="请输入手机号" 
                     class="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
                   />
                 </div>
@@ -186,14 +199,14 @@ const handleRegister = async () => {
                   <input 
                     v-model="code"
                     type="text" 
-                    placeholder="输入 6 位短信验证码" 
+                    placeholder="请输入6位验证码" 
                     class="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
                   />
                   <button 
                     type="button"
                     class="text-xs text-primary hover:text-blue-600 font-medium"
                   >
-                    获取短信验证码
+                    获取验证码
                   </button>
                 </div>
               </div>
@@ -215,14 +228,14 @@ const handleRegister = async () => {
                   <input 
                     v-model="password"
                     type="password" 
-                    placeholder="密码" 
+                    placeholder="请输入密码" 
                     class="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
                   />
                 </div>
               </div>
               
-              <div class="flex justify-between items-center text-xs">
-                <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">忘记密码?</button>
+              <div class="flex justify-between items-center text-xs mt-2">
+                <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">忘记密码？</button>
                 <button type="button" @click="switchView('register')" class="text-primary hover:underline">注册账号</button>
               </div>
             </template>
@@ -234,7 +247,7 @@ const handleRegister = async () => {
               class="w-full bg-primary text-white py-2.5 rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 mt-6"
               :disabled="isLoading"
             >
-              {{ isLoading ? '登录中...' : (loginType === 'phone' ? '登录/注册' : '登录') }}
+              {{ isLoading ? '登录中...' : '登录' }}
             </button>
           </form>
         </template>
@@ -267,7 +280,7 @@ const handleRegister = async () => {
                 <input 
                   v-model="password"
                   type="password" 
-                  placeholder="设置密码" 
+                  placeholder="请输入密码" 
                   class="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
                 />
               </div>
@@ -276,7 +289,7 @@ const handleRegister = async () => {
                 <input 
                   v-model="confirmPassword"
                   type="password" 
-                  placeholder="确认密码" 
+                  placeholder="请确认密码" 
                   class="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
                 />
               </div>
@@ -297,14 +310,14 @@ const handleRegister = async () => {
         <!-- Social Login (Only on Login View) -->
         <div v-if="view === 'login'" class="mt-8">
           <div class="relative flex justify-center text-xs mb-4">
-            <span class="bg-white dark:bg-[#2a2a2a] px-2 text-gray-400">其他方式登录</span>
+            <span class="bg-white dark:bg-[#2a2a2a] px-2 text-gray-400">其他登录方式</span>
           </div>
           <div class="flex justify-center gap-6">
             <button type="button" class="p-2 rounded-full bg-gray-50 dark:bg-gray-800 text-green-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <MessageCircle class="w-5 h-5" />
             </button>
-            <button type="button" class="p-2 rounded-full bg-gray-50 dark:bg-gray-800 text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              <Smartphone class="w-5 h-5" />
+            <button type="button" @click="handleQQLogin" class="px-3 h-9 rounded-full bg-gray-50 dark:bg-gray-800 text-sky-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-xs font-semibold">
+              QQ
             </button>
             <button type="button" class="p-2 rounded-full bg-gray-50 dark:bg-gray-800 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <Mail class="w-5 h-5" />
@@ -313,7 +326,7 @@ const handleRegister = async () => {
         </div>
 
         <div class="mt-auto pt-4 text-[10px] text-gray-400 text-center leading-relaxed">
-          {{ view === 'login' ? '未注册手机验证后自动登录，' : '' }}注册即代表同意《LiteChat 协议》《隐私保护指引》
+          {{ view === 'login' ? '登录即代表您同意' : '注册即代表您同意' }}<a href="#" class="text-primary hover:underline">《用户协议》</a>和<a href="#" class="text-primary hover:underline">《隐私政策》</a>
         </div>
       </div>
     </div>

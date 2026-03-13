@@ -78,6 +78,10 @@ func NewHTTPServer(c *conf.Server,
 				Match(auth.NewWhiteListMatcher(map[string]bool{
 					basepb.OperationAuthLogin:    true,
 					basepb.OperationTrackerBatch: true,
+					"/auth/qq/login":             true,
+					"/auth/qq/callback":          true,
+					"GET /auth/qq/login":         true,
+					"GET /auth/qq/callback":      true,
 				})).Build(),
 		),
 	}
@@ -105,6 +109,9 @@ func NewHTTPServer(c *conf.Server,
 	srv := kratoshttp.NewServer(opts...)
 	chatv1.RegisterChatHTTPServer(srv, chat)
 	basepb.RegisterAuthHTTPServer(srv, authServ)
+	// QQ OAuth routes
+	srv.HandleFunc("/auth/qq/login", authServ.HandleQQLogin)
+	srv.HandleFunc("/auth/qq/callback", authServ.HandleQQCallback)
 	basepb.RegisterSystemHTTPServer(srv, system)
 	basepb.RegisterTrackerHTTPServer(srv, tracker)
 	aipb.RegisterAIHTTPServer(srv, aiServ)
@@ -141,3 +148,7 @@ func NewHTTPServer(c *conf.Server,
 	srv.HandlePrefix("/q/", openapiv2.NewHandler())
 	return srv
 }
+
+
+
+

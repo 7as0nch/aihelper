@@ -50,6 +50,7 @@ func TestDb(t *testing.T) {
 	//Generate basic type-safe DAO API for struct `model.User` following conventions
 	var models = []interface{}{
 		model.SysUser{},
+		model.SysUserAuth{},
 		model.SysMenu{},
 		model.SysDict{},
 		model.SysDictType{},

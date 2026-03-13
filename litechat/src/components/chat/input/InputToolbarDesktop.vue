@@ -60,7 +60,8 @@ const getIcon = (iconName: string) => {
 
 defineExpose({
   closeDropdown,
-  triggerFileUpload
+  triggerFileUpload,
+  imageInput
 });
 </script>
 

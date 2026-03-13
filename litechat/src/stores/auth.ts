@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { authApi, type AuthConfig, type UserInfo as User } from '../api/auth';
 import { getConfig } from '@/config';
-import { setToken, removeToken } from '@/utils/cookie';
+import { getToken, setToken, removeToken } from '@/utils/cookie';
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<User | null>(null);
@@ -10,8 +10,30 @@ export const useAuthStore = defineStore('auth', () => {
     const showAuthModal = ref(false);
     const config = ref<AuthConfig>({ enableQrLogin: true });
 
+    const consumeQQTokenFromUrl = () => {
+        if (typeof window === 'undefined') return;
+
+        const current = new URL(window.location.href);
+        const qqToken = current.searchParams.get('qq_token');
+        const qqError = current.searchParams.get('qq_error');
+
+        if (qqToken) {
+            setToken(qqToken);
+        }
+
+        if (qqToken || qqError) {
+            current.searchParams.delete('qq_token');
+            current.searchParams.delete('qq_error');
+            const query = current.searchParams.toString();
+            const cleanURL = `${current.pathname}${query ? `?${query}` : ''}${current.hash}`;
+            window.history.replaceState({}, '', cleanURL);
+        }
+    };
+
     // Initialize from localStorage and load config
     const init = async () => {
+        consumeQQTokenFromUrl();
+
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             user.value = JSON.parse(storedUser);
@@ -22,6 +44,19 @@ export const useAuthStore = defineStore('auth', () => {
             config.value = await authApi.getAuthConfig();
         } catch (e) {
             console.error('Failed to load auth config', e);
+        }
+
+        // If token exists but user profile is not loaded yet, recover session from backend.
+        if (!isAuthenticated.value && getToken()) {
+            try {
+                const res = await authApi.getUserInfo();
+                user.value = res.user;
+                isAuthenticated.value = true;
+                localStorage.setItem('user', JSON.stringify(res.user));
+            } catch (e) {
+                console.error('Failed to recover auth session', e);
+                logout();
+            }
         }
     };
 
@@ -34,7 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
     };
 
     const checkAuth = (): boolean => {
-        // 前端模式不需要登录
+        // Frontend mode does not require login.
         if (isAuthenticated.value || getConfig('VITE_AI_TYPE') === 'frontend') {
             return true;
         }
@@ -61,7 +96,7 @@ export const useAuthStore = defineStore('auth', () => {
     const loginWithPhone = async (phone: string, code: string): Promise<boolean> => {
         try {
             const response = await authApi.loginWithPhone(phone, code);
-            handleLoginSuccess(response.user, response.accessToken);
+            await handleLoginSuccess(response.user, response.accessToken);
             return true;
         } catch (e) {
             console.error('Login failed', e);
@@ -72,8 +107,7 @@ export const useAuthStore = defineStore('auth', () => {
     const loginWithPassword = async (username: string, password: string): Promise<boolean> => {
         try {
             const response = await authApi.loginWithPassword(username, password);
-            console.log(response);
-            handleLoginSuccess(response.user, response.accessToken);
+            await handleLoginSuccess(response.user, response.accessToken);
             return true;
         } catch (e) {
             console.error('Login failed', e);
@@ -84,7 +118,7 @@ export const useAuthStore = defineStore('auth', () => {
     const register = async (username: string, password: string): Promise<boolean> => {
         try {
             const response = await authApi.register(username, password);
-            handleLoginSuccess(response.user, response.accessToken);
+            await handleLoginSuccess(response.user, response.accessToken);
             return true;
         } catch (e) {
             console.error('Registration failed', e);
@@ -115,3 +149,4 @@ export const useAuthStore = defineStore('auth', () => {
         logout
     };
 });
+

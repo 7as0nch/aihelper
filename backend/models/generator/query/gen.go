@@ -31,6 +31,7 @@ var (
 	SysMenu          *sysMenu
 	SysTracker       *sysTracker
 	SysUser          *sysUser
+	SysUserAuth      *sysUserAuth
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -49,6 +50,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	SysMenu = &Q.SysMenu
 	SysTracker = &Q.SysTracker
 	SysUser = &Q.SysUser
+	SysUserAuth = &Q.SysUserAuth
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
@@ -68,6 +70,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		SysMenu:          newSysMenu(db, opts...),
 		SysTracker:       newSysTracker(db, opts...),
 		SysUser:          newSysUser(db, opts...),
+		SysUserAuth:      newSysUserAuth(db, opts...),
 	}
 }
 
@@ -88,6 +91,7 @@ type Query struct {
 	SysMenu          sysMenu
 	SysTracker       sysTracker
 	SysUser          sysUser
+	SysUserAuth      sysUserAuth
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -109,6 +113,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		SysMenu:          q.SysMenu.clone(db),
 		SysTracker:       q.SysTracker.clone(db),
 		SysUser:          q.SysUser.clone(db),
+		SysUserAuth:      q.SysUserAuth.clone(db),
 	}
 }
 
@@ -137,6 +142,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		SysMenu:          q.SysMenu.replaceDB(db),
 		SysTracker:       q.SysTracker.replaceDB(db),
 		SysUser:          q.SysUser.replaceDB(db),
+		SysUserAuth:      q.SysUserAuth.replaceDB(db),
 	}
 }
 
@@ -155,6 +161,7 @@ type queryCtx struct {
 	SysMenu          ISysMenuDo
 	SysTracker       ISysTrackerDo
 	SysUser          ISysUserDo
+	SysUserAuth      ISysUserAuthDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
@@ -173,6 +180,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		SysMenu:          q.SysMenu.WithContext(ctx),
 		SysTracker:       q.SysTracker.WithContext(ctx),
 		SysUser:          q.SysUser.WithContext(ctx),
+		SysUserAuth:      q.SysUserAuth.WithContext(ctx),
 	}
 }
 

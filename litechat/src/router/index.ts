@@ -86,6 +86,15 @@ const routes: Route[] = [
         hidden: true,
         component: HistoryView,
     },
+    {
+        path: '/mock-qq-login',
+        name: 'MockQQLogin',
+        hidden: true,
+        component: () => import('@/views/MockQQLogin.vue'),
+        meta: {
+            title: 'QQ登录模拟',
+        }
+    },
 ];
 
 export function createAppRouter(history: any) {
@@ -108,7 +117,7 @@ export function createAppRouter(history: any) {
 
         // Check if route requires auth
         // The user requirement: "Except the first one (Home), others need validation"
-        const publicRoutes = ['Landing', 'Chat'];
+        const publicRoutes = ['Landing', 'Chat', 'MockQQLogin'];
 
         // If it's not a public route
         if (!publicRoutes.includes(to.name as string)) {

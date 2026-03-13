@@ -2,6 +2,8 @@ package base
 
 import (
 	"context"
+	"sync"
+
 	pb "github.com/example/aichat/backend/api/base"
 	"github.com/example/aichat/backend/internal/biz/base"
 	kerrors "github.com/go-kratos/kratos/v2/errors"
@@ -12,17 +14,21 @@ import (
 type AuthService struct {
 	pb.UnimplementedAuthServer
 	user *base.SysUserUseCase
+
+	qqStateMu sync.Mutex
+	qqState   map[string]qqStateItem
 }
 
 func NewAuthService(user *base.SysUserUseCase) *AuthService {
 	return &AuthService{
-		user: user,
+		user:    user,
+		qqState: make(map[string]qqStateItem),
 	}
 }
 
 func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
-	log.Infof("用户登录 %v", req.Username)
-	token, err := s.user.Login(ctx, req.Username)
+	log.Infof("login request for user: %s", req.Username)
+	token, err := s.user.Login(ctx, req.Username, req.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -38,9 +44,8 @@ func (s *AuthService) GetInfo(ctx context.Context, _ *emptypb.Empty) (*pb.GetInf
 		return nil, err
 	}
 	if user == nil || user.ID == 0 {
-		return nil, kerrors.New(401, "用户不存在", "用户不存在")
+		return nil, kerrors.New(401, "USER_NOT_FOUND", "user not found")
 	}
-	log.Infof("获取用户信息 %#v", user)
 	return &pb.GetInfoReply{
 		User: &pb.User{
 			UserId:   user.ID,
@@ -48,21 +53,22 @@ func (s *AuthService) GetInfo(ctx context.Context, _ *emptypb.Empty) (*pb.GetInf
 			UserName: user.Name,
 			Avatar:   user.Avatar,
 		},
-		Roles: []string{
-			"superadmin",
-		},
+		Roles: []string{"superadmin"},
 		Permissions: []string{"*:*:*"},
 	}, nil
 }
 
 // logout
-// NOTE: 这里笔记备注：虽然请求参数为空，但仍然需要定义一个空的请求类型，以符合 gRPC 的方法签名要求。前端调用时，传递一个空的请求对象即可。
 func (s *AuthService) Logout(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, s.user.Logout(ctx)
 }
 
 // Register
 func (s *AuthService) Register(ctx context.Context, req *pb.RegisterRequest) (*emptypb.Empty, error) {
+	_, err := s.user.Register(ctx, req.Account, req.Password, req.Email, req.Phonenumber, req.Sex)
+	if err != nil {
+		return nil, err
+	}
 	return &emptypb.Empty{}, nil
 }
 
@@ -78,9 +84,8 @@ func (s *AuthService) GetProfile(ctx context.Context, req *emptypb.Empty) (*pb.G
 		return nil, err
 	}
 	if user == nil || user.ID == 0 {
-		return nil, kerrors.New(401, "用户不存在", "用户不存在")
+		return nil, kerrors.New(401, "USER_NOT_FOUND", "user not found")
 	}
-	log.Infof("获取用户信息 %#v", user)
 	return &pb.GetInfoReply{
 		User: &pb.User{
 			UserId:      user.ID,
@@ -97,3 +102,4 @@ func (s *AuthService) GetProfile(ctx context.Context, req *emptypb.Empty) (*pb.G
 func (s *AuthService) UpdatePwd(ctx context.Context, req *pb.UpdatePwdRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
+
