@@ -9,6 +9,7 @@ message Bootstrap {
   Server server = 1;
   Data data = 2;
   Log log = 3;
+  Auth auth = 4;
 }
 
 message Log {
@@ -61,9 +62,22 @@ message Data {
     string addr = 2;
     google.protobuf.Duration read_timeout = 3;
     google.protobuf.Duration write_timeout = 4;
+    string password = 5;
   }
 
   Database database = 1;
   PGDataBase pg_database = 2;
   Redis redis = 3;
+}
+
+message Auth {
+  message QQ {
+    string app_id = 1;
+    string app_key = 2;
+    string callback_url = 3;
+    string frontend_redirect = 4;
+    string scope = 5;
+  }
+
+  QQ qq = 1;
 }

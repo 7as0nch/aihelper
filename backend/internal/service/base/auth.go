@@ -2,10 +2,11 @@ package base
 
 import (
 	"context"
-	"sync"
 
 	pb "github.com/example/aichat/backend/api/base"
+	"github.com/example/aichat/backend/internal/biz/base/loginprovider"
 	"github.com/example/aichat/backend/internal/biz/base"
+	"github.com/example/aichat/backend/models/generator/model"
 	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -14,26 +15,35 @@ import (
 type AuthService struct {
 	pb.UnimplementedAuthServer
 	user *base.SysUserUseCase
-
-	qqStateMu sync.Mutex
-	qqState   map[string]qqStateItem
 }
 
 func NewAuthService(user *base.SysUserUseCase) *AuthService {
 	return &AuthService{
-		user:    user,
-		qqState: make(map[string]qqStateItem),
+		user: user,
 	}
 }
 
 func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
-	log.Infof("login request for user: %s", req.Username)
-	token, err := s.user.Login(ctx, req.Username, req.Password)
+	authType, ok := model.ParseAuthType(req.LoginType)
+	if !ok {
+		return nil, kerrors.BadRequest("UNSUPPORTED_LOGIN_TYPE", "unsupported login type")
+	}
+
+	log.Infof("login request type=%s", authType.String())
+	result, err := s.user.Login(ctx, &loginprovider.LoginRequest{
+		AuthType: authType,
+		Username: req.Username,
+		Password: req.Password,
+		Phone:    req.Phone,
+		Code:     req.Code,
+		AuthCode: req.AuthCode,
+	})
 	if err != nil {
 		return nil, err
 	}
 	return &pb.LoginReply{
-		AccessToken: token,
+		AccessToken: result.Token,
+		Token:       result.Token,
 	}, nil
 }
 

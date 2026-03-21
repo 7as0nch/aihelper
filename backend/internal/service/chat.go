@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,9 +14,12 @@ import (
 	pb "github.com/example/aichat/backend/api/chat/v1"
 	"github.com/example/aichat/backend/internal/biz"
 	"github.com/example/aichat/backend/internal/biz/ai"
+	"github.com/example/aichat/backend/internal/consts"
+	"github.com/example/aichat/backend/internal/db"
 	"github.com/example/aichat/backend/models/generator/model"
 	pkgai "github.com/example/aichat/backend/pkg/ai"
 	"github.com/example/aichat/backend/pkg/auth"
+	redislib "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -23,18 +28,23 @@ import (
 // sessionStream 封装了单个 AI 生成任务的状态
 type sessionStream struct {
 	mu        sync.Mutex
-	history   []*pb.Message                 // 内存缓冲区，用于支持刷新后的“断点续传”
 	clients   map[chan *pb.Message]struct{} // 订阅该任务的所有客户端连接
 	done      chan struct{}                 // 信号：AI 生成完成
 	aiMsgID   int64                         // 数据库中预留的 AI 消息 ID
 	startTime time.Time                     // 任务启动时间，用于耗时统计
+	sessionID int64
+	redis     db.RedisRepo
 }
 
 // broadcast 向所有已连接的客户端广播消息片段
 func (ss *sessionStream) broadcast(msg *pb.Message) {
+	if ss.redis != nil {
+		if payload, err := protojson.Marshal(msg); err == nil {
+			_ = ss.redis.RPush(context.Background(), fmt.Sprintf(consts.RedisKeyChatStreamDelta, ss.sessionID), 30*time.Minute, string(payload))
+		}
+	}
 	ss.mu.Lock()
 	defer ss.mu.Unlock()
-	ss.history = append(ss.history, msg)
 	for client := range ss.clients {
 		select {
 		case client <- msg:
@@ -48,15 +58,36 @@ type ChatService struct {
 	uc            *biz.ChatUsecase
 	agent         *ai.AIUsecase
 	log           *zap.Logger
+	redis         db.RedisRepo
 	activeStreams sync.Map // Key: SessionID (int64) -> Value: *sessionStream
 }
 
-func NewChatService(uc *biz.ChatUsecase, agent *ai.AIUsecase, logger *zap.Logger) *ChatService {
+func NewChatService(uc *biz.ChatUsecase, agent *ai.AIUsecase, logger *zap.Logger, redisRepo db.RedisRepo) *ChatService {
 	return &ChatService{
 		uc:    uc,
 		agent: agent,
 		log:   logger,
+		redis: redisRepo,
 	}
+}
+
+type streamStatus string
+
+const (
+	streamStatusRunning streamStatus = "running"
+	streamStatusDone    streamStatus = "done"
+	streamStatusError   streamStatus = "error"
+	streamMetaTTL                    = 30 * time.Minute
+	streamRunningTTL                 = 2 * time.Minute
+)
+
+type streamMeta struct {
+	SessionID int64        `json:"session_id"`
+	AIMessageID int64      `json:"ai_message_id"`
+	StartUnix int64        `json:"start_unix"`
+	UpdatedUnix int64      `json:"updated_unix"`
+	Status    streamStatus `json:"status"`
+	Error     string       `json:"error,omitempty"`
 }
 
 // HistoryById 获取会话消息详情，并智能标记流式状态
@@ -72,7 +103,7 @@ func (s *ChatService) HistoryById(ctx context.Context, req *pb.HistoryRequest) (
 	if len(pbMessages) > 0 {
 		lastMsg := pbMessages[len(pbMessages)-1]
 		if lastMsg.Role == "assistant" {
-			if _, running := s.activeStreams.Load(req.SessionId); running {
+			if _, running := s.activeStreams.Load(req.SessionId); running || s.isStreamRunning(ctx, req.SessionId) {
 				lastMsg.IsStreaming = true
 			}
 		}
@@ -101,6 +132,8 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 		clients:   make(map[chan *pb.Message]struct{}),
 		done:      make(chan struct{}),
 		startTime: time.Now(),
+		sessionID: sessionID,
+		redis:     s.redis,
 	})
 	ss := streamObj.(*sessionStream)
 
@@ -132,6 +165,8 @@ func (s *ChatService) SSEHandler(w http.ResponseWriter, r *http.Request) {
 
 // initAndStartStream 初始化数据库占位符并开启 AI 协程
 func (s *ChatService) initAndStartStream(ctx context.Context, sessionID int64, req *pb.SendStreamRequest, ss *sessionStream) {
+	s.resetStreamCache(ctx, sessionID)
+
 	// 【防御性优化】如果是续传请求（ID > 0），尝试关联已有消息，防止重复创建
 	if req.CurMessage.Id > 0 {
 		messages, err := s.uc.GetSessionMessages(ctx, sessionID)
@@ -142,6 +177,7 @@ func (s *ChatService) initAndStartStream(ctx context.Context, sessionID int64, r
 					nextMsg := messages[i+1]
 					if nextMsg.Role == model.RoleAssistant {
 						ss.aiMsgID = nextMsg.ID
+						s.saveStreamMeta(ctx, ss, streamStatusRunning, "")
 						s.startAIStream(ctx, sessionID, req, ss)
 						return
 					}
@@ -175,6 +211,7 @@ func (s *ChatService) initAndStartStream(ctx context.Context, sessionID int64, r
 	}
 
 	ss.aiMsgID = aiMsg.ID
+	s.saveStreamMeta(ctx, ss, streamStatusRunning, "")
 	s.startAIStream(ctx, sessionID, req, ss)
 }
 
@@ -205,10 +242,14 @@ func (s *ChatService) runAIStream(ctx context.Context, sessionID int64, req *pb.
 	toolOrder := make([]string, 0, 4)
 	linkIndex := make(map[string]*pkgai.QuoteSearchLink)
 	linkOrder := make([]string, 0, 6)
+	finalStatus := streamStatusDone
+	finalErrText := ""
 	for msg := range aiStream {
 		if msg.Error != nil {
 			s.log.Error("AI Stream Error", zap.Error(msg.Error))
 			s.broadcastError(ss, msg.Error)
+			finalStatus = streamStatusError
+			finalErrText = msg.Error.Error()
 			break
 		}
 		if msg.Message == nil {
@@ -217,6 +258,7 @@ func (s *ChatService) runAIStream(ctx context.Context, sessionID int64, req *pb.
 
 		pbMsg := s.pkgaiToPb(msg.Message)
 		ss.broadcast(pbMsg)
+		s.saveStreamMeta(ctx, ss, streamStatusRunning, "")
 
 		contentBuilder.WriteString(msg.Message.Content)
 		reasoningBuilder.WriteString(msg.Message.ReasoningContent)
@@ -271,6 +313,7 @@ func (s *ChatService) runAIStream(ctx context.Context, sessionID int64, req *pb.
 	if err := s.uc.UpdateMessage(ctx, aiMsg); err != nil {
 		s.log.Error("Final DB update failed", zap.Error(err))
 	}
+	s.saveStreamMeta(ctx, ss, finalStatus, finalErrText)
 }
 
 // --- 辅助工具方法 ---
@@ -292,12 +335,81 @@ func (s *ChatService) parseStreamRequest(r *http.Request) (*pb.SendStreamRequest
 	return &req, err
 }
 
+func (s *ChatService) resetStreamCache(ctx context.Context, sessionID int64) {
+	if s.redis == nil {
+		return
+	}
+	_ = s.redis.Del(ctx, fmt.Sprintf(consts.RedisKeyChatStreamMeta, sessionID))
+	_ = s.redis.Del(ctx, fmt.Sprintf(consts.RedisKeyChatStreamDelta, sessionID))
+}
+
+func (s *ChatService) saveStreamMeta(ctx context.Context, ss *sessionStream, status streamStatus, errText string) {
+	if s.redis == nil || ss == nil {
+		return
+	}
+
+	payload, err := json.Marshal(streamMeta{
+		SessionID:  ss.sessionID,
+		AIMessageID: ss.aiMsgID,
+		StartUnix:  ss.startTime.Unix(),
+		UpdatedUnix: time.Now().Unix(),
+		Status:     status,
+		Error:      errText,
+	})
+	if err != nil {
+		s.log.Warn("marshal stream meta failed", zap.Error(err), zap.Int64("session_id", ss.sessionID))
+		return
+	}
+	if err = s.redis.Set(ctx, fmt.Sprintf(consts.RedisKeyChatStreamMeta, ss.sessionID), string(payload), streamMetaTTL); err != nil {
+		s.log.Warn("save stream meta failed", zap.Error(err), zap.Int64("session_id", ss.sessionID))
+	}
+}
+
+func (s *ChatService) loadStreamMeta(ctx context.Context, sessionID int64) (*streamMeta, error) {
+	if s.redis == nil {
+		return nil, nil
+	}
+
+	value, err := s.redis.Get(ctx, fmt.Sprintf(consts.RedisKeyChatStreamMeta, sessionID))
+	if err != nil {
+		if errors.Is(err, redislib.Nil) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var meta streamMeta
+	if err = json.Unmarshal([]byte(value), &meta); err != nil {
+		return nil, err
+	}
+	return &meta, nil
+}
+
+func (s *ChatService) isStreamRunning(ctx context.Context, sessionID int64) bool {
+	meta, err := s.loadStreamMeta(ctx, sessionID)
+	if err != nil || meta == nil {
+		return false
+	}
+	if meta.Status != streamStatusRunning {
+		return false
+	}
+	return time.Since(time.Unix(meta.UpdatedUnix, 0)) <= streamRunningTTL
+}
+
 func (s *ChatService) replayStreamHistory(w http.ResponseWriter, flusher http.Flusher, ss *sessionStream) {
-	ss.mu.Lock()
-	defer ss.mu.Unlock()
-	for _, msg := range ss.history {
-		jsonMsg, _ := protojson.Marshal(msg)
-		fmt.Fprintf(w, "event: delta\ndata: %s\n\n", jsonMsg)
+	if s.redis == nil {
+		flusher.Flush()
+		return
+	}
+
+	values, err := s.redis.LRange(context.Background(), fmt.Sprintf(consts.RedisKeyChatStreamDelta, ss.sessionID), 0, -1)
+	if err != nil && !errors.Is(err, redislib.Nil) {
+		s.log.Warn("replay stream history failed", zap.Error(err), zap.Int64("session_id", ss.sessionID))
+		flusher.Flush()
+		return
+	}
+	for _, value := range values {
+		fmt.Fprintf(w, "event: delta\ndata: %s\n\n", value)
 	}
 	flusher.Flush()
 }
@@ -336,6 +448,7 @@ func (s *ChatService) listenAndServe(w http.ResponseWriter, flusher http.Flusher
 
 func (s *ChatService) broadcastError(ss *sessionStream, err error) {
 	s.log.Error("AI Stream Error", zap.Error(err))
+	s.saveStreamMeta(context.Background(), ss, streamStatusError, err.Error())
 	ss.broadcast(&pb.Message{
 		Role:    "assistant",
 		Content: fmt.Sprintf("\n[生成出错]: %v", err),

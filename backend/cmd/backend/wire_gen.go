@@ -10,6 +10,7 @@ import (
 	"github.com/example/aichat/backend/internal/biz"
 	ai2 "github.com/example/aichat/backend/internal/biz/ai"
 	"github.com/example/aichat/backend/internal/biz/base"
+	"github.com/example/aichat/backend/internal/biz/base/loginprovider"
 	"github.com/example/aichat/backend/internal/conf"
 	"github.com/example/aichat/backend/internal/data"
 	"github.com/example/aichat/backend/internal/data/ai"
@@ -38,13 +39,15 @@ func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Log
 	}
 	sysUserRepo := data.NewSysUserRepo(dataRepo)
 	authRepo := auth.NewAuthRepo()
-	sysUserUseCase := base.NewSysUserUseCase(sysUserRepo, authRepo)
+	redisRepo := db.NewRedisRepo(dataRepo)
+	stateCache := loginprovider.NewStateCache(redisRepo)
+	sysUserUseCase := base.NewSysUserUseCase(sysUserRepo, authRepo, stateCache, bootstrap)
 	authService := base2.NewAuthService(sysUserUseCase)
 	sysMenuRepo := data.NewSysMenuRepo(dataRepo, logger)
 	sysMenuUseCase := base.NewSysMenuUseCase(sysMenuRepo)
 	dictTypeRepo := data.NewDictTypeRepo(dataRepo, logger)
 	dictDataRepo := data.NewDictDataRepo(dataRepo, logger)
-	transaction := db.NewTransaction(dataRepo)
+	transaction := data.NewTransaction(dataRepo)
 	dictTypeUseCase := base.NewDictTypeUseCase(dictTypeRepo, dictDataRepo, transaction)
 	dictDataUseCase := base.NewDictDataUseCase(dictDataRepo)
 	systemService := base2.NewSystemService(sysMenuUseCase, dictTypeUseCase, dictDataUseCase)
@@ -67,7 +70,7 @@ func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Log
 	aiWorkflowRepo := ai.NewAIWorkflowRepo(dataRepo, logger)
 	aiWorkflowUseCase := ai2.NewAIWorkflowUseCase(aiWorkflowRepo)
 	aiUsecase := ai2.NewAIUsecase(aiApplicationUseCase, aiAgentUseCase, aiWorkflowUseCase, aiModelUseCase, logger)
-	chatService := service.NewChatService(chatUsecase, aiUsecase, logger)
+	chatService := service.NewChatService(chatUsecase, aiUsecase, logger, redisRepo)
 	grpcServer := server.NewGRPCServer(confServer, authService, systemService, trackerService, aiService, chatService, logLogger)
 	httpServer := server.NewHTTPServer(confServer, chatService, authService, authRepo, systemService, trackerService, aiService, logLogger)
 	webSocketServer := server.NewWebSocketServerWrapper(chatService, logger)

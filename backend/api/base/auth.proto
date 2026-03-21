@@ -104,6 +104,10 @@ message GetInfoReply {
 message LoginRequest {
   string username = 1;
   string password = 2;
+  string login_type = 3; // "password", "phone", "qq"
+  string phone = 4;
+  string code = 5; // 手机验证码
+  string auth_code = 6; // 第三方登录授权码
 }
 
 message LoginReply {

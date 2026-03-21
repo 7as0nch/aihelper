@@ -54,6 +54,22 @@ func (r *sysUserRepo) GetById(ctx context.Context, id int64) (*model.SysUser, er
 	return user, nil
 }
 
+func (r *sysUserRepo) GetByPhone(ctx context.Context, phone string) (*model.SysUser, error) {
+	phone = strings.TrimSpace(phone)
+	if phone == "" {
+		return nil, nil
+	}
+
+	user, err := r.query.SysUser.WithContext(ctx).Where(r.query.SysUser.Phonenumber.Eq(phone)).First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
 func (r *sysUserRepo) Create(ctx context.Context, user *model.SysUser) error {
 	return r.db.DB(ctx).Create(user).Error
 }

@@ -55,9 +55,13 @@ export const authApi: AuthApi = {
         // Backend mode (Backend API): Real login
         if (aiType === 'backend') {
             return request<LoginResponse>({
-                url: '/auth/login/phone',
+                url: '/auth/login',
                 method: 'post',
-                data: { phone, code }
+                data: {
+                    loginType: 'phone',
+                    phone,
+                    code
+                }
             });
         }
 
@@ -87,7 +91,11 @@ export const authApi: AuthApi = {
             return request<LoginResponse>({
                 url: '/auth/login',
                 method: 'post',
-                data: { username, password }
+                data: {
+                    loginType: 'password',
+                    username,
+                    password
+                }
             });
         }
 

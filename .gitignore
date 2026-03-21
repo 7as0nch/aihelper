@@ -88,6 +88,7 @@ Thumbs.db
 *.cert
 *.key
 bin/
+.tools/
 aichat-backend.tar
 aichat-backend.tar.gz
 

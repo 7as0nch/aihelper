@@ -8,7 +8,6 @@ package db
 import (
 	"context"
 
-	"github.com/example/aichat/backend/internal/biz/base"
 	"github.com/example/aichat/backend/internal/conf"
 	"go.uber.org/zap"
 
@@ -21,19 +20,15 @@ type DataRepo interface {
 	GetDB() *gorm.DB
 	DB(ctx context.Context) *gorm.DB
 	InTx(ctx context.Context, fn func(ctx context.Context) error) error
-	Redis()
+	Redis() RedisRepo
 	// TODO OSS
 }
 
 // Data .
 type Data struct {
 	// TODO wrapped database client
-	db *gorm.DB
-}
-
-// NewTransaction .
-func NewTransaction(d DataRepo) base.Transaction {
-	return d
+	db    *gorm.DB
+	redis RedisRepo
 }
 
 // GetDB implements DataRepo.
@@ -67,8 +62,8 @@ func (d *Data) InTx(ctx context.Context, fn func(ctx context.Context) error) err
 }
 
 // Redis implements DataRepo.
-func (d *Data) Redis() {
-	panic("unimplemented")
+func (d *Data) Redis() RedisRepo {
+	return d.redis
 }
 
 // NewData .
@@ -79,11 +74,19 @@ func NewData(c *conf.Bootstrap, logger *zap.Logger) (DataRepo, func(), error) {
 		logger.Error("NewMysqlDB failed")
 		return nil, nil, nil
 	}
+	redisRepo, err := NewRedis(c, logger)
+	if err != nil {
+		return nil, nil, err
+	}
 	cleanup := func() {
 		logger.Info("closing the data resources")
+		if redisRepo != nil {
+			_ = redisRepo.Close()
+		}
 	}
 	return &Data{
-		db: db,
+		db:    db,
+		redis: redisRepo,
 	}, cleanup, nil
 }
 
@@ -94,5 +97,9 @@ func NewMysqlDB(source string) *gorm.DB {
 		panic(err)
 	}
 	return db
+}
+
+func NewRedisRepo(d DataRepo) RedisRepo {
+	return d.Redis()
 }
 

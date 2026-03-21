@@ -1,6 +1,10 @@
 package model
 
-import "github.com/example/aichat/backend/models"
+import (
+	"strings"
+
+	"github.com/example/aichat/backend/models"
+)
 
 const TableNameSysUserAuth = "sys_user_auth"
 
@@ -8,10 +12,45 @@ type AuthType int
 
 const (
 	AuthTypePassword AuthType = 1
-	AuthTypeQQ       AuthType = 2
-	AuthTypeWechat   AuthType = 3
-	AuthTypeGithub   AuthType = 4
+	AuthTypePhone    AuthType = 2
+	AuthTypeQQ       AuthType = 3
+	AuthTypeWechat   AuthType = 4
+	AuthTypeGithub   AuthType = 5
 )
+
+func (t AuthType) String() string {
+	switch t {
+	case AuthTypePassword:
+		return "password"
+	case AuthTypePhone:
+		return "phone"
+	case AuthTypeQQ:
+		return "qq"
+	case AuthTypeWechat:
+		return "wechat"
+	case AuthTypeGithub:
+		return "github"
+	default:
+		return "unknown"
+	}
+}
+
+func ParseAuthType(value string) (AuthType, bool) {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "password":
+		return AuthTypePassword, true
+	case "phone":
+		return AuthTypePhone, true
+	case "qq":
+		return AuthTypeQQ, true
+	case "wechat":
+		return AuthTypeWechat, true
+	case "github":
+		return AuthTypeGithub, true
+	default:
+		return 0, false
+	}
+}
 
 // SysUserAuth stores credentials for different login providers.
 type SysUserAuth struct {

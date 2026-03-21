@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/example/aichat/backend/internal/biz/base/loginprovider"
 	"github.com/example/aichat/backend/internal/data/ai"
 	"github.com/example/aichat/backend/internal/db"
 	"github.com/example/aichat/backend/pkg/auth"
@@ -14,11 +15,13 @@ var ProviderSet = wire.NewSet(
 	NewSysMenuRepo,
 	auth.NewAuthRepo,
 	db.NewData,
-	db.NewTransaction,
+	NewTransaction,
 	NewDictTypeRepo,
 	NewDictDataRepo,
 	NewTrackerRepo,
 	NewChatRepo,
+	db.NewRedisRepo,
+	loginprovider.NewStateCache,
 	ai.NewAIAgentRepo,
 	ai.NewAIApplicationRepo,
 	ai.NewAIWorkflowRepo,
