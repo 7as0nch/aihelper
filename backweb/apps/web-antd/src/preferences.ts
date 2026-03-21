@@ -28,6 +28,13 @@ export const overridesPreferences = defineOverridesPreferences({
      */
     // loginExpiredMode: 'modal',
   },
+  copyright: {
+    companyName: '7as0nch V0.0.1-beta',
+    date: new Date().getFullYear().toString(),
+    companySiteLink: 'https://aihelper.chat/',
+    icp: '蜀ICP备2026011723号-1',
+    icpLink: 'https://beian.miit.gov.cn',
+  },
   footer: {
     /**
      * 不显示footer
@@ -46,6 +53,9 @@ export const overridesPreferences = defineOverridesPreferences({
      * 浅色sidebar
      */
     semiDarkSidebar: false,
+    // builtinType: 'custom',
+    // colorPrimary: 'hsl(32 93% 47%)',
+    // mode: 'light',
   },
   /**
    * !!! 更改配置后请清空浏览器缓存

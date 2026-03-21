@@ -272,7 +272,7 @@ metadata:
   namespace: aichat
 spec:
   type: ExternalName
-  externalName: kuboard-v3.kuboard.svc.cluster.local 
+  externalName: kuboard-v3-service.kuboard.svc.cluster.local 
   ports:
   - port: 80
 ---
@@ -306,8 +306,10 @@ spec:
   tls:
   - hosts:
     - aihelper.chat
-    - "*.aihelper.chat"
-    secretName: aihelper-chat-tls-secret
+    - admin.aihelper.chat
+    - api.aihelper.chat
+    - hk.aihelper.chat
+    secretName: cf-origin-tls
   rules:
   - host: aihelper.chat # 用户访问域名
     http:
@@ -339,7 +341,7 @@ spec:
             name: backend
             port:
               number: 8000
-  - host: jdk3s.aihelper.chat # Kuboard 面板域名
+  - host: hk.aihelper.chat # Kuboard 面板域名
     http:
       paths:
       - path: /
