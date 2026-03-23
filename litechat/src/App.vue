@@ -1,19 +1,27 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { StyleProvider } from 'ant-design-vue';
 import Sidebar from '@/components/layout/Sidebar.vue';
 import AuthModal from '@/components/auth/AuthModal.vue';
+import { useAuthStore } from '@/stores/auth';
 
 defineProps<{
   styleContainer?: HTMLElement;
 }>();
 
 const route = useRoute();
+const authStore = useAuthStore();
 const isSidebarOpen = ref(false);
 const isSidebarCollapsed = ref(false);
 
-const isLanding = computed(() => route.name === 'Landing');
+const isLanding = computed(() => ['Landing', 'page'].includes(route.name as string));
+
+watch(isLanding, (landing) => {
+  if (landing) {
+    authStore.closeModal();
+  }
+}, { immediate: true });
 </script>
 
 <template>
@@ -34,7 +42,7 @@ const isLanding = computed(() => route.name === 'Landing');
         <component :is="Component" @toggle-sidebar="isSidebarOpen = !isSidebarOpen" />
       </router-view>
 
-      <AuthModal />
+      <AuthModal v-if="!isLanding" />
     </div>
   </StyleProvider>
 </template>

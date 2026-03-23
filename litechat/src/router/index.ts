@@ -20,7 +20,7 @@ const routes: Route[] = [
         path: '/',
         name: 'page',
         hidden: true,
-        component: ChatView,
+        component: LandingView,
         meta: {
             title: '首页',
         }
@@ -35,7 +35,7 @@ const routes: Route[] = [
         }
     },
     {
-        path: '/chat',
+        path: '/app',
         name: 'Chat',
         hidden: false,
         component: ChatView,
@@ -45,7 +45,7 @@ const routes: Route[] = [
         }
     },
     {
-        path: '/chat/:id',
+        path: '/app/:id',
         name: 'ChatHistory',
         hidden: true,
         component: ChatView,
@@ -117,7 +117,7 @@ export function createAppRouter(history: any) {
 
         // Check if route requires auth
         // The user requirement: "Except the first one (Home), others need validation"
-        const publicRoutes = ['Landing', 'Chat', 'MockQQLogin'];
+        const publicRoutes = ['page', 'Landing', 'Chat', 'MockQQLogin'];
 
         // If it's not a public route
         if (!publicRoutes.includes(to.name as string)) {

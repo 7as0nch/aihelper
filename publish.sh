@@ -9,9 +9,9 @@ BUILDER_NAME="${BUILDER_NAME:-}"
 USE_CONTAINER_BUILDER="${USE_CONTAINER_BUILDER:-0}"
 
 # 各个服务的版本号独立管理
-VERSION_BACKEND="v1.0.4-beta.10"
-VERSION_BACKWEB="v1.0.4-beta.1"
-VERSION_LITECHAT="v1.0.4-beta.6"
+VERSION_BACKEND="v1.0.4-beta.12"
+VERSION_BACKWEB="v1.0.4-beta.2"
+VERSION_LITECHAT="v1.0.4-beta.8"
 
 # --- 脚本逻辑 ---
 SERVICE=${1:-}  # 接收第一个参数作为指定服务名
@@ -122,7 +122,7 @@ fi
 echo "Done! 所有选定服务已发布，K8s 配置已更新。"
 
 echo "将k8s-deployment.yaml增量同步到远程服务器"
-rsync -avz --delete k8s-deployment.yaml root@sshk.aihelper.chat:/root/k3s/aichat/aichat.yaml
+rsync -avz --delete k8s-deployment.yaml root@sshjd.aihelper.chat:/root/k3s/aichat/aichat.yaml
 
 echo "远程执行命令：kubectl apply -f pipeline.yaml"
-ssh root@sshk.aihelper.chat "kubectl apply -f /root/k3s/aichat/aichat.yaml"
+ssh root@sshjd.aihelper.chat "kubectl apply -f /root/k3s/aichat/aichat.yaml"
