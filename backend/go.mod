@@ -1,6 +1,6 @@
 module github.com/example/aichat/backend
 
-go 1.24.7
+go 1.25.3
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
@@ -21,11 +21,13 @@ require (
 	github.com/googollee/go-socket.io v1.7.0
 	github.com/kaptinlin/jsonrepair v0.2.4
 	github.com/prometheus/client_golang v1.11.0
+	github.com/redis/go-redis/v9 v9.18.0
 	github.com/xuri/excelize/v2 v2.10.0
 	go.mongodb.org/mongo-driver v1.17.6
 	go.opentelemetry.io/otel/sdk v1.34.0
 	go.uber.org/automaxprocs v1.5.1
 	go.uber.org/zap v1.19.1
+	golang.org/x/crypto v0.47.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250811160224-6b04f9b4fc78
 	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.7
@@ -63,7 +65,6 @@ require (
 	github.com/prometheus/common v0.30.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rakyll/statik v0.1.7 // indirect
-	github.com/redis/go-redis/v9 v9.18.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/tiendc/go-deepcopy v1.7.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -149,7 +150,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0
 	golang.org/x/arch v0.23.0 // indirect
-	golang.org/x/crypto v0.47.0
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sync v0.19.0
