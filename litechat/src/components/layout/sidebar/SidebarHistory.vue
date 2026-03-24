@@ -111,9 +111,9 @@ const {
               <!-- Normal Mode -->
               <router-link 
                 v-else
-                :to="`/chat/${history.id}`"
+                :to="`/app/${history.id}`"
                 class="block px-3 py-2 pl-9 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg truncate transition-colors pr-8"
-                :class="{ 'bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400': route.path === `/chat/${history.id}` }"
+                :class="{ 'bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400': route.path === `/app/${history.id}` }"
                 :title="history.title"
               >
                 {{ history.title }}

@@ -85,7 +85,7 @@ export function useHistoryMenu() {
     const confirmDelete = async (id: string | null) => {
         if (!id) return;
         await store.deleteChat(id);
-        if (route.path === `/chat/${id}`) {
+        if (route.path === `/app/${id}`) {
             router.push('/');
         }
         deleteConfirmId.value = null;
