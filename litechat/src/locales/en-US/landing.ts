@@ -110,6 +110,7 @@ const landing = {
         'A strong mini-project template for LiteChat practice',
       ],
       promptLabel: 'We have tomatoes, eggs, and tofu tonight. What can we cook in 30 minutes?',
+      repoLabel: 'View the AICook repository',
     },
     backlog: [
       {
@@ -138,7 +139,7 @@ const landing = {
     cta: 'Explore the roadmap',
   },
   footer: {
-    description: 'An open-source website and frontend delivery layer for assistant products, evolving around Go, Eino, and Vben.',
+    description: 'Frontend delivery foundation for AI assistants.',
     ecosystem: 'Product',
     resources: 'Resources',
     status: 'Status',
