@@ -25,7 +25,7 @@ const filteredFavorites = computed(() => {
 });
 
 const navigateToChat = (id: string) => {
-  router.push(`/chat/${id}`);
+  router.push(`/app/${id}`);
 };
 
 const unstar = (e: Event, id: string) => {

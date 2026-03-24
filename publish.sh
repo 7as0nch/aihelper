@@ -11,7 +11,7 @@ USE_CONTAINER_BUILDER="${USE_CONTAINER_BUILDER:-0}"
 # 各个服务的版本号独立管理
 VERSION_BACKEND="v1.0.4-beta.12"
 VERSION_BACKWEB="v1.0.4-beta.2"
-VERSION_LITECHAT="v1.0.4-beta.8"
+VERSION_LITECHAT="v1.0.4-beta.9"
 
 # --- 脚本逻辑 ---
 SERVICE=${1:-}  # 接收第一个参数作为指定服务名

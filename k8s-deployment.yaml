@@ -208,7 +208,7 @@ spec:
     spec:
       containers:
       - name: litechat
-        image: 7as0nch/aichat-litechat:v1.0.4-beta.7
+        image: 7as0nch/aichat-litechat:v1.0.4-beta.9
         # 【就绪检查】流量入口控制
         readinessProbe:
           httpGet:
