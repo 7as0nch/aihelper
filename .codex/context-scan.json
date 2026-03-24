@@ -1,0 +1,38 @@
+{
+  "affected_area": [
+    "litechat/src/views/LandingView.vue",
+    "litechat/src/mount.ts",
+    "litechat/src/stores/theme.ts",
+    "litechat/src/router/index.ts",
+    "litechat/package.json"
+  ],
+  "current_behavior": {
+    "landing": "官网为单文件大组件，文案和样式全部内嵌，使用本地 isDark 状态独立控制主题。",
+    "i18n": "litechat 目前没有自己的国际化基础设施。",
+    "theme": "全局已有 Pinia theme store，但 Landing 未复用。",
+    "animation": "项目内只有少量过渡和 requestAnimationFrame 用法，没有官网级滚动动画模式。"
+  },
+  "similar_cases": [
+    "backweb/packages/locales/src/i18n.ts 提供了仓库现有的 vue-i18n 组织方式",
+    "litechat/src/components/ThemeToggle.vue 提供了现有主题切换模式",
+    "litechat/src/components/common/ExternalLinkModal.vue 使用了 Vue Transition"
+  ],
+  "stack": {
+    "frontend": "Vue 3 + Vite + TypeScript + Pinia + vue-router + Tailwind",
+    "design": "当前 Landing 使用 scoped CSS，自定义样式为主",
+    "package_manager": "pnpm"
+  },
+  "tests": {
+    "available": [
+      "pnpm build"
+    ],
+    "gaps": [
+      "官网页面目前没有独立单元测试"
+    ]
+  },
+  "observations": [
+    "litechat 已存在 pnpm-lock.yaml 和 node_modules，可直接按 pnpm 生态改动。",
+    "用户要求官网默认浅色，但聊天页不要求同步调整默认策略，需要兼顾兼容性。",
+    "官网重构属于中大型改动，需要补充 .codex 过程和验证文件。"
+  ]
+}
