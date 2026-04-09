@@ -8,19 +8,19 @@ server:
 data:
   database:
     driver: mysql
-    source: read_rentianhua:yNxruv24C26@tcp(rm-bp1hw1ynxruv24c26jo.mysql.rds.aliyuncs.com:3306)/rth?parseTime=True&loc=Local
+    source: read_rentianhua:@tcp(rm-.mysql.rds.aliyuncs.com:3306)/rth?parseTime=True&loc=Local
   pg_database:
     host: sshjd.aihelper.chat
     port: 30532
-    user: pgadmin
-    password: "pgcj123456"
+    user: 
+    password: ""
     dbname: pgdb
     sslmode: disable
   redis:
     addr: sshjd.aihelper.chat:30379
     read_timeout: 0.2s
     write_timeout: 0.2s
-    password: "rediscj123456"
+    password: ""
 
 log:
   maxAge: 30
@@ -39,5 +39,5 @@ auth:
 
 # TODO minio 配置
 oss:
-  access_key: "7ns5yiCMFgN5rdZbkJnW"
-  secret_key: "4GV4kNFqonmgFNlTkLMfK6R7ChCP4a63TFMIqHIx"
+  access_key: ""
+  secret_key: ""
