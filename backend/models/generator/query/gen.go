@@ -26,6 +26,7 @@ var (
 	AITool           *aITool
 	AIToolAgentBind  *aIToolAgentBind
 	AIWorkflow       *aIWorkflow
+	BetaApplication  *betaApplication
 	SysDict          *sysDict
 	SysDictType      *sysDictType
 	SysMenu          *sysMenu
@@ -45,6 +46,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	AITool = &Q.AITool
 	AIToolAgentBind = &Q.AIToolAgentBind
 	AIWorkflow = &Q.AIWorkflow
+	BetaApplication = &Q.BetaApplication
 	SysDict = &Q.SysDict
 	SysDictType = &Q.SysDictType
 	SysMenu = &Q.SysMenu
@@ -65,6 +67,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		AITool:           newAITool(db, opts...),
 		AIToolAgentBind:  newAIToolAgentBind(db, opts...),
 		AIWorkflow:       newAIWorkflow(db, opts...),
+		BetaApplication:  newBetaApplication(db, opts...),
 		SysDict:          newSysDict(db, opts...),
 		SysDictType:      newSysDictType(db, opts...),
 		SysMenu:          newSysMenu(db, opts...),
@@ -86,6 +89,7 @@ type Query struct {
 	AITool           aITool
 	AIToolAgentBind  aIToolAgentBind
 	AIWorkflow       aIWorkflow
+	BetaApplication  betaApplication
 	SysDict          sysDict
 	SysDictType      sysDictType
 	SysMenu          sysMenu
@@ -108,6 +112,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		AITool:           q.AITool.clone(db),
 		AIToolAgentBind:  q.AIToolAgentBind.clone(db),
 		AIWorkflow:       q.AIWorkflow.clone(db),
+		BetaApplication:  q.BetaApplication.clone(db),
 		SysDict:          q.SysDict.clone(db),
 		SysDictType:      q.SysDictType.clone(db),
 		SysMenu:          q.SysMenu.clone(db),
@@ -137,6 +142,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		AITool:           q.AITool.replaceDB(db),
 		AIToolAgentBind:  q.AIToolAgentBind.replaceDB(db),
 		AIWorkflow:       q.AIWorkflow.replaceDB(db),
+		BetaApplication:  q.BetaApplication.replaceDB(db),
 		SysDict:          q.SysDict.replaceDB(db),
 		SysDictType:      q.SysDictType.replaceDB(db),
 		SysMenu:          q.SysMenu.replaceDB(db),
@@ -156,6 +162,7 @@ type queryCtx struct {
 	AITool           IAIToolDo
 	AIToolAgentBind  IAIToolAgentBindDo
 	AIWorkflow       IAIWorkflowDo
+	BetaApplication  IBetaApplicationDo
 	SysDict          ISysDictDo
 	SysDictType      ISysDictTypeDo
 	SysMenu          ISysMenuDo
@@ -175,6 +182,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		AITool:           q.AITool.WithContext(ctx),
 		AIToolAgentBind:  q.AIToolAgentBind.WithContext(ctx),
 		AIWorkflow:       q.AIWorkflow.WithContext(ctx),
+		BetaApplication:  q.BetaApplication.WithContext(ctx),
 		SysDict:          q.SysDict.WithContext(ctx),
 		SysDictType:      q.SysDictType.WithContext(ctx),
 		SysMenu:          q.SysMenu.WithContext(ctx),

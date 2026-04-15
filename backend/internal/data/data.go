@@ -19,6 +19,7 @@ var ProviderSet = wire.NewSet(
 	NewDictTypeRepo,
 	NewDictDataRepo,
 	NewTrackerRepo,
+	NewBetaApplicationRepo,
 	NewChatRepo,
 	db.NewRedisRepo,
 	loginprovider.NewStateCache,

@@ -54,6 +54,10 @@ func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Log
 	trackerRepo := data.NewTrackerRepo(dataRepo, logger)
 	trackerUseCase := base.NewTrackerUseCase(trackerRepo)
 	trackerService := base2.NewTrackerService(trackerUseCase)
+	betaApplicationRepo := data.NewBetaApplicationRepo(dataRepo, logger)
+	betaApplicationNotifier := base2.NewBetaApplicationNotifier(bootstrap, logger)
+	betaApplicationUseCase := base.NewBetaApplicationUseCase(betaApplicationRepo, betaApplicationNotifier, logger)
+	betaApplicationService := base2.NewBetaApplicationService(betaApplicationUseCase)
 	aiAgentRepo := ai.NewAIAgentRepo(dataRepo, logger)
 	aiAgentUseCase := ai2.NewAIAgentUseCase(aiAgentRepo, transaction)
 	aiModelRepo := ai.NewAIModelRepo(dataRepo, logger)
@@ -71,8 +75,8 @@ func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Log
 	aiWorkflowUseCase := ai2.NewAIWorkflowUseCase(aiWorkflowRepo)
 	aiUsecase := ai2.NewAIUsecase(aiApplicationUseCase, aiAgentUseCase, aiWorkflowUseCase, aiModelUseCase, logger)
 	chatService := service.NewChatService(chatUsecase, aiUsecase, logger, redisRepo)
-	grpcServer := server.NewGRPCServer(confServer, authService, systemService, trackerService, aiService, chatService, logLogger)
-	httpServer := server.NewHTTPServer(confServer, chatService, authService, authRepo, systemService, trackerService, aiService, logLogger)
+	grpcServer := server.NewGRPCServer(confServer, authService, systemService, trackerService, betaApplicationService, aiService, chatService, logLogger)
+	httpServer := server.NewHTTPServer(confServer, chatService, authService, authRepo, systemService, trackerService, betaApplicationService, aiService, logLogger)
 	webSocketServer := server.NewWebSocketServerWrapper(chatService, logger)
 	webSocketApp := server.NewWebSocketAppWrapper(webSocketServer, logger)
 	app := newApp(logLogger, grpcServer, httpServer, webSocketApp)
@@ -80,3 +84,4 @@ func wireApp(confServer *conf.Server, bootstrap *conf.Bootstrap, logger *zap.Log
 		cleanup()
 	}, nil
 }
+

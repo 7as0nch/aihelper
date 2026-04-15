@@ -12,7 +12,7 @@ data:
   pg_database:
     host: sshjd.aihelper.chat
     port: 30532
-    user: 
+    user:
     password: ""
     dbname: pgdb
     sslmode: disable
@@ -36,6 +36,15 @@ auth:
     callback_url: ""
     frontend_redirect: "http://localhost:5173/chat"
     scope: "get_user_info"
+
+beta:
+  mail:
+    host: ""
+    port: 587
+    username: ""
+    password: ""
+    to: ""
+    from: ""
 
 # TODO minio 配置
 oss:

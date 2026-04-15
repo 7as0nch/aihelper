@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
-	_ "net/http/pprof" // 导入 pprof，自动注册 /debug/pprof/* 路由
+	_ "net/http/pprof"
 
 	aipb "github.com/example/aichat/backend/api/ai"
 	basepb "github.com/example/aichat/backend/api/base"
@@ -29,17 +29,15 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
-// NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server,
 	chat *service.ChatService,
 	authServ *base.AuthService,
 	authRepo auth.AuthRepo,
 	system *base.SystemService,
 	tracker *base.TrackerService,
+	betaApplication *base.BetaApplicationService,
 	aiServ *ai.AIService,
 	logg log.Logger) *kratoshttp.Server {
-
-	// 初始化 tracer provider（开发环境使用采样率100%，生产环境可调整）
 	tp := tracesdk.NewTracerProvider(
 		tracesdk.WithSampler(tracesdk.ParentBased(tracesdk.TraceIDRatioBased(1.0))),
 		tracesdk.WithResource(resource.NewWithAttributes(
@@ -48,11 +46,7 @@ func NewHTTPServer(c *conf.Server,
 			semconv.DeploymentEnvironmentKey.String("development"),
 		)),
 	)
-
-	// 设置全局 tracer provider
 	otel.SetTracerProvider(tp)
-
-	// 设置全局 propagator,使 tracing.Server() 能够从 HTTP headers 提取 trace context
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
 		propagation.Baggage{},
@@ -60,29 +54,23 @@ func NewHTTPServer(c *conf.Server,
 
 	var opts = []kratoshttp.ServerOption{
 		kratoshttp.Middleware(
-			metrics.Server(), // 启用服务器端指标
+			metrics.Server(),
 			recovery.Recovery(),
-			// 先提取 ClientID,这样后续的 logging.Server 可以记录它
-			selector.Server(
-				auth.NewHeaderServer()).
-				Match(func(ctx context.Context, operation string) bool {
-					// 对所有请求都执行 NewHeaderServer,提取 ClientID
-					return true
-				}).Build(),
-			logging.Server(logg),  // 此时 ClientID 已经在 context 中
-			tracing.Server(),      // 启用分布式追踪中间件,通过 propagator 提取 trace context
-			auth.MiddlewareCors(), // 跨域中间件,只对特定接口开放
-			// JWT 验证保持在最后,使用原有的白名单逻辑
-			selector.Server(
-				authRepo.Server()).
-				Match(auth.NewWhiteListMatcher(map[string]bool{
-					basepb.OperationAuthLogin:    true,
-					basepb.OperationTrackerBatch: true,
-					"/auth/qq/login":             true,
-					"/auth/qq/callback":          true,
-					"GET /auth/qq/login":         true,
-					"GET /auth/qq/callback":      true,
-				})).Build(),
+			selector.Server(auth.NewHeaderServer()).Match(func(ctx context.Context, operation string) bool {
+				return true
+			}).Build(),
+			logging.Server(logg),
+			tracing.Server(),
+			auth.MiddlewareCors(),
+			selector.Server(authRepo.Server()).Match(auth.NewWhiteListMatcher(map[string]bool{
+				basepb.OperationAuthLogin:             true,
+				basepb.OperationTrackerBatch:          true,
+				basepb.OperationBetaApplicationCreateApplication: true,
+				"/auth/qq/login":                    true,
+				"/auth/qq/callback":                 true,
+				"GET /auth/qq/login":                true,
+				"GET /auth/qq/callback":             true,
+			})).Build(),
 		),
 	}
 	if c.Http.Network != "" {
@@ -98,35 +86,29 @@ func NewHTTPServer(c *conf.Server,
 		kratoshttp.ResponseEncoder(auth.DefaultResponseEncoder),
 		kratoshttp.ErrorEncoder(auth.DefaultErrorEncoder),
 		kratoshttp.RequestDecoder(func(r *http.Request, v interface{}) error {
-			// 处理text/plain类型请求
 			if r.Header.Get("Content-Type") == "text/plain; charset=utf-8" {
-				// 将Content-Type设置为application/json，以便使用默认的JSON解码器
 				r.Header.Set("Content-Type", "application/json")
 			}
-			// 使用默认的请求解码器
 			return kratoshttp.DefaultRequestDecoder(r, v)
 		}))
 	srv := kratoshttp.NewServer(opts...)
 	chatv1.RegisterChatHTTPServer(srv, chat)
 	basepb.RegisterAuthHTTPServer(srv, authServ)
-	// QQ OAuth routes
 	srv.HandleFunc("/auth/qq/login", authServ.HandleQQLogin)
 	srv.HandleFunc("/auth/qq/callback", authServ.HandleQQCallback)
 	basepb.RegisterSystemHTTPServer(srv, system)
 	basepb.RegisterTrackerHTTPServer(srv, tracker)
+	basepb.RegisterBetaApplicationHTTPServer(srv, betaApplication)
 	aipb.RegisterAIHTTPServer(srv, aiServ)
 
-	// 健康检查接口
 	srv.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 	})
 
-	// SSEHandler 手动注册，并手动注入用户信息到 Context（解决 HandleFunc 绕过中间件导致 Context 丢失的问题）
 	srv.HandleFunc("/chat/send", func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		if token != "" {
-			// 如果有 token，手动校验一次并注入 Context
 			if claims, err := authRepo.CheckToken(r.Context(), token); err == nil && claims != nil {
 				ctx := context.WithValue(r.Context(), auth.UserId, int64(claims.UserId))
 				r = r.WithContext(ctx)
@@ -134,21 +116,8 @@ func NewHTTPServer(c *conf.Server,
 		}
 		chat.SSEHandler(w, r)
 	})
-	// Prometheus metrics 端点
 	srv.Handle("/metrics", promhttp.Handler())
-
-	// pprof 性能分析端点（通过导入 net/http/pprof 自动注册到 /debug/pprof/*）
-	// 访问示例：
-	// - http://api.aihelper.chat/debug/pprof/          # 概览页面
-	// - http://api.aihelper.chat/debug/pprof/heap    # 堆内存分析
-	// - http://api.aihelper.chat/debug/pprof/profile  # CPU 性能分析（30秒采样）
-	// - http://api.aihelper.chat/debug/pprof/goroutine # Goroutine 分析
 	srv.HandlePrefix("/debug/pprof/", http.DefaultServeMux)
-
 	srv.HandlePrefix("/q/", openapiv2.NewHandler())
 	return srv
 }
-
-
-
-

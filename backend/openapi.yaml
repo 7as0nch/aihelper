@@ -3,21 +3,19 @@
 
 openapi: 3.0.3
 info:
-    title: Auth API
-    description: The chat service definition.
+    title: BetaApplication API
     version: 0.0.1
 paths:
-    /auth/login:
+    /beta/applications:
         post:
             tags:
-                - Auth
-            description: Login
-            operationId: Auth_Login
+                - BetaApplication
+            operationId: BetaApplication_CreateApplication
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/base.LoginRequest'
+                            $ref: '#/components/schemas/base.CreateBetaApplicationRequest'
                 required: true
             responses:
                 "200":
@@ -25,208 +23,32 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/base.LoginReply'
-    /auth/logout:
-        post:
-            tags:
-                - Auth
-            operationId: Auth_Logout
-            requestBody:
-                content:
-                    application/json: {}
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /auth/user/info:
-        get:
-            tags:
-                - Auth
-            description: getInfo
-            operationId: Auth_GetInfo
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/base.GetInfoReply'
-    /auth/user/profile:
-        get:
-            tags:
-                - Auth
-            description: /user/profile
-            operationId: Auth_GetProfile
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/base.GetInfoReply'
-        put:
-            tags:
-                - Auth
-            description: /user/profile
-            operationId: Auth_UpdateProfile
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/base.User'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /auth/user/profile/updatePwd:
-        put:
-            tags:
-                - Auth
-            description: /user/profile/updatePwd
-            operationId: Auth_UpdatePwd
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/base.UpdatePwdRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /auth/user/register:
-        post:
-            tags:
-                - Auth
-            description: Register
-            operationId: Auth_Register
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/base.RegisterRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
+                                $ref: '#/components/schemas/base.CreateBetaApplicationReply'
 components:
     schemas:
-        base.GetInfoReply:
+        base.CreateBetaApplicationReply:
             type: object
             properties:
-                user:
-                    $ref: '#/components/schemas/base.User'
-                roles:
-                    type: array
-                    items:
-                        type: string
-                permissions:
-                    type: array
-                    items:
-                        type: string
-        base.LoginReply:
-            type: object
-            properties:
-                accessToken:
-                    type: string
-                token:
-                    type: string
-        base.LoginRequest:
-            type: object
-            properties:
-                username:
-                    type: string
-                password:
-                    type: string
-                loginType:
-                    type: string
-                phone:
-                    type: string
-                code:
-                    type: string
-                authCode:
-                    type: string
-        base.RegisterRequest:
-            type: object
-            properties:
-                account:
-                    type: string
-                password:
-                    type: string
-                email:
-                    type: string
-                phonenumber:
-                    type: string
-                sex:
-                    type: string
-        base.Role:
-            type: object
-            properties:
-                dataScope:
-                    type: string
-                flag:
-                    type: boolean
-                roleId:
-                    type: string
-                roleKey:
-                    type: string
-                roleName:
-                    type: string
-                roleSort:
-                    type: integer
-                    format: int32
-                status:
-                    type: string
-                superAdmin:
-                    type: boolean
-        base.UpdatePwdRequest:
-            type: object
-            properties:
-                oldPassword:
-                    type: string
-                newPassword:
-                    type: string
-        base.User:
-            type: object
-            properties:
-                avatar:
-                    type: string
-                createTime:
-                    type: string
-                deptId:
-                    type: string
-                deptName:
-                    type: string
-                email:
-                    type: string
-                loginDate:
-                    type: string
-                loginIp:
-                    type: string
-                nickName:
-                    type: string
-                phonenumber:
-                    type: string
-                remark:
-                    type: string
-                roles:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/base.Role'
-                sex:
+                id:
                     type: string
                 status:
                     type: string
-                tenantId:
+                mailStatus:
                     type: string
-                userId:
+        base.CreateBetaApplicationRequest:
+            type: object
+            properties:
+                productInterest:
                     type: string
-                userName:
+                contactType:
                     type: string
-                userType:
+                contactValue:
+                    type: string
+                useCase:
+                    type: string
+                note:
+                    type: string
+                sourcePage:
                     type: string
 tags:
-    - name: Auth
+    - name: BetaApplication

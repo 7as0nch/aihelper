@@ -10,6 +10,7 @@ message Bootstrap {
   Data data = 2;
   Log log = 3;
   Auth auth = 4;
+  Beta beta = 5;
 }
 
 message Log {
@@ -41,14 +42,6 @@ message Data {
     string driver = 1;
     string source = 2;
   }
-  // # type Config struct {
-  // #   Host     string // 数据库主机地址
-  // #   Port     int    // 数据库端口
-  // #   User     string // 数据库用户名
-  // #   Password string // 数据库密码
-  // #   DBName   string // 数据库名称
-  // #   SSLMode  string // SSL模式 (disable, require, verify-ca, verify-full)
-  // # }
   message PGDataBase {
     string host = 1;
     int32 port = 2;
@@ -80,4 +73,17 @@ message Auth {
   }
 
   QQ qq = 1;
+}
+
+message Beta {
+  message Mail {
+    string host = 1;
+    int32 port = 2;
+    string username = 3;
+    string password = 4;
+    string to = 5;
+    string from = 6;
+  }
+
+  Mail mail = 1;
 }

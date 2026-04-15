@@ -21,13 +21,14 @@ func NewGRPCServer(c *conf.Server,
 	authServ *base.AuthService,
 	systemServ *base.SystemService,
 	trackerServ *base.TrackerService,
+	betaApplicationServ *base.BetaApplicationService,
 	aiServ *ai.AIService,
 	chat *service.ChatService, logg log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
 			logging.Server(logg),
-			tracing.Server(tracing.WithTracerProvider(noop.NewTracerProvider())), // 启用分布式追踪中间件
+			tracing.Server(tracing.WithTracerProvider(noop.NewTracerProvider())),
 		),
 	}
 	if c.Grpc.Network != "" {
@@ -44,6 +45,7 @@ func NewGRPCServer(c *conf.Server,
 	basepb.RegisterAuthServer(srv, authServ)
 	basepb.RegisterSystemServer(srv, systemServ)
 	basepb.RegisterTrackerServer(srv, trackerServ)
+	basepb.RegisterBetaApplicationServer(srv, betaApplicationServ)
 	aipb.RegisterAIServer(srv, aiServ)
 	return srv
 }

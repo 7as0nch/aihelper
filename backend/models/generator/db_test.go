@@ -10,7 +10,7 @@ import (
 )
 
 // PostgreSQL连接配置 - 使用项目中的配置
-const URL = "host=115.120.248.67 port=31042 user=pgadmin password=123456 dbname=pgdb sslmode=disable search_path=aichat"
+const URL = "host=sshjd.aihelper.chat port=30532 user=pgadmin password=pgcj123456 dbname=pgdb sslmode=disable search_path=aichat"
 
 // Dynamic SQL
 type Querier interface {
@@ -64,6 +64,7 @@ func TestDb(t *testing.T) {
 		model.AIPromptTemplate{},
 		model.AIWorkflow{},
 		model.AIApplication{},
+		model.BetaApplication{},
 	}
 	g.ApplyBasic(models...)
 	g.ApplyInterface(func(Querier) {}, models...)
@@ -88,8 +89,10 @@ func TestMigrate(t *testing.T) {
 		// model.AIToolAgentBind{},
 		// model.AIModel{},
 		// model.AIPromptTemplate{},
-		model.AIWorkflow{},
-		model.AIApplication{},)
+		// model.AIWorkflow{},
+		// model.AIApplication{},
+		model.BetaApplication{},
+	)
 	if err != nil {
 		t.Logf("迁移失败: %v", err)
 		return
