@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import 'ant-design-vue/dist/reset.css';
 import './style.css';
+import './styles/landing-ant.css';
 
 import { StyleProvider } from 'ant-design-vue';
 import App from './App.vue';

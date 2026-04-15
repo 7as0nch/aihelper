@@ -15,34 +15,41 @@ const authStore = useAuthStore();
 const isSidebarOpen = ref(false);
 const isSidebarCollapsed = ref(false);
 
-const isLanding = computed(() => ['Landing', 'page'].includes(route.name as string));
+const isPublicPage = computed(() => ['Landing', 'page', 'ApplyBeta'].includes(route.name as string));
 
-watch(isLanding, (landing) => {
-  if (landing) {
-    authStore.closeModal();
-  }
-}, { immediate: true });
+watch(
+  isPublicPage,
+  (publicPage) => {
+    if (publicPage) {
+      authStore.closeModal();
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
   <StyleProvider :container="styleContainer" :hash-priority="'high'">
-    <div :class="[
-      'w-full bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800',
-      isLanding ? 'min-h-screen overflow-auto' : 'flex h-screen overflow-hidden'
-    ]">
-      <Sidebar 
-        v-if="!isLanding"
-        :is-open="isSidebarOpen" 
+    <div
+      :class="[
+        isPublicPage
+          ? 'min-h-screen bg-transparent'
+          : 'flex h-screen w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800',
+      ]"
+    >
+      <Sidebar
+        v-if="!isPublicPage"
+        :is-open="isSidebarOpen"
         :is-collapsed="isSidebarCollapsed"
         @close="isSidebarOpen = false"
         @toggle-collapse="isSidebarCollapsed = !isSidebarCollapsed"
       />
-      
+
       <router-view v-slot="{ Component }">
         <component :is="Component" @toggle-sidebar="isSidebarOpen = !isSidebarOpen" />
       </router-view>
 
-      <AuthModal v-if="!isLanding" />
+      <AuthModal v-if="!isPublicPage" />
     </div>
   </StyleProvider>
 </template>

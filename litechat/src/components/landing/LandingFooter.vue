@@ -1,177 +1,267 @@
 <script setup lang="ts">
-import { Globe, Mail } from 'lucide-vue-next';
+import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-const props = defineProps<{
-  currentYear: number;
-  companySiteLink: string;
-  githubLink: string;
-  giteeLink: string;
-  icp: string;
-  icpLink: string;
-  contactEmail: string;
-}>();
+
+const props = withDefaults(
+  defineProps<{
+    currentYear: number;
+    companySiteLink: string;
+    githubLink: string;
+    giteeLink: string;
+    icp: string;
+    icpLink: string;
+    contactEmail: string;
+    homePath?: string;
+    variant?: 'default' | 'ant';
+  }>(),
+  { homePath: '/', variant: 'ant' },
+);
+
 const { t } = useI18n();
+
+const mailtoHref = `mailto:${props.contactEmail}`;
 </script>
+
 <template>
-  <footer class="footer-shell">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <span class="footer-title">LiteChat</span>
-        <p>{{ t('landing.footer.description') }}</p>
-        <div class="footer-badge">{{ t('landing.footer.builtWith') }}</div>
-      </div>
-      <div class="footer-column">
-        <h4>{{ t('landing.footer.ecosystem') }}</h4>
-        <a href="#capabilities">{{ t('landing.nav.features') }}</a>
-        <a href="#workflow">{{ t('landing.nav.workflow') }}</a>
-        <a href="#project-lab">{{ t('landing.nav.projects') }}</a>
-        <a href="#open-source">{{ t('landing.nav.openSource') }}</a>
-      </div>
-      <div class="footer-column">
-        <h4>{{ t('landing.footer.resources') }}</h4>
-        <a :href="props.githubLink" target="_blank" rel="noreferrer">{{ t('landing.footer.github') }}</a>
-        <a :href="props.giteeLink" target="_blank" rel="noreferrer">{{ t('landing.footer.gitee') }}</a>
-        <a :href="props.companySiteLink" target="_blank" rel="noreferrer">{{ t('landing.footer.officialSite') }}</a>
-      </div>
-      <div class="footer-column">
-        <h4>{{ t('landing.footer.status') }}</h4>
-        <div class="status-card">
-          <span>{{ t('landing.footer.statusLabel') }}</span>
-          <strong>{{ t('landing.footer.statusValue') }}</strong>
+  <footer class="footer-root" :class="{ 'footer-root--ant': props.variant === 'ant' }">
+    <div v-if="props.variant === 'ant'" class="footer-landing">
+      <div class="footer-landing-inner">
+        <div class="footer-grid">
+          <!-- Brand -->
+          <div class="footer-col footer-col-brand">
+            <RouterLink :to="props.homePath" class="footer-brand-row" @click.stop>
+              <span class="footer-brand-mark">
+                <img src="/logo.png" :alt="t('landing.brand.name')" />
+              </span>
+              <span class="footer-brand-name">{{ t('landing.brand.name') }}</span>
+            </RouterLink>
+            <p class="footer-brand-desc">{{ t('landing.footer.brandDescription') }}</p>
+          </div>
+
+          <!-- Products -->
+          <div class="footer-col">
+            <h4 class="footer-col-title">{{ t('landing.footer.columnProducts') }}</h4>
+            <ul class="footer-link-list">
+              <li>
+                <RouterLink :to="{ path: props.homePath, hash: '#products' }">
+                  {{ t('landing.footer.linkProductIntro') }}
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/apply">{{ t('landing.footer.linkBeta') }}</RouterLink>
+              </li>
+            </ul>
+          </div>
+
+          <!-- About -->
+          <div class="footer-col">
+            <h4 class="footer-col-title">{{ t('landing.footer.columnAbout') }}</h4>
+            <ul class="footer-link-list">
+              <li>
+                <RouterLink :to="{ path: props.homePath, hash: '#products' }">
+                  {{ t('landing.footer.linkFaq') }}
+                </RouterLink>
+              </li>
+              <li>
+                <a :href="mailtoHref">{{ t('landing.footer.linkContact') }}</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Resources -->
+          <div class="footer-col">
+            <h4 class="footer-col-title">{{ t('landing.footer.columnResources') }}</h4>
+            <ul class="footer-link-list">
+              <li>
+                <a :href="props.githubLink" target="_blank" rel="noreferrer">{{ t('landing.footer.github') }}</a>
+              </li>
+              <li>
+                <a :href="props.giteeLink" target="_blank" rel="noreferrer">{{ t('landing.footer.gitee') }}</a>
+              </li>
+              <li>
+                <a :href="props.companySiteLink" target="_blank" rel="noreferrer">
+                  {{ t('landing.footer.officialSite') }}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-divider" />
+
+        <div class="footer-bottom">
+          <p class="footer-copyright">
+            © {{ props.currentYear }} {{ t('landing.brand.name') }} · {{ t('landing.footer.rightsReserved') }}
+            <a class="footer-icp" :href="props.icpLink" target="_blank" rel="noreferrer">{{ props.icp }}</a>
+          </p>
         </div>
       </div>
     </div>
-    <div class="footer-bottom">
-      <div class="footer-bottom-meta">
-        <span>© {{ props.currentYear }} LiteChat. {{ t('landing.footer.copyright') }}</span>
-        <a class="icp-link" :href="props.icpLink" target="_blank" rel="noreferrer">{{ props.icp }}</a>
-      </div>
-      <div class="footer-icons">
-        <a :href="props.companySiteLink" target="_blank" rel="noreferrer" aria-label="official site">
-          <Globe :size="18" />
-        </a>
-        <a :href="'mailto:' + props.contactEmail" aria-label="email">
-          <Mail :size="18" />
-        </a>
-      </div>
+
+    <div v-else class="footer-fallback">
+      <p class="footer-fallback-meta">
+        © {{ props.currentYear }} {{ t('landing.brand.name') }}
+        <a :href="props.icpLink" target="_blank" rel="noreferrer">{{ props.icp }}</a>
+      </p>
     </div>
   </footer>
 </template>
+
 <style scoped>
-.footer-shell {
-  --footer-bg: linear-gradient(180deg, rgba(8, 15, 28, 0.94), rgba(4, 10, 20, 0.98));
-  --footer-border: rgba(148, 163, 184, 0.18);
-  --footer-panel: rgba(255, 255, 255, 0.04);
-  --footer-text: #f8fbff;
-  --footer-muted: #a9b8cf;
-  --footer-accent: #7dd3fc;
-  position: relative;
-  z-index: 1;
-  margin-top: 40px;
-  padding: 58px 24px 32px;
-  background: var(--footer-bg);
-  border-top: 1px solid var(--footer-border);
+.footer-root--ant {
+  margin-top: 0;
 }
-.footer-grid,
-.footer-bottom {
-  max-width: 1320px;
+
+.footer-landing {
+  background: var(--landing-nav-bg, #001529);
+  color: rgba(255, 255, 255, 0.65);
+  padding: 64px 24px 28px;
+}
+
+.footer-landing-inner {
+  max-width: 1200px;
   margin: 0 auto;
 }
+
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
-  gap: 28px;
+  grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+  gap: 40px 32px;
+  align-items: flex-start;
 }
-.footer-title {
-  color: var(--footer-text);
-  font-size: 1.8rem;
-  font-weight: 700;
-  letter-spacing: -0.05em;
+
+.footer-col-title {
+  margin: 0 0 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.02em;
 }
-.footer-brand p {
-  max-width: 320px;
-  margin: 16px 0 0;
-  color: var(--footer-muted);
-  line-height: 1.8;
-}
-.footer-badge {
+
+.footer-brand-row {
   display: inline-flex;
   align-items: center;
-  min-height: 38px;
-  margin-top: 22px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: var(--footer-panel);
-  border: 1px solid var(--footer-border);
-  color: var(--footer-accent);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  gap: 12px;
+  margin-bottom: 16px;
+  text-decoration: none;
+  color: #fff;
+  transition: opacity 0.2s ease;
 }
-.footer-column {
+
+.footer-brand-row:hover {
+  opacity: 0.88;
+}
+
+.footer-brand-mark {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer-brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.footer-brand-name {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.footer-brand-desc {
+  margin: 0;
+  max-width: 280px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.footer-link-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: grid;
   gap: 12px;
-  align-content: start;
 }
-.footer-column h4 {
-  margin: 0 0 6px;
-  color: var(--footer-text);
-  font-size: 0.92rem;
-}
-.footer-column a,
-.footer-icons a,
-.icp-link {
-  color: var(--footer-muted);
+
+.footer-link-list a {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.45);
   text-decoration: none;
   transition: color 0.2s ease;
 }
-.footer-column a:hover,
-.footer-icons a:hover,
-.icp-link:hover {
-  color: var(--footer-text);
+
+.footer-link-list a:hover {
+  color: #fff;
 }
-.status-card {
-  display: grid;
-  gap: 12px;
-  padding: 18px;
-  border-radius: 16px;
-  background: var(--footer-panel);
-  border: 1px solid var(--footer-border);
+
+.footer-divider {
+  height: 1px;
+  margin: 48px 0 20px;
+  background: rgba(255, 255, 255, 0.08);
 }
-.status-card span {
-  color: var(--footer-muted);
-  font-size: 0.82rem;
-}
-.status-card strong {
-  color: var(--footer-text);
-}
+
 .footer-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 46px;
-  padding-top: 24px;
-  border-top: 1px solid var(--footer-border);
-  color: var(--footer-muted);
-  font-size: 0.92rem;
+  text-align: center;
+  padding-bottom: 8px;
 }
-.footer-bottom-meta {
-  display: grid;
-  gap: 6px;
+
+.footer-copyright {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.35);
 }
-.footer-icons {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+
+.footer-icp {
+  margin-left: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
-@media (max-width: 960px) {
+
+.footer-icp:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.footer-fallback {
+  padding: 24px;
+  text-align: center;
+  background: var(--landing-page-bg, #ececec);
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.footer-fallback-meta a {
+  margin-left: 8px;
+  color: inherit;
+}
+
+@media (max-width: 991px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-col-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 575px) {
+  .footer-landing {
+    padding: 48px 16px 24px;
+  }
+
   .footer-grid {
     grid-template-columns: 1fr;
-  }
-  .footer-bottom {
-    flex-direction: column;
-    align-items: flex-start;
+    gap: 32px;
   }
 }
 </style>

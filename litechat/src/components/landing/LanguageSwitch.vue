@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import type { SupportedLocale } from '@/i18n/types';
-
 import { useI18n } from 'vue-i18n';
 
-const props = defineProps<{
-  modelValue: SupportedLocale;
-}>();
+const props = withDefaults(
+  defineProps<{
+    modelValue: SupportedLocale;
+    /** Dark nav bar (Ant landing) */
+    tone?: 'light' | 'dark';
+  }>(),
+  { tone: 'light' },
+);
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: SupportedLocale): void;
@@ -21,7 +25,11 @@ const setLocale = (locale: SupportedLocale) => {
 </script>
 
 <template>
-  <div class="language-switch" :aria-label="t('landing.language.label')">
+  <div
+    class="language-switch"
+    :class="{ 'language-switch--dark': props.tone === 'dark' }"
+    :aria-label="t('landing.language.label')"
+  >
     <button
       type="button"
       class="language-option"
@@ -47,33 +55,46 @@ const setLocale = (locale: SupportedLocale) => {
   align-items: center;
   gap: 4px;
   padding: 4px;
-  border-radius: 14px;
-  background: var(--surface-strong);
-  border: 1px solid var(--border-soft);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid var(--site-border);
 }
 
 .language-option {
-  border: 0;
-  cursor: pointer;
   min-width: 52px;
   padding: 9px 12px;
-  border-radius: 14px;
+  border: 0;
+  border-radius: 999px;
   background: transparent;
-  color: var(--text-muted);
+  color: var(--site-muted);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+  cursor: pointer;
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease;
 }
 
 .language-option.is-active {
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text-strong);
+  background: rgba(199, 91, 44, 0.14);
+  color: var(--site-text);
   transform: translateY(-1px);
 }
 
-:global(.theme-dark) .language-option.is-active {
-  background: rgba(125, 211, 252, 0.14);
+.language-switch--dark {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.language-switch--dark .language-option {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.language-switch--dark .language-option.is-active {
+  background: var(--landing-primary, #1890ff);
+  color: #fff;
+  transform: none;
 }
 </style>
