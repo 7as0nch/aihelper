@@ -232,22 +232,25 @@ watch(
   line-height: 1.5;
   background: var(--landing-nav-bg, #001529) !important;
   box-shadow: var(--landing-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
+  /* Added transitions for a smooth morphing effect */
   transition:
-    background 0.28s ease,
-    box-shadow 0.28s ease,
-    padding 0.28s ease;
+    top 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .header-ant--floating {
+  top: 12px;
   background: transparent !important;
   box-shadow: none;
-  padding: 12px clamp(12px, 3vw, 20px) 0;
+  padding: 0 clamp(12px, 3vw, 24px);
 }
 
 .header-ant--floating .header-ant-bar.home-page {
   background: var(--landing-nav-bg, #001529);
-  border-radius: 6px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .header-ant-bar.home-page {
@@ -263,11 +266,12 @@ watch(
   gap: 8px;
   row-gap: 0;
   background: transparent;
+  border-radius: 0;
+  /* Control the border-radius and shadow during the transition */
   transition:
-    border-radius 0.28s ease,
-    box-shadow 0.28s ease,
-    background 0.28s ease,
-    max-width 0.28s ease;
+    border-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-ant-brand {
